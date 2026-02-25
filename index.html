@@ -563,14 +563,31 @@ function pickRole(role) {
   btn.textContent = tx[role];
 }
 
-function selectAvatar(em, el) {
-  document.querySelectorAll('.av-item').forEach(i => i.classList.remove('sel'));
-  el.classList.add('sel');
-  selAv = em;
-  const ppAv = document.getElementById('pp-av');
-  if (ppAv) ppAv.textContent = em;
-}
+// Variable globale pour stocker l'avatar choisi (🦁 par défaut)
+let selAv = "🦁"; 
 
+function pickAv(element, emoji) {
+  // 1. On retire la classe 'sel' de tous les choix d'avatars
+  document.querySelectorAll('.av-opt').forEach(opt => {
+    opt.classList.remove('sel');
+  });
+
+  // 2. On ajoute la classe 'sel' à l'élément cliqué
+  if (element) {
+    element.classList.add('sel');
+  }
+
+  // 3. On met à jour la variable globale et l'aperçu
+  selAv = emoji;
+  const ppAv = document.getElementById('pp-av');
+  if (ppAv) {
+    ppAv.textContent = emoji;
+  }
+  
+  // Met à jour l'icône dans la zone de message (si elle existe)
+  const composeAv = document.getElementById('compose-av');
+  if (composeAv) composeAv.textContent = emoji;
+}
 function updatePP() {
   const name = document.getElementById('pp-name');
   const input = document.getElementById('pseudo-input');
@@ -1000,5 +1017,28 @@ function showToast(msg,type='success'){
   tTimer=setTimeout(()=>t.classList.remove('visible'),3000);
 }
 </script>
+// --- COPIER À PARTIR D'ICI ---
+let avatarSelectionne = ""; 
+
+function pickAv(url, element) {
+  avatarSelectionne = url;
+  
+  // Nettoyage des sélections précédentes
+  const tousLesAvatars = document.querySelectorAll('.av-opt'); 
+  tousLesAvatars.forEach(av => {
+    av.style.border = "none";
+    av.style.filter = "grayscale(100%)"; // Optionnel : met en gris les non-sélectionnés
+    av.style.transform = "scale(1)";
+  });
+
+  // Mise en avant de l'avatar choisi
+  if (element) {
+    element.style.border = "3px solid #d4694a"; // La couleur --terra de votre projet
+    element.style.filter = "grayscale(0%)";
+    element.style.borderRadius = "50%";
+    element.style.transform = "scale(1.1)";
+  }
+}
+// --- JUSQU'À ICI ---
 </body>
 </html>
