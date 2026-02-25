@@ -365,7 +365,8 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
       </div>
 
       <div class="field-wrap">
-        <label class="field-label" id="code-lbl">CODE ÉQUIPE</label>
+        <!-- ✅ CORRECTION : Ajout de l'attribut for -->
+        <label class="field-label" for="code-input" id="code-lbl">CODE ÉQUIPE</label>
         <input class="field-input eleve" id="code-input"
           placeholder="ex : TEAM-0000"
           style="text-transform:uppercase;letter-spacing:2px;font-family:monospace;"
@@ -374,7 +375,8 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
 
       <div id="pseudo-block" style="display:none;">
         <div class="field-wrap">
-          <label class="field-label">TON PSEUDO D'AFFICHAGE</label>
+          <!-- ✅ CORRECTION : Ajout de l'attribut for -->
+          <label class="field-label" for="pseudo-input">TON PSEUDO D'AFFICHAGE</label>
           <input class="field-input mentor" id="pseudo-input" placeholder="ex : Coach Aziz" oninput="updatePP()">
         </div>
         <label class="field-label" style="margin-bottom:6px;">AVATAR</label>
