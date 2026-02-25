@@ -524,10 +524,14 @@ const EDGE_URL = `${SUPABASE_URL}/functions/v1/proxy-mistral`;
 const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
 // ── VARIABLES D'ÉTAT ──
-let activeRole = 'eleve'; // Par défaut
-let selAv = '🦊';
+let activeRole = 'eleve';
+let selAv = '🦁';
 let currentUser = null;
+let currentEquipe = null;
+let conversationHistory = [];
 let masterPrompt = '';
+let selectedEquipeId = null;
+let resetEquipeId = null;
 
 // ── FONCTIONS DE LOGIN ──
 
@@ -563,31 +567,29 @@ function pickRole(role) {
   btn.textContent = tx[role];
 }
 
-// Variable globale pour stocker l'avatar choisi (🦁 par défaut)
-let selAv = "🦁"; 
-
 function pickAv(element, emoji) {
-  // 1. On retire la classe 'sel' de tous les choix d'avatars
+  // Retire la classe 'sel' de tous les avatars
   document.querySelectorAll('.av-opt').forEach(opt => {
     opt.classList.remove('sel');
   });
 
-  // 2. On ajoute la classe 'sel' à l'élément cliqué
+  // Ajoute la classe 'sel' à l'élément cliqué
   if (element) {
     element.classList.add('sel');
   }
 
-  // 3. On met à jour la variable globale et l'aperçu
+  // Met à jour la variable globale et l'aperçu
   selAv = emoji;
   const ppAv = document.getElementById('pp-av');
   if (ppAv) {
     ppAv.textContent = emoji;
   }
   
-  // Met à jour l'icône dans la zone de message (si elle existe)
+  // Met à jour l'icône dans la zone de message
   const composeAv = document.getElementById('compose-av');
   if (composeAv) composeAv.textContent = emoji;
 }
+
 function updatePP() {
   const name = document.getElementById('pp-name');
   const input = document.getElementById('pseudo-input');
@@ -611,9 +613,9 @@ async function doLogin() {
   errEl.classList.remove('visible');
 
   try {
-    // CORRECTION ERREUR 406 : On utilise .select('*') pour éviter les jointures non configurées
+    // ✅ CORRECTION : Jointure avec la table roles
     const { data: user, error } = await sb.from('utilisateurs')
-      .select('*')
+      .select('*, roles(nom)')
       .eq('code', code)
       .eq('actif', true)
       .maybeSingle();
@@ -624,8 +626,8 @@ async function doLogin() {
       return;
     }
 
-    // Détermination du rôle (on utilise la colonne 'role_nom' ou 'type' de ta table)
-    const rn = user.role_nom || user.type || 'eleve';
+    // ✅ Extraction du nom du rôle depuis la jointure
+    const roleName = user.roles?.nom || 'eleve';
     
     // Vérification de cohérence entre le rôle choisi et le code entré
     const roleOk = {
@@ -634,7 +636,7 @@ async function doLogin() {
       fac: ['facilitateur', 'facilitateur_general', 'admin']
     };
 
-    if (!roleOk[activeRole].includes(rn)) {
+    if (!roleOk[activeRole].includes(roleName)) {
       showErr('Ce code ne correspond pas au rôle sélectionné.');
       resetBtn();
       return;
@@ -687,7 +689,7 @@ function resetBtn() {
 function doLogout() {
   currentUser = null;
   currentEquipe = null;
-  if (typeof conversationHistory !== 'undefined') conversationHistory = [];
+  conversationHistory = [];
   masterPrompt = '';
   const chat = document.getElementById('chat-messages');
   if (chat) chat.innerHTML = '';
@@ -695,6 +697,7 @@ function doLogout() {
   go('login');
   showToast('Déconnecté', 'success');
 }
+
 // ── VUE ÉLÈVE ──
 async function initEleve(){
   const{data:eq}=await sb.from('equipes').select('*').eq('code_equipe',currentUser.code).single();
@@ -1017,28 +1020,6 @@ function showToast(msg,type='success'){
   tTimer=setTimeout(()=>t.classList.remove('visible'),3000);
 }
 </script>
-// --- COPIER À PARTIR D'ICI ---
-let avatarSelectionne = ""; 
 
-function pickAv(url, element) {
-  avatarSelectionne = url;
-  
-  // Nettoyage des sélections précédentes
-  const tousLesAvatars = document.querySelectorAll('.av-opt'); 
-  tousLesAvatars.forEach(av => {
-    av.style.border = "none";
-    av.style.filter = "grayscale(100%)"; // Optionnel : met en gris les non-sélectionnés
-    av.style.transform = "scale(1)";
-  });
-
-  // Mise en avant de l'avatar choisi
-  if (element) {
-    element.style.border = "3px solid #d4694a"; // La couleur --terra de votre projet
-    element.style.filter = "grayscale(0%)";
-    element.style.borderRadius = "50%";
-    element.style.transform = "scale(1.1)";
-  }
-}
-// --- JUSQU'À ICI ---
 </body>
 </html>
