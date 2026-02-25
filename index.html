@@ -334,6 +334,31 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
 .toast.visible{transform:translateX(-50%) translateY(0);}
 .toast.success{background:var(--moss);}
 .toast.error{background:var(--terra);}
+/* DRAWER CONVERSATION FAC */
+.fac-main.drawer-open{display:grid;grid-template-columns:1fr;gap:16px;}
+.fac-layout.drawer-open .fac-main{display:flex;gap:0;padding:0;overflow:hidden;}
+.teams-col{padding:20px;display:flex;flex-direction:column;gap:16px;overflow-y:auto;width:240px;flex-shrink:0;border-right:1px solid rgba(29,111,164,.1);background:#f0f4f8;}
+.teams-col .teams-grid{grid-template-columns:1fr!important;}
+
+.conv-drawer{flex:1;display:flex;flex-direction:column;background:white;overflow:hidden;
+  animation:drawerIn .3s cubic-bezier(.175,.885,.32,1.275);}
+@keyframes drawerIn{from{opacity:0;transform:translateX(40px);}to{opacity:1;transform:none;}}
+
+.drawer-hdr{padding:14px 18px;border-bottom:1px solid rgba(0,0,0,.07);
+  display:flex;align-items:center;justify-content:space-between;flex-shrink:0;background:white;}
+.drawer-title{font-family:'Fraunces',serif;font-weight:700;font-size:.95rem;color:#0a1929;display:flex;align-items:center;gap:8px;}
+.drawer-sub{font-size:.63rem;color:#4a6b85;margin-top:2px;}
+.btn-drawer-close{background:rgba(0,0,0,.05);border:none;border-radius:8px;
+  width:28px;height:28px;cursor:pointer;font-size:.8rem;color:#4a6b85;
+  display:flex;align-items:center;justify-content:center;transition:all .2s;}
+.btn-drawer-close:hover{background:rgba(212,105,74,.1);color:var(--terra);}
+
+.drawer-msgs{flex:1;overflow-y:auto;padding:16px;display:flex;flex-direction:column;gap:10px;}
+.drawer-msgs::-webkit-scrollbar{width:3px;}
+.drawer-msgs::-webkit-scrollbar-thumb{background:rgba(29,111,164,.15);border-radius:2px;}
+.drawer-empty{align-self:center;margin-top:40px;font-size:.75rem;color:var(--light);font-style:italic;}
+
+.team-card.active-drawer{border-color:var(--fac);box-shadow:0 0 0 2px rgba(29,111,164,.15);}
 </style>
 </head>
 <body>
@@ -952,7 +977,7 @@ async function initFac(){
 async function renderFacEquipes(){
   const{data:eqs}=await sb.from('equipes').select('*').eq('facilitateur_id',currentUser.id).order('created_at',{ascending:true});
   const main=document.getElementById('fac-main');
-  main.innerHTML=`<div><div class="fac-page-title">📋 Mes équipes</div><div class="fac-page-sub">Cliquez sur une équipe pour voir sa conversation. Seul le facilitateur peut réinitialiser un projet.</div></div><div class="teams-grid" id="teams-grid"></div>`;
+  main.innerHTML=`<div><div class="fac-page-title">📋 Mes équipes</div><div class="fac-page-sub">Cliquez sur 💬 Voir pour lire la conversation d'une équipe.</div></div><div class="teams-grid" id="teams-grid"></div>`;
   const grid=document.getElementById('teams-grid');
   if(!eqs||eqs.length===0){grid.innerHTML='<p style="font-size:.8rem;color:var(--light);">Aucune équipe assignée.</p>';return;}
   eqs.forEach(eq=>{
@@ -960,7 +985,7 @@ async function renderFacEquipes(){
     const dc=eq.etape_courante===0?'pending':eq.etape_courante>=5?'done':'active';
     const dl=eq.etape_courante===0?'Pas commencé':eq.etape_courante>=5?'Terminé ✓':`Jour ${eq.etape_courante}`;
     const card=document.createElement('div');
-    card.className='team-card';
+    card.className='team-card'; card.id='card-eq-'+eq.id;
     card.innerHTML=`
       <div class="tc-header">
         <div class="tc-av" style="background:linear-gradient(135deg,#7ab648,#3d5c3a);">🌿</div>
@@ -971,7 +996,7 @@ async function renderFacEquipes(){
       <div class="tc-footer">
         <div class="tc-eleves">👥 ${eq.nb_eleves||'?'} élève(s)</div>
         <div class="tc-actions">
-          <button class="btn-view" onclick="showToast('Vue conversation — bientôt disponible','success');event.stopPropagation()">💬 Voir</button>
+          <button class="btn-view" onclick="openConvDrawer(${eq.id},'${(eq.nom||eq.code_equipe).replace(/'/g,"\\'")}','${eq.college||''}',${eq.etape_courante});event.stopPropagation()">💬 Voir</button>
           <button class="btn-reset" onclick="openReset(${eq.id});event.stopPropagation()">🗑️ Reset</button>
         </div>
       </div>`;
@@ -979,6 +1004,83 @@ async function renderFacEquipes(){
   });
 }
 
+async function openConvDrawer(eqId, nom, college, etape){
+  // Highlight la card active
+  document.querySelectorAll('.team-card').forEach(c=>c.classList.remove('active-drawer'));
+  const activeCard=document.getElementById('card-eq-'+eqId);
+  if(activeCard) activeCard.classList.add('active-drawer');
+
+  // Restructurer le layout si pas encore en mode drawer
+  const layout=document.getElementById('fac-layout')||document.querySelector('.fac-layout');
+  const main=document.getElementById('fac-main');
+  
+  if(!document.getElementById('conv-drawer')){
+    // Première ouverture : transformer fac-main en layout 2 colonnes
+    const grid=document.getElementById('teams-grid');
+    const header=main.firstElementChild;
+    main.innerHTML='';
+    main.style.cssText='display:flex;gap:0;padding:0;overflow:hidden;';
+    
+    // Colonne gauche : liste des équipes
+    const col=document.createElement('div');
+    col.className='teams-col';
+    col.appendChild(header);
+    col.appendChild(grid);
+    grid.style.cssText='display:flex;flex-direction:column;gap:10px;';
+    main.appendChild(col);
+    
+    // Colonne droite : drawer
+    const drawer=document.createElement('div');
+    drawer.className='conv-drawer'; drawer.id='conv-drawer';
+    main.appendChild(drawer);
+  }
+
+  // Charger les messages
+  const{data:msgs}=await sb.from('conversations')
+    .select('*').eq('equipe_id',eqId).eq('statut','visible')
+    .order('created_at',{ascending:true});
+
+  const drawer=document.getElementById('conv-drawer');
+  drawer.innerHTML=`
+    <div class="drawer-hdr">
+      <div>
+        <div class="drawer-title">🌿 ${nom}</div>
+        <div class="drawer-sub">${college||'—'} · Jour ${etape}/5</div>
+      </div>
+      <button class="btn-drawer-close" onclick="closeConvDrawer()">✕</button>
+    </div>
+    <div class="drawer-msgs" id="drawer-msgs"></div>`;
+
+  const c=document.getElementById('drawer-msgs');
+  if(!msgs||msgs.length===0){
+    c.innerHTML='<div class="drawer-empty">Aucun message pour l\'instant.</div>';
+    return;
+  }
+  msgs.forEach(m=>{
+    const d=document.createElement('div');
+    if(m.role==='assistant'){
+      d.className='msg spark-msg';
+      d.innerHTML=`<div class="msg-av">⚡</div><div class="msg-col"><div class="msg-who">SPARK ⚡</div><div class="msg-bubble">${formatTxt(m.message)}</div></div>`;
+    } else if(m.role==='user'){
+      d.className='msg eleve-msg';
+      d.innerHTML=`<div class="msg-av">👥</div><div class="msg-col"><div class="msg-who">${m.pseudo||'La Team'}</div><div class="msg-bubble">${formatTxt(m.message)}</div></div>`;
+    } else if(m.role==='mentor'){
+      d.className='msg mentor-msg';
+      d.innerHTML=`<div class="msg-av">🎓</div><div class="msg-col"><div class="msg-who">${m.pseudo||'Mentor'}</div><div class="msg-bubble">${formatTxt(m.message)}</div></div>`;
+    }
+    c.appendChild(d);
+  });
+  c.scrollTop=c.scrollHeight;
+}
+
+function closeConvDrawer(){
+  // Retirer le highlight
+  document.querySelectorAll('.team-card').forEach(c=>c.classList.remove('active-drawer'));
+  // Reconstruire la vue normale
+  renderFacEquipes();
+  const main=document.getElementById('fac-main');
+  main.style.cssText='';
+}
 async function renderFacValidation(){
   const{data:msgs}=await sb.from('messages_mentors')
     .select('*,utilisateurs(pseudo,avatar,code),equipes(nom,code_equipe)')
