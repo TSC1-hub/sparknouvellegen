@@ -523,106 +523,161 @@ const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZ
 const EDGE_URL = `${SUPABASE_URL}/functions/v1/proxy-mistral`;
 const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-// ÉTAT
-let currentUser = null, currentEquipe = null, masterPrompt = '';
-let conversationHistory = [], selectedEquipeId = null, resetEquipeId = null;
-let activeRole = 'eleve', selAv = '🦁';
+// ── VARIABLES D'ÉTAT ──
+let activeRole = 'eleve'; // Par défaut
+let selAv = '🦊';
+let currentUser = null;
+let masterPrompt = '';
 
-// ── LOGIN ──
+// ── FONCTIONS DE LOGIN ──
+
 function pickRole(role) {
   activeRole = role;
-  ['eleve','mentor','fac'].forEach(r => {
-    const c = document.getElementById('rc-'+r);
-    c.className = 'role-card'+(r===role?' active-'+r:'');
-    c.querySelector('.rc-check').textContent = r===role?'✓':'';
+  
+  // Mise à jour visuelle des cartes de rôle
+  ['eleve', 'mentor', 'fac'].forEach(r => {
+    const c = document.getElementById('rc-' + r);
+    if (c) {
+      c.className = 'role-card' + (r === role ? ' active-' + r : '');
+      const check = c.querySelector('.rc-check');
+      if (check) check.textContent = r === role ? '✓' : '';
+    }
   });
-  const lbl={eleve:'CODE ÉQUIPE',mentor:'CODE MENTOR',fac:'CODE FACILITATEUR'};
-  const ph={eleve:'ex : TEAM-0000',mentor:'ex : MENTOR-0000',fac:'ex : FAC-0000'};
-  const tx={eleve:'Rejoindre l\'atelier 🌱',mentor:'Rejoindre en tant que mentor →',fac:'Accéder au tableau de bord →'};
-  document.getElementById('code-lbl').textContent=lbl[role];
-  document.getElementById('code-input').placeholder=ph[role];
-  document.getElementById('code-input').className='field-input '+role;
-  document.getElementById('pseudo-block').style.display=role==='mentor'?'block':'none';
-  const btn=document.getElementById('btn-connect');
-  btn.className='btn-connect '+role; btn.textContent=tx[role];
-// Remplace le bloc existant par celui-ci :
-const { data: user, error } = await sb.from('utilisateurs')
-  .select('*') 
-  .eq('code', code)
-  .eq('actif', true)
-  .single();
 
-if (error || !user) {
-  showErr('Code invalide ou non reconnu.');
-  resetBtn();
-  return;
+  // Textes dynamiques selon le rôle
+  const lbl = { eleve: 'CODE ÉQUIPE', mentor: 'CODE MENTOR', fac: 'CODE FACILITATEUR' };
+  const ph = { eleve: 'ex : TEAM-0000', mentor: 'ex : MENTOR-0000', fac: 'ex : FAC-0000' };
+  const tx = { eleve: "Rejoindre l'atelier 🌱", mentor: 'Rejoindre en tant que mentor →', fac: 'Accéder au tableau de bord →' };
+
+  document.getElementById('code-lbl').textContent = lbl[role];
+  const input = document.getElementById('code-input');
+  input.placeholder = ph[role];
+  input.className = 'field-input ' + role;
+  
+  // Afficher le bloc pseudo uniquement pour le mentor
+  const pBlock = document.getElementById('pseudo-block');
+  if (pBlock) pBlock.style.display = role === 'mentor' ? 'block' : 'none';
+
+  const btn = document.getElementById('btn-connect');
+  btn.className = 'btn-connect ' + role;
+  btn.textContent = tx[role];
 }
 
-// On détermine le rôle directement via une colonne 'role_nom' ou 'type_role' 
-// que tu as probablement dans ta table utilisateurs
-const rn = user.role_nom || user.type; // Adapte selon le nom de ta colonne
-  el.classList.add('sel'); selAv=em;
-  document.getElementById('pp-av').textContent=em;
-}
-function updatePP(){
-  document.getElementById('pp-name').textContent=document.getElementById('pseudo-input').value||'Ton pseudo ici';
+function selectAvatar(em, el) {
+  document.querySelectorAll('.av-item').forEach(i => i.classList.remove('sel'));
+  el.classList.add('sel');
+  selAv = em;
+  const ppAv = document.getElementById('pp-av');
+  if (ppAv) ppAv.textContent = em;
 }
 
-async function doLogin(){
-  const code=document.getElementById('code-input').value.trim().toUpperCase();
-  const errEl=document.getElementById('login-error');
-  const btn=document.getElementById('btn-connect');
-  if(!code){showErr('Veuillez entrer un code.');return;}
-  btn.disabled=true; btn.textContent='Connexion...'; errEl.classList.remove('visible');
+function updatePP() {
+  const name = document.getElementById('pp-name');
+  const input = document.getElementById('pseudo-input');
+  if (name && input) name.textContent = input.value.trim() || 'Ton pseudo ici';
+}
 
-  try{
-    const{data:user,error}=await sb.from('utilisateurs')
-      .select('*,roles(nom)').eq('code',code).eq('actif',true).single();
-    if(error||!user){showErr('Code invalide ou non reconnu.');resetBtn();return;}
+async function doLogin() {
+  const code = document.getElementById('code-input').value.trim().toUpperCase();
+  const errEl = document.getElementById('login-error');
+  const btn = document.getElementById('btn-connect');
 
-    const rn=user.roles?.nom;
-    const roleOk={eleve:['eleve'],mentor:['mentor'],fac:['facilitateur','facilitateur_general','admin']};
-    if(!roleOk[activeRole]?.includes(rn)){
-      showErr('Ce code ne correspond pas au rôle sélectionné.');resetBtn();return;
+  if (!code) {
+    showErr('Veuillez entrer un code.');
+    return;
+  }
+
+  // État de chargement
+  btn.disabled = true;
+  const originalText = btn.textContent;
+  btn.textContent = 'Connexion...';
+  errEl.classList.remove('visible');
+
+  try {
+    // CORRECTION ERREUR 406 : On utilise .select('*') pour éviter les jointures non configurées
+    const { data: user, error } = await sb.from('utilisateurs')
+      .select('*')
+      .eq('code', code)
+      .eq('actif', true)
+      .maybeSingle();
+
+    if (error || !user) {
+      showErr('Code invalide ou non reconnu.');
+      resetBtn();
+      return;
     }
 
-    currentUser=user;
-    await sb.from('utilisateurs').update({derniere_connexion:new Date().toISOString()}).eq('id',user.id);
+    // Détermination du rôle (on utilise la colonne 'role_nom' ou 'type' de ta table)
+    const rn = user.role_nom || user.type || 'eleve';
+    
+    // Vérification de cohérence entre le rôle choisi et le code entré
+    const roleOk = {
+      eleve: ['eleve'],
+      mentor: ['mentor'],
+      fac: ['facilitateur', 'facilitateur_general', 'admin']
+    };
 
-    if(activeRole==='mentor'){
-      const pseudo=document.getElementById('pseudo-input').value.trim()||'Mentor';
-      await sb.from('utilisateurs').update({pseudo,avatar:selAv}).eq('id',user.id);
-      currentUser.pseudo=pseudo; currentUser.avatar=selAv;
+    if (!roleOk[activeRole].includes(rn)) {
+      showErr('Ce code ne correspond pas au rôle sélectionné.');
+      resetBtn();
+      return;
     }
 
-    const{data:p}=await sb.from('prompts').select('contenu').eq('actif',true).single();
-    if(p) masterPrompt=p.contenu;
+    currentUser = user;
 
-    if(activeRole==='eleve') await initEleve();
-    else if(activeRole==='mentor') await initMentor();
+    // Mise à jour de la dernière connexion
+    await sb.from('utilisateurs').update({ derniere_connexion: new Date().toISOString() }).eq('id', user.id);
+
+    // Si c'est un mentor, on enregistre son pseudo et avatar choisis
+    if (activeRole === 'mentor') {
+      const pseudo = document.getElementById('pseudo-input').value.trim() || 'Mentor';
+      await sb.from('utilisateurs').update({ pseudo: pseudo, avatar: selAv }).eq('id', user.id);
+      currentUser.pseudo = pseudo;
+      currentUser.avatar = selAv;
+    }
+
+    // Récupération du prompt maître
+    const { data: p } = await sb.from('prompts').select('contenu').eq('actif', true).limit(1).maybeSingle();
+    if (p) masterPrompt = p.contenu;
+
+    // Redirection selon le rôle
+    if (activeRole === 'eleve') await initEleve();
+    else if (activeRole === 'mentor') await initMentor();
     else await initFac();
 
-  }catch(e){showErr('Erreur de connexion.');resetBtn();}
+  } catch (e) {
+    console.error(e);
+    showErr('Erreur de connexion au serveur.');
+    resetBtn();
+  }
 }
 
-function showErr(msg){
-  const e=document.getElementById('login-error');
-  e.textContent=msg; e.classList.add('visible');
-}
-function resetBtn(){
-  const btn=document.getElementById('btn-connect');
-  btn.disabled=false;
-  const tx={eleve:'Rejoindre l\'atelier 🌱',mentor:'Rejoindre en tant que mentor →',fac:'Accéder au tableau de bord →'};
-  btn.textContent=tx[activeRole];
+function showErr(msg) {
+  const e = document.getElementById('login-error');
+  if (e) {
+    e.textContent = msg;
+    e.classList.add('visible');
+  }
 }
 
-function doLogout(){
-  currentUser=null; currentEquipe=null; conversationHistory=[]; masterPrompt='';
-  document.getElementById('chat-messages').innerHTML='';
-  document.getElementById('code-input').value='';
-  go('login'); showToast('Déconnecté','success');
+function resetBtn() {
+  const btn = document.getElementById('btn-connect');
+  btn.disabled = false;
+  const tx = { eleve: "Rejoindre l'atelier 🌱", mentor: 'Rejoindre en tant que mentor →', fac: 'Accéder au tableau de bord →' };
+  btn.textContent = tx[activeRole];
 }
 
+function doLogout() {
+  currentUser = null;
+  currentEquipe = null;
+  if (typeof conversationHistory !== 'undefined') conversationHistory = [];
+  masterPrompt = '';
+  const chat = document.getElementById('chat-messages');
+  if (chat) chat.innerHTML = '';
+  document.getElementById('code-input').value = '';
+  go('login');
+  showToast('Déconnecté', 'success');
+}
 // ── VUE ÉLÈVE ──
 async function initEleve(){
   const{data:eq}=await sb.from('equipes').select('*').eq('code_equipe',currentUser.code).single();
