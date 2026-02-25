@@ -824,10 +824,49 @@ function showTyping(){
 function hideTyping(){const e=document.getElementById('typing-wrap');if(e)e.remove();}
 function scrollBot(){const c=document.getElementById('chat-messages');if(c)c.scrollTop=c.scrollHeight;}
 
-function handleKey(e){
-  if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();sendMessage();}
-  const ta=document.getElementById('msg-input');
-  ta.style.height='auto'; ta.style.height=Math.min(ta.scrollHeight,120)+'px';
+function login() {
+  // Récupérer la carte de rôle active
+  const activeRoleCard = document.querySelector(
+    '.role-card.active-eleve, .role-card.active-mentor, .role-card.active-fac'
+  );
+
+  // Vérifier quel rôle est actif
+  if (activeRoleCard.classList.contains('active-eleve')) {
+    // Logique pour les élèves
+    const code = document.getElementById('equipe-code').value;
+    if (!code) {
+      alert("Veuillez entrer un code d'équipe.");
+      return;
+    }
+    // Appel à Supabase pour authentifier l'élève
+    console.log("Connexion en tant qu'élève avec le code :", code);
+    go('s-eleve'); // Redirection vers l'écran élève
+  }
+  else if (activeRoleCard.classList.contains('active-mentor')) {
+    // Logique pour les mentors
+    const mentorId = document.getElementById('mentor-id').value; // Remplacez par l'ID réel de votre champ
+    if (!mentorId) {
+      alert("Veuillez sélectionner un avatar.");
+      return;
+    }
+    // Appel à Supabase pour authentifier le mentor
+    console.log("Connexion en tant que mentor avec l'ID :", mentorId);
+    go('s-mentor'); // Redirection vers l'écran mentor
+  }
+  else if (activeRoleCard.classList.contains('active-fac')) {
+    // Logique pour les facilitateurs
+    const facId = document.getElementById('facilitateur-code').value; // Remplacez par l'ID réel de votre champ
+    if (!facId) {
+      alert("Veuillez entrer un identifiant de facilitateur.");
+      return;
+    }
+    // Appel à Supabase pour authentifier le facilitateur
+    console.log("Connexion en tant que facilitateur avec l'ID :", facId);
+    go('s-fac'); // Redirection vers l'écran facilitateur
+  }
+  else {
+    alert("Veuillez sélectionner un rôle.");
+  }
 }
 
 function listenMentorMessages(){
