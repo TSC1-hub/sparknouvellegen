@@ -545,10 +545,22 @@ function pickRole(role) {
   document.getElementById('pseudo-block').style.display=role==='mentor'?'block':'none';
   const btn=document.getElementById('btn-connect');
   btn.className='btn-connect '+role; btn.textContent=tx[role];
+// Remplace le bloc existant par celui-ci :
+const { data: user, error } = await sb.from('utilisateurs')
+  .select('*') 
+  .eq('code', code)
+  .eq('actif', true)
+  .single();
+
+if (error || !user) {
+  showErr('Code invalide ou non reconnu.');
+  resetBtn();
+  return;
 }
 
-function pickAv(el,em){
-  document.querySelectorAll('.av-opt').forEach(a=>a.classList.remove('sel'));
+// On détermine le rôle directement via une colonne 'role_nom' ou 'type_role' 
+// que tu as probablement dans ta table utilisateurs
+const rn = user.role_nom || user.type; // Adapte selon le nom de ta colonne
   el.classList.add('sel'); selAv=em;
   document.getElementById('pp-av').textContent=em;
 }
