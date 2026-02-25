@@ -517,24 +517,33 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
 <div class="toast" id="toast"></div>
 
 <script>
-// CONFIG — remplacez par vos vraies valeurs
+// ═══════════════════════════════════════════════════════════
+// CONFIG - Remplacez par vos vraies valeurs
+// ═══════════════════════════════════════════════════════════
 const SUPABASE_URL = 'https://mqfkjikpdnpmynwtfjep.supabase.co';
 const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1xZmtqaWtwZG5wbXlud3RmamVwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIwMTI5OTUsImV4cCI6MjA4NzU4ODk5NX0.vTxgzWy88EM3WaJC0cYF4ewx89CXbHiT-ApaOWumo54';
 const EDGE_URL = `${SUPABASE_URL}/functions/v1/proxy-mistral`;
 const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-// ── VARIABLES D'ÉTAT ──
-let activeRole = 'eleve'; // Par défaut
-let selAv = '🦊';
+// ═══════════════════════════════════════════════════════════
+// VARIABLES GLOBALES
+// ═══════════════════════════════════════════════════════════
+let activeRole = 'eleve';
+let selAv = '🦁';
 let currentUser = null;
+let currentEquipe = null;
 let masterPrompt = '';
+let conversationHistory = [];
+let selectedEquipeId = null;
+let resetEquipeId = null;
 
-// ── FONCTIONS DE LOGIN ──
+// ═══════════════════════════════════════════════════════════
+// FONCTIONS LOGIN
+// ═══════════════════════════════════════════════════════════
 
 function pickRole(role) {
   activeRole = role;
   
-  // Mise à jour visuelle des cartes de rôle
   ['eleve', 'mentor', 'fac'].forEach(r => {
     const c = document.getElementById('rc-' + r);
     if (c) {
@@ -544,7 +553,6 @@ function pickRole(role) {
     }
   });
 
-  // Textes dynamiques selon le rôle
   const lbl = { eleve: 'CODE ÉQUIPE', mentor: 'CODE MENTOR', fac: 'CODE FACILITATEUR' };
   const ph = { eleve: 'ex : TEAM-0000', mentor: 'ex : MENTOR-0000', fac: 'ex : FAC-0000' };
   const tx = { eleve: "Rejoindre l'atelier 🌱", mentor: 'Rejoindre en tant que mentor →', fac: 'Accéder au tableau de bord →' };
@@ -554,7 +562,6 @@ function pickRole(role) {
   input.placeholder = ph[role];
   input.className = 'field-input ' + role;
   
-  // Afficher le bloc pseudo uniquement pour le mentor
   const pBlock = document.getElementById('pseudo-block');
   if (pBlock) pBlock.style.display = role === 'mentor' ? 'block' : 'none';
 
@@ -563,31 +570,18 @@ function pickRole(role) {
   btn.textContent = tx[role];
 }
 
-// Variable globale pour stocker l'avatar choisi (🦁 par défaut)
-let selAv = "🦁"; 
-
 function pickAv(element, emoji) {
-  // 1. On retire la classe 'sel' de tous les choix d'avatars
-  document.querySelectorAll('.av-opt').forEach(opt => {
-    opt.classList.remove('sel');
-  });
-
-  // 2. On ajoute la classe 'sel' à l'élément cliqué
-  if (element) {
-    element.classList.add('sel');
-  }
-
-  // 3. On met à jour la variable globale et l'aperçu
+  document.querySelectorAll('.av-opt').forEach(opt => opt.classList.remove('sel'));
+  if (element) element.classList.add('sel');
   selAv = emoji;
-  const ppAv = document.getElementById('pp-av');
-  if (ppAv) {
-    ppAv.textContent = emoji;
-  }
   
-  // Met à jour l'icône dans la zone de message (si elle existe)
+  const ppAv = document.getElementById('pp-av');
+  if (ppAv) ppAv.textContent = emoji;
+  
   const composeAv = document.getElementById('compose-av');
   if (composeAv) composeAv.textContent = emoji;
 }
+
 function updatePP() {
   const name = document.getElementById('pp-name');
   const input = document.getElementById('pseudo-input');
@@ -604,14 +598,12 @@ async function doLogin() {
     return;
   }
 
-  // État de chargement
   btn.disabled = true;
   const originalText = btn.textContent;
   btn.textContent = 'Connexion...';
   errEl.classList.remove('visible');
 
   try {
-    // CORRECTION ERREUR 406 : On utilise .select('*') pour éviter les jointures non configurées
     const { data: user, error } = await sb.from('utilisateurs')
       .select('*')
       .eq('code', code)
@@ -624,10 +616,8 @@ async function doLogin() {
       return;
     }
 
-    // Détermination du rôle (on utilise la colonne 'role_nom' ou 'type' de ta table)
     const rn = user.role_nom || user.type || 'eleve';
     
-    // Vérification de cohérence entre le rôle choisi et le code entré
     const roleOk = {
       eleve: ['eleve'],
       mentor: ['mentor'],
@@ -642,10 +632,8 @@ async function doLogin() {
 
     currentUser = user;
 
-    // Mise à jour de la dernière connexion
     await sb.from('utilisateurs').update({ derniere_connexion: new Date().toISOString() }).eq('id', user.id);
 
-    // Si c'est un mentor, on enregistre son pseudo et avatar choisis
     if (activeRole === 'mentor') {
       const pseudo = document.getElementById('pseudo-input').value.trim() || 'Mentor';
       await sb.from('utilisateurs').update({ pseudo: pseudo, avatar: selAv }).eq('id', user.id);
@@ -653,11 +641,9 @@ async function doLogin() {
       currentUser.avatar = selAv;
     }
 
-    // Récupération du prompt maître
     const { data: p } = await sb.from('prompts').select('contenu').eq('actif', true).limit(1).maybeSingle();
     if (p) masterPrompt = p.contenu;
 
-    // Redirection selon le rôle
     if (activeRole === 'eleve') await initEleve();
     else if (activeRole === 'mentor') await initMentor();
     else await initFac();
@@ -687,7 +673,7 @@ function resetBtn() {
 function doLogout() {
   currentUser = null;
   currentEquipe = null;
-  if (typeof conversationHistory !== 'undefined') conversationHistory = [];
+  conversationHistory = [];
   masterPrompt = '';
   const chat = document.getElementById('chat-messages');
   if (chat) chat.innerHTML = '';
@@ -695,7 +681,11 @@ function doLogout() {
   go('login');
   showToast('Déconnecté', 'success');
 }
-// ── VUE ÉLÈVE ──
+
+// ═══════════════════════════════════════════════════════════
+// VUE ÉLÈVE
+// ═══════════════════════════════════════════════════════════
+
 async function initEleve(){
   const{data:eq}=await sb.from('equipes').select('*').eq('code_equipe',currentUser.code).single();
   currentEquipe=eq;
@@ -730,7 +720,7 @@ async function loadConversation(){
 }
 
 async function sparkGreet(){
-  const g="Bienvenue dans le programme The Schools Challenge, vous êtes la 10ème génération à découvrir ce programme ! 🥳 Vous allez lors de 6 prochains mois collaborer tous.tes ensemble dans la résolution d'un problème ! Etes-vous prêt.e.s? 💪";
+  const g="Bienvenue dans le programme The Schools Challenge, vous êtes la 10ème génération à découvrir ce programme ! 🥳 Vous allez lors des 6 prochains mois collaborer tous.tes ensemble dans la résolution d'un problème ! Êtes-vous prêt.e.s? 💪";
   await saveMsg('assistant',g,'SPARK ⚡');
   renderMsg('assistant',g,'SPARK ⚡');
   conversationHistory.push({role:'model',parts:[{text:g}]});
@@ -811,6 +801,7 @@ function showTyping(){
   w.innerHTML=`<div class="msg-av">⚡</div><div class="msg-col"><div class="msg-who">SPARK ⚡</div><div class="typing-bubble"><div class="typing-dot"></div><div class="typing-dot"></div><div class="typing-dot"></div></div></div>`;
   c.appendChild(w); scrollBot();
 }
+
 function hideTyping(){const e=document.getElementById('typing-wrap');if(e)e.remove();}
 function scrollBot(){const c=document.getElementById('chat-messages');if(c)c.scrollTop=c.scrollHeight;}
 
@@ -832,7 +823,10 @@ function listenMentorMessages(){
     }).subscribe();
 }
 
-// ── VUE MENTOR ──
+// ═══════════════════════════════════════════════════════════
+// VUE MENTOR
+// ═══════════════════════════════════════════════════════════
+
 async function initMentor(){
   const av=currentUser.avatar||'🎓';
   const ps=currentUser.pseudo||'Mentor';
@@ -890,7 +884,10 @@ async function sendMentorMsg(){
 
 function fillCompose(el){document.getElementById('mentor-compose-ta').value=el.textContent.trim();document.getElementById('mentor-compose-ta').focus();}
 
-// ── VUE FACILITATEUR ──
+// ═══════════════════════════════════════════════════════════
+// VUE FACILITATEUR
+// ═══════════════════════════════════════════════════════════
+
 async function initFac(){
   document.getElementById('fac-h-name').textContent=currentUser.pseudo||'Facilitateur';
   document.getElementById('fac-sid-name').textContent=currentUser.pseudo||'Facilitateur';
@@ -990,7 +987,10 @@ function facNav(s,el){
   else if(s==='validation') renderFacValidation();
 }
 
-// ── RESET ──
+// ═══════════════════════════════════════════════════════════
+// RESET
+// ═══════════════════════════════════════════════════════════
+
 function openReset(id){resetEquipeId=id;document.getElementById('modal-reset').classList.add('open');}
 function closeReset(){document.getElementById('modal-reset').classList.remove('open');resetEquipeId=null;}
 async function confirmReset(){
@@ -1002,13 +1002,15 @@ async function confirmReset(){
   await renderFacEquipes();
 }
 
-// ── NAV ──
+// ═══════════════════════════════════════════════════════════
+// UTILITAIRES
+// ═══════════════════════════════════════════════════════════
+
 function go(id){
   document.querySelectorAll('.screen').forEach(s=>s.classList.remove('on'));
   document.getElementById('s-'+id).classList.add('on');
 }
 
-// ── TOAST ──
 let tTimer=null;
 function showToast(msg,type='success'){
   const t=document.getElementById('toast');
@@ -1017,28 +1019,6 @@ function showToast(msg,type='success'){
   tTimer=setTimeout(()=>t.classList.remove('visible'),3000);
 }
 </script>
-// --- COPIER À PARTIR D'ICI ---
-let avatarSelectionne = ""; 
 
-function pickAv(url, element) {
-  avatarSelectionne = url;
-  
-  // Nettoyage des sélections précédentes
-  const tousLesAvatars = document.querySelectorAll('.av-opt'); 
-  tousLesAvatars.forEach(av => {
-    av.style.border = "none";
-    av.style.filter = "grayscale(100%)"; // Optionnel : met en gris les non-sélectionnés
-    av.style.transform = "scale(1)";
-  });
-
-  // Mise en avant de l'avatar choisi
-  if (element) {
-    element.style.border = "3px solid #d4694a"; // La couleur --terra de votre projet
-    element.style.filter = "grayscale(0%)";
-    element.style.borderRadius = "50%";
-    element.style.transform = "scale(1.1)";
-  }
-}
-// --- JUSQU'À ICI ---
 </body>
 </html>
