@@ -365,41 +365,35 @@
         </div>
 
         <div class="field-wrap">
-          <label class="field-label" id="code-lbl">CODE ÉQUIPE</label>
-          <input class="field-input eleve" id="code-input"
-            placeholder="ex : TEAM-0000"
-            style="text-transform:uppercase;letter-spacing:2px;font-family:monospace;"
-            onkeydown="if(event.key==='Enter')doLogin()">
-        </div>
+  <label class="field-label" for="code-input" id="code-lbl">CODE ÉQUIPE</label>
+  <input class="field-input eleve" id="code-input"
+    placeholder="ex : TEAM-0000"
+    style="text-transform:uppercase;letter-spacing:2px;font-family:monospace;"
+    onkeydown="if(event.key==='Enter')doLogin()">
+</div>
 
-        <div id="pseudo-block" style="display:none;">
-          <div class="field-wrap">
-            <label class="field-label">TON PSEUDO D'AFFICHAGE</label>
-            <input class="field-input mentor" id="pseudo-input" placeholder="ex : Coach Aziz" oninput="updatePP()">
-          </div>
-          <label class="field-label" style="margin-bottom:6px;">AVATAR</label>
-          <div class="av-grid">
-            <div class="av-opt sel" onclick="pickAv(this,'🦁')">🦁</div>
-            <div class="av-opt" onclick="pickAv(this,'🦊')">🦊</div>
-            <div class="av-opt" onclick="pickAv(this,'🦅')">🦅</div>
-            <div class="av-opt" onclick="pickAv(this,'🐬')">🐬</div>
-            <div class="av-opt" onclick="pickAv(this,'🌟')">🌟</div>
-            <div class="av-opt" onclick="pickAv(this,'🔥')">🔥</div>
-            <div class="av-opt" onclick="pickAv(this,'🌊')">🌊</div>
-            <div class="av-opt" onclick="pickAv(this,'⚡')">⚡</div>
-          </div>
-          <div class="pp-preview">
-            <div class="pp-av" id="pp-av">🦁</div>
-            <div><div class="pp-name" id="pp-name">Ton pseudo ici</div><div class="pp-role">Mentor — The Schools Challenge</div></div>
-          </div>
-        </div>
-
-        <button class="btn-connect eleve" id="btn-connect" onclick="doLogin()">Rejoindre l'atelier 🌱</button>
-        <div class="login-error" id="login-error">Code invalide.</div>
-        <div class="rgpd-box"><strong>🔒 Confidentialité</strong> — Aucune donnée personnelle stockée. Les messages mentors sont soumis à validation avant affichage.</div>
-      </div>
-    </div>
+<div id="pseudo-block" style="display:none;">
+  <div class="field-wrap">
+    <label class="field-label" for="pseudo-input">TON PSEUDO D'AFFICHAGE</label>
+    <input class="field-input mentor" id="pseudo-input" placeholder="ex : Coach Aziz" oninput="updatePP()">
   </div>
+  <label class="field-label" style="margin-bottom:6px;">AVATAR</label>
+  <div class="av-grid">
+    <div class="av-opt sel" onclick="pickAv(this,'🦁')">🦁</div>
+    <div class="av-opt" onclick="pickAv(this,'🦊')">🦊</div>
+    <div class="av-opt" onclick="pickAv(this,'🦅')">🦅</div>
+    <div class="av-opt" onclick="pickAv(this,'🐬')">🐬</div>
+    <div class="av-opt" onclick="pickAv(this,'🌟')">🌟</div>
+    <div class="av-opt" onclick="pickAv(this,'🔥')">🔥</div>
+    <div class="av-opt" onclick="pickAv(this,'🌊')">🌊</div>
+    <div class="av-opt" onclick="pickAv(this,'⚡')">⚡</div>
+  </div>
+  <div class="pp-preview">
+    <div class="pp-av" id="pp-av">🦁</div>
+    <div><div class="pp-name" id="pp-name">Ton pseudo ici</div><div class="pp-role">Mentor — The Schools Challenge</div></div>
+  </div>
+</div>
+
 
   <!-- VUE ÉLÈVE -->
   <div class="screen" id="s-eleve">
