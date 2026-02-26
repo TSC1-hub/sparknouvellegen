@@ -894,6 +894,15 @@ async function sendMessage(){
     let vitrineMaj = await detecterCheckpoint(r);
 
     if (!vitrineMaj) {
+      const fallbackImmediatOk = await appliquerFallbackVisuelLocal(txt);
+      if (fallbackImmediatOk) {
+        vitrineMaj = true;
+        ouvrirCarnet();
+        showToast('Mise à jour appliquée (mode secours).','success');
+      }
+    }
+
+    if (!vitrineMaj) {
       const rRetry = await callMistral(currentEquipe.id, currentEquipe.etape_courante, {
         forceHtml: true,
         latestUserRequest: txt
