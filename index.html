@@ -820,9 +820,10 @@ async function initEleve(){
   currentEquipe=eq;
   document.getElementById('eleve-pill').textContent=eq?`${eq.code_equipe} · ${eq.nom||'Équipe'}`:currentUser.code;
   updateSteps(eq?.etape_courante||0);
+  go('eleve');
   await loadConversation();
   if(conversationHistory.length===0) await sparkGreet();
-  go('eleve');
+  requestAnimationFrame(()=>scrollBot());
   listenMentorMessages();
   listenVitrine();
 }
@@ -942,6 +943,26 @@ function renderVitrine(html) {
       <body>${html}</body>
     </html>
   `;
+}
+
+function normaliserBlocVitrine(sourceHtml){
+  const source=(sourceHtml||'').trim();
+  if(!source) return '';
+
+  const headMatch=source.match(/<head[^>]*>([\s\S]*?)<\/head>/i);
+  const bodyMatch=source.match(/<body[^>]*>([\s\S]*?)<\/body>/i);
+
+  if(headMatch||bodyMatch){
+    const head=(headMatch?.[1]||'').trim();
+    const body=(bodyMatch?.[1]||'').trim();
+    return `${head}\n${body}`.trim();
+  }
+
+  return source
+    .replace(/<!doctype[^>]*>/gi,'')
+    .replace(/<html[^>]*>/gi,'')
+    .replace(/<\/html>/gi,'')
+    .trim();
 }
 async function callMistral(equipeId, etapeSlug, options = {}) {
   const { forceHtml = false, latestUserRequest = '' } = options;
@@ -1330,24 +1351,15 @@ function fermerCarnet(){
 async function sauvegarderCarnet(){
   if(!currentEquipe) return;
   const html = document.getElementById('carnet-code-edit').value;
+  const htmlNettoye = normaliserBlocVitrine(html);
   const {data: vitrines} = await sb.from('vitrines')
     .select('*').eq('equipe_id', currentEquipe.id).order('etape', {ascending: true});
   if(!vitrines || vitrines.length === 0) return;
   // Sauvegarder sur la dernière étape
   const derniere = vitrines[vitrines.length-1];
-  await sb.from('vitrines').update({html_section: html}).eq('id', derniere.id);
+  await sb.from('vitrines').update({html_section: htmlNettoye}).eq('id', derniere.id);
   showToast('Vitrine sauvegardée', 'success');
-  // Mise à jour immédiate de la vitrine même si le code est vide
-  const iframe = document.getElementById('vitrine-rendu');
-  if (iframe) {
-    if (html.trim() === "") {
-      iframe.srcdoc = '<p style="font-family:sans-serif;padding:20px;color:#888;">Votre vitrine est vide.</p>';
-    } else {
-      iframe.srcdoc = `<!DOCTYPE html><html lang=\"fr\"><head><meta charset=\"UTF-8\"></head><body>${html}</body></html>`;
-    }
-  }
-  // Met aussi à jour le textarea pour éviter un effet de "rechargement"
-  document.getElementById('carnet-code-edit').value = html;
+  await chargerCarnet();
 }
 function switchCarnetTab(tab, btn){
   document.querySelectorAll('.carnet-tab').forEach(t=>t.classList.remove('active'));
@@ -1371,7 +1383,7 @@ async function chargerCarnet(){
   const htmlComplet=`<!DOCTYPE html><html lang="fr"><head><meta charset="UTF-8">
     <meta name="viewport" content="width=device-width,initial-scale=1.0">
     <title>${currentEquipe.nom||'Vitrine'}</title></head><body style="margin:0;padding:0;">
-    ${vitrines.map(v=>v.html_section||'').join('\n')}
+    ${vitrines.map(v=>normaliserBlocVitrine(v.html_section||'')).join('\n')}
     </body></html>`;
   // Iframe
   const iframe=document.getElementById('vitrine-rendu');
@@ -1403,6 +1415,21 @@ async function detecterCheckpoint(texte) {
   if (!currentEquipe) return;
 
   let vitrineMaj = false;
+  let referenceHtmlNettoye = '';
+
+  try {
+    const { data: derniereVitrine } = await sb.from('vitrines')
+      .select('html_section')
+      .eq('equipe_id', currentEquipe.id)
+      .order('etape', { ascending: false })
+      .limit(1)
+      .maybeSingle();
+
+    referenceHtmlNettoye = (derniereVitrine?.html_section || '')
+      .replace(/\s+/g, ' ')
+      .replace(/>\s+</g, '><')
+      .trim();
+  } catch (_) {}
 
   const blocs = [];
   const regexMarkers = /SPARK_HTML_START([\s\S]*?)SPARK_HTML_END/gi;
@@ -1445,14 +1472,15 @@ async function detecterCheckpoint(texte) {
     html = html.replace(/^```html\s*/i, '').replace(/```\s*$/i, '').trim();
     if (!html) continue;
 
-    const codeEditor = document.getElementById('carnet-code-edit');
-    const htmlActuel = (codeEditor?.value || '').trim();
+    const htmlNettoye = normaliserBlocVitrine(html);
+    if (!htmlNettoye) continue;
+
     const normaliserHtml = (source) => (source || '')
       .replace(/\s+/g, ' ')
       .replace(/>\s+</g, '><')
       .trim();
 
-    if (htmlActuel && normaliserHtml(htmlActuel) === normaliserHtml(html)) {
+    if (referenceHtmlNettoye && normaliserHtml(referenceHtmlNettoye) === normaliserHtml(htmlNettoye)) {
       continue;
     }
 
@@ -1468,9 +1496,10 @@ async function detecterCheckpoint(texte) {
     try {
       // 1. Sauvegarde Supabase
       await sb.from('vitrines').upsert(
-        { equipe_id: currentEquipe.id, etape, html_section: html },
+        { equipe_id: currentEquipe.id, etape, html_section: htmlNettoye },
         { onConflict: 'equipe_id,etape' }
       );
+      referenceHtmlNettoye = htmlNettoye;
       vitrineMaj = true;
 
       // 2. Mise à jour canonique depuis l'historique sauvegardé
