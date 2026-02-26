@@ -917,6 +917,7 @@ async function sendMessage(){
         const fallbackOk = await appliquerFallbackVisuelLocal(txt);
         if (fallbackOk) {
           vitrineMaj = true;
+          ouvrirCarnet();
           showToast('Mise à jour appliquée (mode secours).','success');
         } else {
           showToast('SPARK n\'a pas appliqué de modification HTML. Réessaie.','error');
@@ -1003,16 +1004,20 @@ async function appliquerFallbackVisuelLocal(demande){
   if(!cibleFond && !cibleTitre) return false;
 
   let htmlSource=document.getElementById('carnet-code-edit')?.value||'';
+  let derniereVitrine=null;
   if(!htmlSource.trim()){
-    const { data: derniereVitrine } = await sb.from('vitrines')
-      .select('html_section')
+    const { data: vitrineDb } = await sb.from('vitrines')
+      .select('id,etape,html_section')
       .eq('equipe_id', currentEquipe.id)
       .order('etape', { ascending: false })
       .limit(1)
       .maybeSingle();
-    htmlSource = derniereVitrine?.html_section || '';
+    derniereVitrine = vitrineDb || null;
+    htmlSource = vitrineDb?.html_section || '';
   }
-  if(!htmlSource.trim()) return false;
+  if(!htmlSource.trim()){
+    htmlSource = '<!DOCTYPE html><html lang="fr"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>Vitrine</title></head><body><h1>Notre vitrine</h1></body></html>';
+  }
 
   const parser=new DOMParser();
   const doc=parser.parseFromString(htmlSource,'text/html');
@@ -1041,14 +1046,15 @@ async function appliquerFallbackVisuelLocal(demande){
   const htmlNettoye=normaliserBlocVitrine(htmlFinal);
   if(!htmlNettoye) return false;
 
-  const { data: vitrines } = await sb.from('vitrines')
-    .select('id')
-    .eq('equipe_id', currentEquipe.id)
-    .order('etape', { ascending: true });
-  if(!vitrines || vitrines.length===0) return false;
-
-  const derniere=vitrines[vitrines.length-1];
-  await sb.from('vitrines').update({html_section: htmlNettoye}).eq('id', derniere.id);
+  if(derniereVitrine?.id){
+    await sb.from('vitrines').update({html_section: htmlNettoye}).eq('id', derniereVitrine.id);
+  } else {
+    const etape = Number(currentEquipe.etape_courante || 0);
+    await sb.from('vitrines').upsert(
+      { equipe_id: currentEquipe.id, etape, html_section: htmlNettoye },
+      { onConflict: 'equipe_id,etape' }
+    );
+  }
   await chargerCarnet();
   return true;
 }
