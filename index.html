@@ -929,7 +929,8 @@ async function sendMessage(){
   } catch(e) {
     console.error(e);
     hideTyping();
-    showToast('Erreur SPARK','error');
+    const msg = e?.message ? `Erreur SPARK : ${e.message}` : 'Erreur SPARK';
+    showToast(msg,'error');
   }
   document.getElementById('btn-send').disabled=false; inp.focus();
 }
@@ -1105,19 +1106,44 @@ CORRECTION OBLIGATOIRE (réponse précédente invalide) :
     contents: conversationHistory.slice(-10)
   };
 
-  // 3. L'appel propre à ton Edge Function Supabase
-  // ATTENTION : remplace 'votre_nom_de_fonction' par le nom de ta fonction
-  const { data, error } = await sb.functions.invoke('proxy-mistral', {
+  // 3. Appel Edge Function (avec fallback si l'apikey n'est pas transmis)
+  let { data, error } = await sb.functions.invoke('proxy-mistral', {
     body: payload
   });
 
+  const errMsg = (error?.message || '').toLowerCase();
+  if (error && errMsg.includes('no api key found')) {
+    const resp = await fetch(`${SUPABASE_URL}/functions/v1/proxy-mistral`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'apikey': SUPABASE_KEY,
+        'Authorization': `Bearer ${SUPABASE_KEY}`
+      },
+      body: JSON.stringify(payload)
+    });
+
+    const raw = await resp.json().catch(() => ({}));
+    if (!resp.ok) {
+      throw new Error(raw?.error || raw?.message || `Erreur Edge Function: ${resp.status}`);
+    }
+
+    data = raw;
+    error = null;
+  }
+
   if (error) {
     console.error("Erreur Edge Function:", error);
-    throw error;
+    throw new Error(error.message || 'Erreur Edge Function');
+  }
+
+  const contenu = data?.choices?.[0]?.message?.content;
+  if (!contenu) {
+    throw new Error('Réponse SPARK invalide (contenu vide).');
   }
 
   // 4. On renvoie la réponse de l'IA au format Mistral
-  return data.choices[0].message.content;
+  return contenu;
 }
 
 async function saveMsg(role,message,pseudo){
