@@ -1047,13 +1047,15 @@ async function appliquerFallbackVisuelLocal(demande){
   if(!htmlNettoye) return false;
 
   if(derniereVitrine?.id){
-    await sb.from('vitrines').update({html_section: htmlNettoye}).eq('id', derniereVitrine.id);
+    const { error: errUpdateFallback } = await sb.from('vitrines').update({html_section: htmlNettoye}).eq('id', derniereVitrine.id);
+    if(signalerErreurSupabase('fallback-update', errUpdateFallback)) return false;
   } else {
     const etape = Number(currentEquipe.etape_courante || 0);
-    await sb.from('vitrines').upsert(
+    const { error: errInsertFallback } = await sb.from('vitrines').upsert(
       { equipe_id: currentEquipe.id, etape, html_section: htmlNettoye },
       { onConflict: 'equipe_id,etape' }
     );
+    if(signalerErreurSupabase('fallback-upsert', errInsertFallback)) return false;
   }
   await chargerCarnet();
   return true;
@@ -1149,6 +1151,14 @@ function renderMsg(role,text,pseudo){
 
 function formatTxt(t){
   return t.replace(/\n\n/g,'<br><br>').replace(/\n/g,'<br>').replace(/\*\*(.*?)\*\*/g,'<strong>$1</strong>');
+}
+
+function signalerErreurSupabase(operation, error){
+  if(!error) return false;
+  console.error(`[SUPABASE:${operation}]`, error);
+  const msg = error.message || 'erreur inconnue';
+  showToast(`Erreur Supabase (${operation}) : ${msg}`,'error');
+  return true;
 }
 
 function showTyping(){
@@ -1461,7 +1471,8 @@ async function sauvegarderCarnet(){
   if(!vitrines || vitrines.length === 0) return;
   // Sauvegarder sur la dernière étape
   const derniere = vitrines[vitrines.length-1];
-  await sb.from('vitrines').update({html_section: htmlNettoye}).eq('id', derniere.id);
+  const { error: errSaveCarnet } = await sb.from('vitrines').update({html_section: htmlNettoye}).eq('id', derniere.id);
+  if(signalerErreurSupabase('save-carnet', errSaveCarnet)) return;
   showToast('Vitrine sauvegardée', 'success');
   await chargerCarnet();
 }
@@ -1599,10 +1610,13 @@ async function detecterCheckpoint(texte) {
 
     try {
       // 1. Sauvegarde Supabase
-      await sb.from('vitrines').upsert(
+      const { error: errCheckpoint } = await sb.from('vitrines').upsert(
         { equipe_id: currentEquipe.id, etape, html_section: htmlNettoye },
         { onConflict: 'equipe_id,etape' }
       );
+      if (signalerErreurSupabase('checkpoint-upsert', errCheckpoint)) {
+        continue;
+      }
       referenceHtmlNettoye = htmlNettoye;
       vitrineMaj = true;
 
