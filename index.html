@@ -914,7 +914,13 @@ async function sendMessage(){
       vitrineMaj = await detecterCheckpoint(rRetry);
 
       if (!vitrineMaj) {
-        showToast('SPARK n\'a pas appliqué de modification HTML. Réessaie.','error');
+        const fallbackOk = await appliquerFallbackVisuelLocal(txt);
+        if (fallbackOk) {
+          vitrineMaj = true;
+          showToast('Mise à jour appliquée (mode secours).','success');
+        } else {
+          showToast('SPARK n\'a pas appliqué de modification HTML. Réessaie.','error');
+        }
       }
     }
     
@@ -963,6 +969,79 @@ function normaliserBlocVitrine(sourceHtml){
     .replace(/<html[^>]*>/gi,'')
     .replace(/<\/html>/gi,'')
     .trim();
+}
+
+function detecterCouleurDepuisTexte(texte){
+  const t=(texte||'').toLowerCase();
+  const map=[
+    {keys:['bleu','blue'], value:'#2563eb'},
+    {keys:['blanc','white'], value:'#ffffff'},
+    {keys:['noir','black'], value:'#000000'},
+    {keys:['rouge','red'], value:'#dc2626'},
+    {keys:['vert','green'], value:'#16a34a'},
+    {keys:['jaune','yellow'], value:'#eab308'},
+    {keys:['orange'], value:'#f97316'},
+    {keys:['violet','purple'], value:'#7c3aed'},
+    {keys:['rose','pink'], value:'#ec4899'},
+    {keys:['gris','gray','grey'], value:'#6b7280'}
+  ];
+  for(const item of map){
+    if(item.keys.some(k=>t.includes(k))) return item.value;
+  }
+  return null;
+}
+
+async function appliquerFallbackVisuelLocal(demande){
+  if(!currentEquipe) return false;
+
+  const texteDemande=(demande||'').toLowerCase();
+  const couleur=detecterCouleurDepuisTexte(texteDemande);
+  if(!couleur) return false;
+
+  const cibleFond=/fond|background/.test(texteDemande);
+  const cibleTitre=/titre|h1/.test(texteDemande);
+  if(!cibleFond && !cibleTitre) return false;
+
+  const htmlSource=document.getElementById('carnet-code-edit')?.value||'';
+  if(!htmlSource.trim()) return false;
+
+  const parser=new DOMParser();
+  const doc=parser.parseFromString(htmlSource,'text/html');
+
+  if(!doc.head){
+    const head=doc.createElement('head');
+    if(doc.documentElement.firstChild) doc.documentElement.insertBefore(head, doc.documentElement.firstChild);
+    else doc.documentElement.appendChild(head);
+  }
+
+  let styleSecours=doc.getElementById('spark-fallback-style');
+  if(!styleSecours){
+    styleSecours=doc.createElement('style');
+    styleSecours.id='spark-fallback-style';
+    doc.head.appendChild(styleSecours);
+  }
+
+  const regles=[];
+  if(cibleFond) regles.push(`body { background-color: ${couleur} !important; }`);
+  if(cibleTitre) regles.push(`h1 { color: ${couleur} !important; }`);
+  if(regles.length===0) return false;
+
+  styleSecours.textContent=regles.join('\n');
+
+  const htmlFinal=doc.documentElement.outerHTML;
+  const htmlNettoye=normaliserBlocVitrine(htmlFinal);
+  if(!htmlNettoye) return false;
+
+  const { data: vitrines } = await sb.from('vitrines')
+    .select('id')
+    .eq('equipe_id', currentEquipe.id)
+    .order('etape', { ascending: true });
+  if(!vitrines || vitrines.length===0) return false;
+
+  const derniere=vitrines[vitrines.length-1];
+  await sb.from('vitrines').update({html_section: htmlNettoye}).eq('id', derniere.id);
+  await chargerCarnet();
+  return true;
 }
 async function callMistral(equipeId, etapeSlug, options = {}) {
   const { forceHtml = false, latestUserRequest = '' } = options;
