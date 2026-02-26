@@ -509,7 +509,7 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
       </div>
       <div class="mentor-compose">
         <div class="compose-lbl"><span id="compose-av">🦁</span> Écrire à l'équipe</div>
-        <textarea class="compose-ta" id="mentor-compose-ta" placeholder="Votre message d'encouragement..."></textarea>
+        <textarea class="compose-ta" id="mentor-compose-ta" placeholder="Votre message d'encouragement..." onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendMentorMsg();}"></textarea>
         <div class="compose-foot">
           <div class="compose-warn">🔒 Soumis au facilitateur avant affichage</div>
           <button class="btn-mentor-send" onclick="sendMentorMsg()">Envoyer ✉️</button>
@@ -1210,7 +1210,12 @@ async function confirmReset(){
   closeReset(); showToast('Projet réinitialisé','success');
   await renderFacEquipes();
 }
-
+function handleKey(e){
+  if(e.key==='Enter'&&!e.shiftKey){
+    e.preventDefault();
+    sendMessage();
+  }
+}
 // ── NAV ──
 function go(id){
   document.querySelectorAll('.screen').forEach(s=>s.classList.remove('on'));
