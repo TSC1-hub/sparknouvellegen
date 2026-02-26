@@ -1129,8 +1129,8 @@ function closeConvDrawer(){
   main.style.cssText='';
 }
 async function renderFacValidation(){
-  const{data:msgs}=await sb.from('messages_mentors')
-    .select('*,utilisateurs(pseudo,avatar,code),equipes(nom,code_equipe)')
+ const{data:msgs}=await sb.from('messages_mentors')
+    .select('*,utilisateurs!messages_mentors_mentor_id_fkey(pseudo,avatar,code),equipes(nom,code_equipe)')
     .eq('statut','en_attente').order('created_at',{ascending:false});
   const main=document.getElementById('fac-main');
   main.innerHTML=`<div><div class="val-title">📬 Messages en attente <span class="val-badge">${msgs?.length||0}</span></div><div class="val-sub">Ces messages seront affichés aux élèves uniquement après votre approbation.</div></div>`;
