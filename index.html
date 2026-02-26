@@ -966,8 +966,17 @@ async function loadMentorTeam(eq,el){
     c.appendChild(d);
   });
   c.scrollTop=c.scrollHeight;
+sb.channel('mentor-conv-'+eq.id)
+  .on('postgres_changes',{event:'INSERT',schema:'public',table:'conversations',filter:`equipe_id=eq.${eq.id}`},p=>{
+    const m=p.new;
+    const d=document.createElement('div');
+    if(m.role==='assistant'){d.className='msg spark-msg';d.innerHTML=`<div class="msg-av">⚡</div><div class="msg-col"><div class="msg-who">SPARK ⚡</div><div class="msg-bubble">${formatTxt(m.message)}</div></div>`;}
+    else if(m.role==='user'){d.className='msg eleve-msg';d.innerHTML=`<div class="msg-av">👥</div><div class="msg-col"><div class="msg-who">${m.pseudo||'La Team'}</div><div class="msg-bubble">${formatTxt(m.message)}</div></div>`;}
+    else if(m.role==='mentor'){d.className='msg mentor-msg';d.innerHTML=`<div class="msg-av">🎓</div><div class="msg-col"><div class="msg-who">${m.pseudo||'Mentor'}</div><div class="msg-bubble">${formatTxt(m.message)}</div></div>`;}
+    c.appendChild(d);
+    c.scrollTop=c.scrollHeight;
+  }).subscribe();
 }
-
 async function sendMentorMsg(){
   const ta=document.getElementById('mentor-compose-ta');
   const txt=ta.value.trim();
@@ -1203,19 +1212,13 @@ async function confirmReset(){
 }
 
 // ── NAV ──
-function go(id, pushState=true){
+function go(id){
   document.querySelectorAll('.screen').forEach(s=>s.classList.remove('on'));
   document.getElementById('s-'+id).classList.add('on');
-  if(pushState) history.pushState({screen:id}, '', '#'+id);
   if(currentUser) sessionStorage.setItem('spark_user', JSON.stringify(currentUser));
   if(id==='login') sessionStorage.removeItem('spark_user');
 }
 // ── RESTAURATION SESSION & NAVIGATION ──
-window.addEventListener('popstate', e=>{
-  const screen = e.state?.screen;
-  if(screen) go(screen, false);
-  else go('login', false);
-});
 
 window.addEventListener('load', async ()=>{
   document.body.classList.add('ready');
