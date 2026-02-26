@@ -873,7 +873,7 @@ async function sendMessage(){
     const r=await callMistral(currentEquipe.id, currentEquipe.etape_courante); 
     hideTyping();
     
-    // On nettoie le texte pour ne pas afficher les balises HTML dans le chat
+    // LA BONNE FORMULE POUR CACHER SEULEMENT LE CODE HTML DU CHAT
     const rVisible=r.replace(/[\s\S]*?/gi,'').trim();
     
     renderMsg('assistant',rVisible,'SPARK ⚡');
@@ -883,6 +883,7 @@ async function sendMessage(){
     await detecterCheckpoint(r);
     scrollBot();
   } catch(e) {
+    console.error(e);
     hideTyping();
     showToast('Erreur SPARK','error');
   }
@@ -906,7 +907,7 @@ async function callMistral(equipeId, etapeSlug) {
   };
 
   // 3. L'appel propre à ton Edge Function Supabase
-  // ATTENTION : remplace 'votre_nom_de_fonction' par le nom de ta fonction (ex: 'mistral-chat')
+  // ATTENTION : remplace 'votre_nom_de_fonction' par le nom de ta fonction
   const { data, error } = await sb.functions.invoke('votre_nom_de_fonction', {
     body: payload
   });
