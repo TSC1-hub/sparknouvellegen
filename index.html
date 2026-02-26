@@ -376,7 +376,7 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
 <body>
 
 <!-- LOGIN -->
-<div class="screen on" id="s-login">
+<div class="screen" id="s-login">
   <div class="login-card">
     <div class="login-top">
       <div class="login-logo">🌿 SPARK ⚡</div>
@@ -1217,6 +1217,7 @@ window.addEventListener('popstate', e=>{
 
 window.addEventListener('load', async ()=>{
   const saved = sessionStorage.getItem('spark_user');
+  if(!saved) go('login', false);
   if(saved){
     currentUser = JSON.parse(saved);
     const{data:p}=await sb.from('prompts').select('contenu').eq('actif',true).limit(1).maybeSingle();
