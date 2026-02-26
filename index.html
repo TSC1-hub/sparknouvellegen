@@ -398,7 +398,7 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
 .carnet-panel{display:none;flex:1;overflow:hidden;flex-direction:column;}
 .carnet-panel.active{display:flex;}
 
-.carnet-iframe{flex:1;border:none;}
+.carnet-iframe, #vitrine-rendu {flex:1;border:none;}
 .carnet-code{flex:1;overflow-y:auto;padding:16px;background:#1e1e2e;
   font-family:monospace;font-size:.72rem;color:#cdd6f4;white-space:pre-wrap;
   word-break:break-all;line-height:1.6;}
@@ -619,7 +619,8 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
   </div>
   <div class="carnet-content">
     <div class="carnet-panel active" id="carnet-panel-vitrine">
-      <iframe class="carnet-iframe" id="carnet-iframe"></iframe>
+      <!-- zone de rendu de la vitrine – l'ID est utilisé par renderVitrine() -->
+      <iframe class="carnet-iframe" id="vitrine-rendu"></iframe>
     </div>
     <div class="carnet-panel" id="carnet-panel-code">
       <textarea class="carnet-code" id="carnet-code-edit" spellcheck="false" style="flex:1;resize:none;outline:none;border:none;"></textarea>
@@ -869,18 +870,21 @@ async function sendMessage(){
   scrollBot(); showTyping();
   
   try{
-    // On passe les infos de l'équipe à callMistral
     const r=await callMistral(currentEquipe.id, currentEquipe.etape_courante); 
     hideTyping();
     
-    // LA BONNE FORMULE POUR CACHER SEULEMENT LE CODE HTML DU CHAT
-    const rVisible=r.replace(/[\s\S]*?/gi,'').trim();
+    // On extrait le texte visible (sans les balises de code) pour le chat
+    // on supprime les blocs de code délimités par des ```` afin de ne
+    // conserver que le texte narratif dans le flux de conversation
+    const rVisible = r.replace(/```[\s\S]*?```/gi, '').trim();
     
-    renderMsg('assistant',rVisible,'SPARK ⚡');
-    await saveMsg('assistant',rVisible,'SPARK ⚡');
+    renderMsg('assistant', rVisible, 'SPARK ⚡');
+    await saveMsg('assistant', rVisible, 'SPARK ⚡');
     conversationHistory.push({role:'model',parts:[{text:r}]});
     
-    await detecterCheckpoint(r);
+    // --- NOUVEAUTÉ : Mise à jour automatique ---
+    await detecterCheckpoint(r); 
+    
     scrollBot();
   } catch(e) {
     console.error(e);
@@ -889,7 +893,24 @@ async function sendMessage(){
   }
   document.getElementById('btn-send').disabled=false; inp.focus();
 }
-
+function renderVitrine(html) {
+  const v = document.getElementById('vitrine-rendu');
+  if (!v) return;
+  
+  // On utilise srcdoc pour isoler le code de l'élève du reste du site
+  v.srcdoc = `
+    <!DOCTYPE html>
+    <html>
+      <head>
+        <style>
+          body { margin: 0; font-family: sans-serif; overflow-x: hidden; }
+          /* Ici on peut ajouter un CSS de base pour aider l'élève */
+        </style>
+      </head>
+      <body>${html}</body>
+    </html>
+  `;
+}
 async function callMistral(equipeId, etapeSlug) {
   // 1. On récupère le contenu actuel du carnet pour la mémoire de l'IA
   const carnetPhysique = document.getElementById('carnet-code-edit')?.value || "Le carnet est encore vide.";
@@ -1279,7 +1300,7 @@ async function chargerCarnet(){
   const{data:vitrines}=await sb.from('vitrines')
     .select('*').eq('equipe_id',currentEquipe.id).order('etape',{ascending:true});
   if(!vitrines||vitrines.length===0){
-    const iframe=document.getElementById('carnet-iframe');
+    const iframe=document.getElementById('vitrine-rendu');
     const doc=iframe.contentDocument||iframe.contentWindow.document;
     doc.open();doc.write('<p style="font-family:sans-serif;padding:20px;color:#888;">Votre vitrine se construira ici au fil des étapes !</p>');doc.close();
     return;
@@ -1291,7 +1312,7 @@ async function chargerCarnet(){
     ${vitrines.map(v=>v.html_section).join('\n')}
     </body></html>`;
   // Iframe
-  const iframe=document.getElementById('carnet-iframe');
+  const iframe=document.getElementById('vitrine-rendu');
   const doc=iframe.contentDocument||iframe.contentWindow.document;
   doc.open();doc.write(htmlComplet);doc.close();
   // Code
@@ -1343,7 +1364,7 @@ async function detecterCheckpoint(texte) {
       );
 
       // 2. MISE À JOUR VISUELLE DANS L'IFRAME
-      const iframe = document.getElementById('carnet-iframe');
+      const iframe = document.getElementById('vitrine-rendu');
       if (iframe) {
         const doc = iframe.contentDocument || iframe.contentWindow.document;
         doc.open();
@@ -1478,7 +1499,6 @@ function handleKey(e){
     sendMessage();
   }
 }
-// ── NAV ──
 function go(id){
   document.querySelectorAll('.screen').forEach(s=>s.classList.remove('on'));
   document.getElementById('s-'+id).classList.add('on');
@@ -1489,6 +1509,15 @@ function go(id){
 
 window.addEventListener('load', async ()=>{
   document.body.classList.add('ready');
+  
+  // Écouteur pour la modification manuelle dans le carnet
+  const carnetEdit = document.getElementById('carnet-code-edit');
+  if (carnetEdit) {
+    carnetEdit.addEventListener('input', () => {
+      renderVitrine(carnetEdit.value);
+    });
+  }
+
   const saved = sessionStorage.getItem('spark_user');
   if(!saved) go('login', false);
   if(saved){
@@ -1501,6 +1530,7 @@ window.addEventListener('load', async ()=>{
     else await initEleve();
   }
 });
+
 // ── TOAST ──
 let tTimer=null;
 function showToast(msg,type='success'){
