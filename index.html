@@ -925,6 +925,15 @@ function renderVitrine(html) {
 async function callMistral(equipeId, etapeSlug) {
   // 1. On récupère le contenu actuel du carnet pour la mémoire de l'IA
   const carnetPhysique = document.getElementById('carnet-code-edit')?.value || "Le carnet est encore vide.";
+  const consigneSortie = `
+RÈGLE DE SORTIE OBLIGATOIRE :
+- Si l'élève demande un changement visuel/fonctionnel de la vitrine (même petit, ex: "mets en bleu"), renvoie la version COMPLÈTE et à jour du HTML.
+- Mets ce HTML dans un bloc unique au format :
+\`\`\`html
+...HTML complet...
+\`\`\`
+- N'envoie jamais un bloc HTML vide.
+`;
 
   // 2. On prépare le paquet de données (payload)
   const payload = {
@@ -932,7 +941,7 @@ async function callMistral(equipeId, etapeSlug) {
     etape_slug: String(etapeSlug), 
     system_instruction: { 
       parts: [{ 
-        text: masterPrompt + `\n\nCONTEXTE ACTUEL DU PROJET (CODE HTML) :\n${carnetPhysique}\n\nConsigne : Aide l'élève en te basant sur ce qui est déjà écrit dans le carnet ci-dessus.` 
+        text: masterPrompt + `\n\nCONTEXTE ACTUEL DU PROJET (CODE HTML) :\n${carnetPhysique}\n\nConsigne : Aide l'élève en te basant sur ce qui est déjà écrit dans le carnet ci-dessus.\n${consigneSortie}` 
       }] 
     },
     contents: conversationHistory.slice(-10)
@@ -1375,6 +1384,25 @@ async function detecterCheckpoint(texte) {
     const regexFencedHtml = /```html\s*([\s\S]*?)```/gi;
     while ((match = regexFencedHtml.exec(texte)) !== null) {
       blocs.push(match[1]);
+    }
+  }
+
+  if (blocs.length === 0) {
+    const regexFencedAny = /```(?:\w+)?\s*([\s\S]*?)```/gi;
+    while ((match = regexFencedAny.exec(texte)) !== null) {
+      const candidat = (match[1] || '').trim();
+      if (/<\s*([a-zA-Z][\w-]*)(\s|>|\/)/.test(candidat)) {
+        blocs.push(candidat);
+      }
+    }
+  }
+
+  if (blocs.length === 0) {
+    const brut = (texte || '').trim();
+    const idxPremierTag = brut.search(/<(?:!doctype|html|head|body|main|section|article|div|header|footer|nav|style|h1|h2|h3|p|span|img|button)\b/i);
+    if (idxPremierTag >= 0) {
+      const candidat = brut.slice(idxPremierTag).trim();
+      if (candidat) blocs.push(candidat);
     }
   }
 
