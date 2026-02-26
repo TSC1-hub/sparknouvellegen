@@ -361,6 +361,54 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
 .drawer-empty{align-self:center;margin-top:40px;font-size:.75rem;color:var(--light);font-style:italic;}
 
 .team-card.active-drawer{border-color:var(--fac);box-shadow:0 0 0 2px rgba(29,111,164,.15);}
+/* CARNET ÉLÈVE */
+.btn-carnet{display:flex;align-items:center;gap:6px;background:rgba(245,240,232,.1);
+  border:1px solid rgba(245,240,232,.2);border-radius:20px;padding:5px 14px;
+  color:rgba(245,240,232,.85);font-family:'DM Sans',sans-serif;font-size:.75rem;
+  font-weight:500;cursor:pointer;transition:all .25s;}
+.btn-carnet:hover{background:rgba(245,240,232,.18);color:white;}
+.notif-dot{color:var(--terra);font-size:.7rem;animation:blink 1.5s ease-in-out infinite;}
+
+.carnet-overlay{position:fixed;inset:0;background:rgba(26,46,23,.4);
+  backdrop-filter:blur(2px);z-index:40;opacity:0;pointer-events:none;transition:opacity .35s;}
+.carnet-overlay.open{opacity:1;pointer-events:auto;}
+
+.carnet-drawer{position:fixed;top:0;right:0;bottom:0;width:600px;max-width:92vw;
+  background:var(--warm);z-index:50;display:flex;flex-direction:column;
+  transform:translateX(100%);transition:transform .4s cubic-bezier(.25,.46,.45,.94);
+  box-shadow:-8px 0 40px rgba(26,46,23,.2);}
+.carnet-drawer.open{transform:translateX(0);}
+
+.carnet-hdr{background:var(--moss);padding:14px 20px;display:flex;
+  align-items:center;justify-content:space-between;flex-shrink:0;}
+.carnet-hdr-title{font-family:'Fraunces',serif;font-weight:700;font-size:1.1rem;color:var(--sun);}
+.carnet-hdr-sub{font-size:.68rem;color:rgba(245,240,232,.5);font-style:italic;margin-top:1px;}
+.btn-carnet-close{background:rgba(245,240,232,.1);border:1px solid rgba(245,240,232,.15);
+  border-radius:8px;padding:6px 12px;color:rgba(245,240,232,.7);cursor:pointer;
+  font-family:'DM Sans',sans-serif;font-size:.8rem;transition:all .2s;}
+.btn-carnet-close:hover{background:rgba(245,240,232,.2);color:white;}
+
+.carnet-tabs{display:flex;background:white;border-bottom:1px solid var(--border);flex-shrink:0;}
+.carnet-tab{flex:1;padding:10px;font-size:.75rem;font-weight:500;text-align:center;
+  cursor:pointer;border:none;background:transparent;color:var(--light);
+  border-bottom:2px solid transparent;transition:all .2s;font-family:'DM Sans',sans-serif;}
+.carnet-tab.active{color:var(--moss);border-bottom-color:var(--moss);font-weight:600;}
+
+.carnet-content{flex:1;overflow:hidden;display:flex;flex-direction:column;}
+.carnet-panel{display:none;flex:1;overflow:hidden;flex-direction:column;}
+.carnet-panel.active{display:flex;}
+
+.carnet-iframe{flex:1;border:none;}
+.carnet-code{flex:1;overflow-y:auto;padding:16px;background:#1e1e2e;
+  font-family:monospace;font-size:.72rem;color:#cdd6f4;white-space:pre-wrap;
+  word-break:break-all;line-height:1.6;}
+
+.carnet-toast{position:fixed;bottom:20px;right:24px;background:var(--moss);color:white;
+  padding:10px 16px;border-radius:12px;font-size:.8rem;font-weight:500;
+  box-shadow:0 4px 20px rgba(61,92,58,.3);display:flex;align-items:center;gap:8px;
+  z-index:200;animation:toastIn .4s cubic-bezier(.175,.885,.32,1.275);}
+@keyframes toastIn{from{opacity:0;transform:translateY(20px) scale(.9);}to{opacity:1;transform:none;}}
+
 /* VITRINE */
 .drawer-tabs{display:flex;gap:0;border-bottom:1px solid rgba(0,0,0,.07);flex-shrink:0;background:white;}
 .drawer-tab{padding:11px 20px;font-size:.75rem;font-weight:600;cursor:pointer;color:#4a6b85;border-bottom:3px solid transparent;transition:all .2s;}
@@ -448,7 +496,8 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
     <div class="h-logo">🌿 SPARK <span class="h-logo-sub">Design Thinking</span></div>
     <div style="display:flex;align-items:center;gap:8px;">
       <div class="h-pill" id="eleve-pill">TEAM</div>
-      <button class="btn-logout" onclick="doLogout()">↩ Quitter</button>
+      <button class="btn-carnet" id="btn-carnet" onclick="ouvrirCarnet()">📓 Carnet <span class="notif-dot" id="notif-dot" style="display:none;">●</span></button>
+<button class="btn-logout" onclick="doLogout()">↩ Quitter</button>
     </div>
   </div>
   <div class="eleve-workspace">
@@ -554,7 +603,29 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
     </div>
   </div>
 </div>
-
+<!-- CARNET ÉLÈVE -->
+<div class="carnet-overlay" id="carnet-overlay" onclick="fermerCarnet()"></div>
+<div class="carnet-drawer" id="carnet-drawer">
+  <div class="carnet-hdr">
+    <div>
+      <div class="carnet-hdr-title">📓 Carnet de Terrain</div>
+      <div class="carnet-hdr-sub" id="carnet-sub">Équipe — Jour 0/5</div>
+    </div>
+    <button class="btn-carnet-close" onclick="fermerCarnet()">✕ Fermer</button>
+  </div>
+  <div class="carnet-tabs">
+    <button class="carnet-tab active" onclick="switchCarnetTab('vitrine',this)">🎨 Vitrine</button>
+    <button class="carnet-tab" onclick="switchCarnetTab('code',this)">💻 Code</button>
+  </div>
+  <div class="carnet-content">
+    <div class="carnet-panel active" id="carnet-panel-vitrine">
+      <iframe class="carnet-iframe" id="carnet-iframe"></iframe>
+    </div>
+    <div class="carnet-panel" id="carnet-panel-code">
+      <div class="carnet-code" id="carnet-code"></div>
+    </div>
+  </div>
+</div>
 <div class="toast" id="toast"></div>
 
 <script>
@@ -749,6 +820,7 @@ async function initEleve(){
   if(conversationHistory.length===0) await sparkGreet();
   go('eleve');
   listenMentorMessages();
+  listenVitrine();
 }
 
 function updateSteps(etape){
@@ -796,6 +868,7 @@ async function sendMessage(){
     hideTyping(); renderMsg('assistant',r,'SPARK ⚡');
     await saveMsg('assistant',r,'SPARK ⚡');
     conversationHistory.push({role:'model',parts:[{text:r}]});
+    await detecterCheckpoint(r);
     scrollBot();
   }catch(e){hideTyping();showToast('Erreur SPARK','error');}
   document.getElementById('btn-send').disabled=false; inp.focus();
@@ -1130,6 +1203,101 @@ function showVitrineEtape(etape, vitrinesData){
   split.appendChild(code);
   const doc=iframe.contentDocument||iframe.contentWindow.document;
   doc.open(); doc.write(v.html_section); doc.close();
+}
+// ── CARNET ÉLÈVE ──
+function ouvrirCarnet(){
+  document.getElementById('carnet-drawer').classList.add('open');
+  document.getElementById('carnet-overlay').classList.add('open');
+  document.getElementById('notif-dot').style.display='none';
+  chargerCarnet();
+}
+
+function fermerCarnet(){
+  document.getElementById('carnet-drawer').classList.remove('open');
+  document.getElementById('carnet-overlay').classList.remove('open');
+}
+
+function switchCarnetTab(tab, btn){
+  document.querySelectorAll('.carnet-tab').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('.carnet-panel').forEach(p=>p.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById('carnet-panel-'+tab).classList.add('active');
+}
+
+async function chargerCarnet(){
+  if(!currentEquipe) return;
+  const{data:vitrines}=await sb.from('vitrines')
+    .select('*').eq('equipe_id',currentEquipe.id).order('etape',{ascending:true});
+  if(!vitrines||vitrines.length===0){
+    const iframe=document.getElementById('carnet-iframe');
+    const doc=iframe.contentDocument||iframe.contentWindow.document;
+    doc.open();doc.write('<p style="font-family:sans-serif;padding:20px;color:#888;">Votre vitrine se construira ici au fil des étapes !</p>');doc.close();
+    return;
+  }
+  // Assembler tout le HTML
+  const htmlComplet=`<!DOCTYPE html><html lang="fr"><head><meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1.0">
+    <title>${currentEquipe.nom||'Vitrine'}</title></head><body style="margin:0;padding:0;">
+    ${vitrines.map(v=>v.html_section).join('\n')}
+    </body></html>`;
+  // Iframe
+  const iframe=document.getElementById('carnet-iframe');
+  const doc=iframe.contentDocument||iframe.contentWindow.document;
+  doc.open();doc.write(htmlComplet);doc.close();
+  // Code
+  document.getElementById('carnet-code').textContent=htmlComplet;
+  // Sous-titre
+  document.getElementById('carnet-sub').textContent=
+    `${currentEquipe.nom||currentEquipe.code_equipe} — Jour ${currentEquipe.etape_courante}/5`;
+}
+
+function afficherToastCarnet(etapeNom){
+  const ancien=document.getElementById('carnet-toast');
+  if(ancien) ancien.remove();
+  const toast=document.createElement('div');
+  toast.id='carnet-toast';
+  toast.className='carnet-toast';
+  toast.innerHTML=`<span>📓</span> Vitrine mise à jour — ${etapeNom} !`;
+  document.body.appendChild(toast);
+  setTimeout(()=>ouvrirCarnet(),1500);
+  setTimeout(()=>{
+    toast.style.opacity='0';toast.style.transition='opacity .3s';
+    setTimeout(()=>toast.remove(),300);
+  },3000);
+}
+
+async function detecterCheckpoint(texte){
+  if(!currentEquipe) return;
+  const regex=/```html([\s\S]*?SPARK_CHECKPOINT:([\w-]+)[\s\S]*?)```/gi;
+  let match;
+  while((match=regex.exec(texte))!==null){
+    const html=match[1].trim();
+    const slug=match[2].trim();
+    const etapeMap={'etape0-preparation':0,'jour1-questionner':1,'jour2-concevoir':2,
+      'jour3-fabriquer':3,'jour4-diffuser':4,'jour5-convaincre':5};
+    const etape=etapeMap[slug]??0;
+    await sb.from('vitrines').upsert({equipe_id:currentEquipe.id,etape,html_section:html},
+      {onConflict:'equipe_id,etape'});
+    await sb.from('equipes').update({etape_courante:etape}).eq('id',currentEquipe.id);
+    currentEquipe.etape_courante=etape;
+    updateSteps(etape);
+    afficherToastCarnet(slug.replace(/-/g,' '));
+    document.getElementById('notif-dot').style.display='inline';
+  }
+}
+
+function listenVitrine(){
+  if(!currentEquipe) return;
+  sb.channel('vitrine-'+currentEquipe.id)
+    .on('postgres_changes',{event:'INSERT',schema:'public',table:'vitrines',
+      filter:`equipe_id=eq.${currentEquipe.id}`},()=>{
+      chargerCarnet();
+      document.getElementById('notif-dot').style.display='inline';
+    })
+    .on('postgres_changes',{event:'UPDATE',schema:'public',table:'vitrines',
+      filter:`equipe_id=eq.${currentEquipe.id}`},()=>{
+      chargerCarnet();
+    }).subscribe();
 }
 function closeConvDrawer(){
   // Retirer le highlight
