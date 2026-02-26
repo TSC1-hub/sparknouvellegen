@@ -908,7 +908,7 @@ function login() {
 
 function listenMentorMessages(){
   if(!currentEquipe) return;
-  sb.channel('mentor-'+currentEquipe.id)
+  sb.channel('realtime-mentor-'+currentEquipe.id)
     .on('postgres_changes',{event:'INSERT',schema:'public',table:'conversations',filter:`equipe_id=eq.${currentEquipe.id}`},p=>{
       const m=p.new;
       if(m.role==='mentor'&&m.statut==='visible'){
@@ -1159,7 +1159,7 @@ async function renderFacValidation(){
 }
 
 async function approveMsg(id,eqId,pseudo,message){
-  await sb.from('messages_mentors').update({statut:'valide',valide_par:currentUser.id}).eq('id',id);
+  await sb.from('messages_mentors').update({statut:'valide','validé_par':currentUser.id}).eq('id',id);
   await sb.from('conversations').insert({equipe_id:eqId,role:'mentor',message,pseudo,auteur_code:currentUser.code,statut:'visible'});
   const c=document.getElementById('vc-'+id);
   if(c){c.classList.add('approved');c.querySelector('.vcard-actions').innerHTML='<div class="approved-lbl">✓ Approuvé et envoyé</div>';}
