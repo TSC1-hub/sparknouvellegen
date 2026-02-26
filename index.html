@@ -1002,7 +1002,16 @@ async function appliquerFallbackVisuelLocal(demande){
   const cibleTitre=/titre|h1/.test(texteDemande);
   if(!cibleFond && !cibleTitre) return false;
 
-  const htmlSource=document.getElementById('carnet-code-edit')?.value||'';
+  let htmlSource=document.getElementById('carnet-code-edit')?.value||'';
+  if(!htmlSource.trim()){
+    const { data: derniereVitrine } = await sb.from('vitrines')
+      .select('html_section')
+      .eq('equipe_id', currentEquipe.id)
+      .order('etape', { ascending: false })
+      .limit(1)
+      .maybeSingle();
+    htmlSource = derniereVitrine?.html_section || '';
+  }
   if(!htmlSource.trim()) return false;
 
   const parser=new DOMParser();
@@ -1047,7 +1056,17 @@ async function callMistral(equipeId, etapeSlug, options = {}) {
   const { forceHtml = false, latestUserRequest = '' } = options;
 
   // 1. On récupère le contenu actuel du carnet pour la mémoire de l'IA
-  const carnetPhysique = document.getElementById('carnet-code-edit')?.value || "Le carnet est encore vide.";
+  let carnetPhysique = document.getElementById('carnet-code-edit')?.value || '';
+  if (!carnetPhysique.trim() && currentEquipe?.id) {
+    const { data: derniereVitrine } = await sb.from('vitrines')
+      .select('html_section')
+      .eq('equipe_id', currentEquipe.id)
+      .order('etape', { ascending: false })
+      .limit(1)
+      .maybeSingle();
+    carnetPhysique = derniereVitrine?.html_section || '';
+  }
+  if (!carnetPhysique.trim()) carnetPhysique = "Le carnet est encore vide.";
   const consigneSortie = `
 RÈGLE DE SORTIE OBLIGATOIRE :
 - Si l'élève demande un changement visuel/fonctionnel de la vitrine (même petit, ex: "mets en bleu"), renvoie la version COMPLÈTE et à jour du HTML.
