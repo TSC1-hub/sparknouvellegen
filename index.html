@@ -862,39 +862,86 @@ async function sendMessage(){
   if(!txt||!currentEquipe) return;
   inp.value=''; inp.style.height='auto';
   document.getElementById('btn-send').disabled=true;
+  
   renderMsg('user',txt,'La Team');
   await saveMsg('user',txt,'La Team');
   conversationHistory.push({role:'user',parts:[{text:txt}]});
   scrollBot(); showTyping();
+  
   try{
-    const r=await callMistral();
+    // On passe les infos de l'équipe à callMistral
+    const r=await callMistral(currentEquipe.id, currentEquipe.etape_courante); 
     hideTyping();
-    const rVisible=r.replace(/SPARK_HTML_START[\s\S]*?SPARK_HTML_END/gi,'').trim();
+    
+    // On nettoie le texte pour ne pas afficher les balises HTML dans le chat
+    const rVisible=r.replace(/[\s\S]*?/gi,'').trim();
+    
     renderMsg('assistant',rVisible,'SPARK ⚡');
     await saveMsg('assistant',rVisible,'SPARK ⚡');
     conversationHistory.push({role:'model',parts:[{text:r}]});
+    
     await detecterCheckpoint(r);
     scrollBot();
-  }catch(e){hideTyping();showToast('Erreur SPARK','error');}
+  } catch(e) {
+    hideTyping();
+    showToast('Erreur SPARK','error');
+  }
   document.getElementById('btn-send').disabled=false; inp.focus();
 }
 
-async function callMistral() {
-  // 1. On récupère le contenu actuel du carnet pour que l'IA sache où on en est
-const carnetPhysique = document.getElementById('carnet-code-edit')?.value || "Le carnet est encore vide.";
+async function callMistral(equipeId, etapeSlug) {
+  // 1. On récupère le contenu actuel du carnet (le code HTML actuel)
+  const carnetPhysique = document.getElementById('carnet-code-edit')?.value || "Le carnet est encore vide.";
+
+  // 2. On prépare le paquet pour l'Edge Function
   const payload = {
+    // Les deux clés cruciales pour l'enregistrement automatique
+    equipe_id: equipeId,
+    etape_slug: String(etapeSlug), 
+    
+    // Le cerveau (Master Prompt + Mémoire du carnet)
     system_instruction: { 
       parts: [{ 
-        text: masterPrompt + `\n\nCONTEXTE ACTUEL DU PROJET :\n${carnetPhysique}\n\nConsigne : Aide l'élève en te basant sur ce qui est déjà écrit dans le carnet ci-dessus.` 
+        text: masterPrompt + `\n\nCONTEXTE ACTUEL DU PROJET (CODE HTML) :\n${carnetPhysique}\n\nConsigne : Aide l'élève en te basant sur ce qui est déjà écrit dans le carnet ci-dessus.` 
       }] 
     },
-    // On garde une fenêtre de 10 messages pour la fluidité de la discussion
-    contents: conversationHistory.slice(-10), 
-    generationConfig: { 
-      temperature: 0.7, 
-      maxOutputTokens: 4000 
-    }
+    
+    // L'historique des messages (les 10 derniers)
+    contents: conversationHistory.slice(-10)
   };
+
+  // 3. L'appel à l'Edge Function Supabase
+  // Remplace 'votre_nom_de_fonction' par le nom que tu as donné dans Supabase
+  const { data, error } = await sb.functions.invoke('votre_nom_de_fonction', {
+    body: payload
+  });
+
+  if (error) throw error;
+
+  // On renvoie le texte de l'assistant (Mistral)
+  // Note : data.choices[0].message.content est le format standard de Mistral
+  return data.choices[0].message.content;
+}
+  }; // <--- ICI on ferme le payload
+
+  // 2. ON ENVOIE LA REQUÊTE (Ce qu'il te manquait)
+  const res = await fetch(EDGE_URL, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${sb.supabaseKey}`,
+      'apikey': sb.supabaseKey
+    },
+    body: JSON.stringify(payload)
+  });
+
+  // 3. ON TRAITE LA RÉPONSE
+  const d = await res.json();
+  if (!res.ok) throw new Error(d.error || 'Erreur API');
+  
+  // On renvoie le contenu du message à la fonction qui l'a appelé
+  return d.choices[0].message.content;
+}
 
   const res = await fetch(EDGE_URL, {
     method: 'POST',
