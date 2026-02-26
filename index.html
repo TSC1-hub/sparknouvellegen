@@ -881,8 +881,7 @@ async function sendMessage(){
 
 async function callMistral() {
   // 1. On récupère le contenu actuel du carnet pour que l'IA sache où on en est
-  const carnetPhysique = document.getElementById('carnet-content')?.innerText || "Vide pour le moment";
-
+const carnetPhysique = document.getElementById('carnet-code-edit')?.value || "Le carnet est encore vide.";
   const payload = {
     system_instruction: { 
       parts: [{ 
@@ -1306,23 +1305,59 @@ function afficherToastCarnet(etapeNom){
   },3000);
 }
 
-async function detecterCheckpoint(texte){
-  if(!currentEquipe) return;
-  const regex=/SPARK_HTML_START([\s\S]*?SPARK_CHECKPOINT:([\w-]+)[\s\S]*?)SPARK_HTML_END/gi;
+async function detecterCheckpoint(texte) {
+  if (!currentEquipe) return;
+
+  const regex = /SPARK_HTML_START([\s\S]*?)SPARK_HTML_END/gi;
   let match;
-  while((match=regex.exec(texte))!==null){
-    const html=match[1].trim();
-    const slug=match[2].trim();
-    const etapeMap={'etape0-preparation':0,'jour1-questionner':1,'jour2-concevoir':2,
-      'jour3-fabriquer':3,'jour4-diffuser':4,'jour5-convaincre':5};
-    const etape=etapeMap[slug]??0;
-    await sb.from('vitrines').upsert({equipe_id:currentEquipe.id,etape,html_section:html},
-      {onConflict:'equipe_id,etape'});
-    await sb.from('equipes').update({etape_courante:etape}).eq('id',currentEquipe.id);
-    currentEquipe.etape_courante=etape;
-    updateSteps(etape);
-    afficherToastCarnet(slug.replace(/-/g,' '));
-    document.getElementById('notif-dot').style.display='inline';
+
+  while ((match = regex.exec(texte)) !== null) {
+    let html = match[1].trim();
+    html = html.replace(/^```html\s*/i, '').replace(/```\s*$/i, '').trim();
+
+    const checkpointMatch = html.match(/SPARK_CHECKPOINT:([\w-]+)/);
+    const slug = checkpointMatch ? checkpointMatch[1] : 'etape0-preparation';
+
+    const etapeMap = {
+      'etape0-preparation': 0, 'jour1-questionner': 1, 'jour2-concevoir': 2,
+      'jour3-fabriquer': 3, 'jour4-diffuser': 4, 'jour5-convaincre': 5
+    };
+    const etape = etapeMap[slug] ?? 0;
+
+    try {
+      // 1. Sauvegarde Supabase
+      await sb.from('vitrines').upsert(
+        { equipe_id: currentEquipe.id, etape, html_section: html },
+        { onConflict: 'equipe_id,etape' }
+      );
+
+      // 2. MISE À JOUR VISUELLE DANS L'IFRAME
+      const iframe = document.getElementById('carnet-iframe');
+      if (iframe) {
+        const doc = iframe.contentDocument || iframe.contentWindow.document;
+        doc.open();
+        // On ajoute un peu de style pour que le contenu soit joli dans l'iframe
+        doc.write(`
+          <style>
+            body { font-family: 'DM Sans', sans-serif; padding: 20px; color: #2c3a28; line-height: 1.6; }
+          </style>
+          ${html}
+        `);
+        doc.close();
+      }
+
+      // 3. Mise à jour du texte dans l'éditeur de code (l'onglet Code)
+      const codeEditor = document.getElementById('carnet-code-edit');
+      if (codeEditor) codeEditor.value = html;
+
+      // 4. Notifications et ouverture
+      updateSteps(etape);
+      ouvrirCarnet();
+      showToast("Vitrine mise à jour ! 🎨", "success");
+
+    } catch (err) {
+      console.error("Erreur sauvegarde:", err);
+    }
   }
 }
 
