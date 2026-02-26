@@ -1278,15 +1278,25 @@ function fermerCarnet(){
 }
 async function sauvegarderCarnet(){
   if(!currentEquipe) return;
-  const html=document.getElementById('carnet-code-edit').value;
-  const{data:vitrines}=await sb.from('vitrines')
-    .select('*').eq('equipe_id',currentEquipe.id).order('etape',{ascending:true});
-  if(!vitrines||vitrines.length===0) return;
+  const html = document.getElementById('carnet-code-edit').value;
+  const {data: vitrines} = await sb.from('vitrines')
+    .select('*').eq('equipe_id', currentEquipe.id).order('etape', {ascending: true});
+  if(!vitrines || vitrines.length === 0) return;
   // Sauvegarder sur la dernière étape
-  const derniere=vitrines[vitrines.length-1];
-  await sb.from('vitrines').update({html_section:html}).eq('id',derniere.id);
-  showToast('Vitrine sauvegardée','success');
-  await chargerCarnet();
+  const derniere = vitrines[vitrines.length-1];
+  await sb.from('vitrines').update({html_section: html}).eq('id', derniere.id);
+  showToast('Vitrine sauvegardée', 'success');
+  // Mise à jour immédiate de la vitrine même si le code est vide
+  const iframe = document.getElementById('vitrine-rendu');
+  if (iframe) {
+    if (html.trim() === "") {
+      iframe.srcdoc = '<p style="font-family:sans-serif;padding:20px;color:#888;">Votre vitrine est vide.</p>';
+    } else {
+      iframe.srcdoc = `<!DOCTYPE html><html lang=\"fr\"><head><meta charset=\"UTF-8\"></head><body>${html}</body></html>`;
+    }
+  }
+  // Met aussi à jour le textarea pour éviter un effet de "rechargement"
+  document.getElementById('carnet-code-edit').value = html;
 }
 function switchCarnetTab(tab, btn){
   document.querySelectorAll('.carnet-tab').forEach(t=>t.classList.remove('active'));
