@@ -908,7 +908,7 @@ async function callMistral(equipeId, etapeSlug) {
 
   // 3. L'appel propre à ton Edge Function Supabase
   // ATTENTION : remplace 'votre_nom_de_fonction' par le nom de ta fonction
-  const { data, error } = await sb.functions.invoke('votre_nom_de_fonction', {
+  const { data, error } = await sb.functions.invoke('proxy-mistral', {
     body: payload
   });
 
