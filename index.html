@@ -1201,11 +1201,32 @@ async function confirmReset(){
 }
 
 // ── NAV ──
-function go(id){
+function go(id, pushState=true){
   document.querySelectorAll('.screen').forEach(s=>s.classList.remove('on'));
   document.getElementById('s-'+id).classList.add('on');
+  if(pushState) history.pushState({screen:id}, '', '#'+id);
+  if(currentUser) sessionStorage.setItem('spark_user', JSON.stringify(currentUser));
+  if(id==='login') sessionStorage.removeItem('spark_user');
 }
+// ── RESTAURATION SESSION & NAVIGATION ──
+window.addEventListener('popstate', e=>{
+  const screen = e.state?.screen;
+  if(screen) go(screen, false);
+  else go('login', false);
+});
 
+window.addEventListener('load', async ()=>{
+  const saved = sessionStorage.getItem('spark_user');
+  if(saved){
+    currentUser = JSON.parse(saved);
+    const{data:p}=await sb.from('prompts').select('contenu').eq('actif',true).limit(1).maybeSingle();
+    if(p) masterPrompt=p.contenu;
+    const roleName = currentUser.roles?.nom||'eleve';
+    if(['facilitateur','facilitateur_general','admin'].includes(roleName)) await initFac();
+    else if(roleName==='mentor') await initMentor();
+    else await initEleve();
+  }
+});
 // ── TOAST ──
 let tTimer=null;
 function showToast(msg,type='success'){
