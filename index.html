@@ -921,20 +921,6 @@ async function callMistral(equipeId, etapeSlug) {
   return data.choices[0].message.content;
 }
 
-  const res = await fetch(EDGE_URL, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${sb.supabaseKey}`,
-      'apikey': sb.supabaseKey
-    },
-    body: JSON.stringify(payload)
-  });
-
-  const d = await res.json();
-  return d.choices[0].message.content;
-}
-
 async function saveMsg(role,message,pseudo){
   if(!currentEquipe) return;
   await sb.from('conversations').insert({
