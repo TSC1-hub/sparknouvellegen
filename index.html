@@ -1000,9 +1000,10 @@ async function appliquerFallbackVisuelLocal(demande){
   const couleur=detecterCouleurDepuisTexte(texteDemande);
   if(!couleur) return false;
 
-  const cibleFond=/fond|background/.test(texteDemande);
-  const cibleTitre=/titre|h1/.test(texteDemande);
-  if(!cibleFond && !cibleTitre) return false;
+  const cibleFondExpr=/fond|background|arrière[-\s]?plan|arriere[-\s]?plan|page|body|bg/.test(texteDemande);
+  const cibleTitreExpr=/titre|h1|heading|en[-\s]?tête|entete/.test(texteDemande);
+  const cibleFond=cibleFondExpr || (!cibleTitreExpr && !!couleur);
+  const cibleTitre=cibleTitreExpr;
 
   let htmlSource=document.getElementById('carnet-code-edit')?.value||'';
   let derniereVitrine=null;
