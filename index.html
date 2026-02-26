@@ -905,7 +905,8 @@ async function sendMessage(){
     if (!vitrineMaj) {
       const rRetry = await callMistral(currentEquipe.id, currentEquipe.etape_courante, {
         forceHtml: true,
-        latestUserRequest: txt
+        latestUserRequest: txt,
+        strictHtmlOnly: true
       });
 
       const retryHtmlBlocks = [...rRetry.matchAll(/```html\s*([\s\S]*?)```/gi)];
@@ -1072,7 +1073,7 @@ async function appliquerFallbackVisuelLocal(demande){
   return true;
 }
 async function callMistral(equipeId, etapeSlug, options = {}) {
-  const { forceHtml = false, latestUserRequest = '' } = options;
+  const { forceHtml = false, latestUserRequest = '', strictHtmlOnly = false } = options;
 
   // 1. On récupère le contenu actuel du carnet pour la mémoire de l'IA
   let carnetPhysique = document.getElementById('carnet-code-edit')?.value || '';
@@ -1104,16 +1105,29 @@ CORRECTION OBLIGATOIRE (réponse précédente invalide) :
 - Pas de texte hors du bloc HTML.
 ` : '';
 
+  const consigneStrict = strictHtmlOnly ? `
+MODE STRICT HTML UNIQUEMENT :
+- Retourne UNIQUEMENT du HTML final (complet), sans explication.
+- Aucune phrase, aucun résumé, aucun markdown.
+- Si tu utilises un bloc, il doit être exactement \`\`\`html ... \`\`\`.
+- Applique précisément la demande utilisateur suivante : "${latestUserRequest || 'mise à jour demandée'}".
+` : '';
+
   // 2. On prépare le paquet de données (payload)
   const payload = {
     equipe_id: equipeId,
     etape_slug: String(etapeSlug), 
     system_instruction: { 
       parts: [{ 
-        text: masterPrompt + `\n\nCONTEXTE ACTUEL DU PROJET (CODE HTML) :\n${carnetPhysique}\n\nConsigne : Aide l'élève en te basant sur ce qui est déjà écrit dans le carnet ci-dessus.\n${consigneSortie}${consigneRelance}` 
+        text: masterPrompt + `\n\nCONTEXTE ACTUEL DU PROJET (CODE HTML) :\n${carnetPhysique}\n\nConsigne : Aide l'élève en te basant sur ce qui est déjà écrit dans le carnet ci-dessus.\n${consigneSortie}${consigneRelance}${consigneStrict}` 
       }] 
     },
-    contents: conversationHistory.slice(-10)
+    contents: strictHtmlOnly
+      ? [{ role: 'user', parts: [{ text: `Applique cette demande à la vitrine et renvoie le HTML final uniquement : ${latestUserRequest || 'mise à jour demandée'}` }] }]
+      : conversationHistory.slice(-10),
+    generationConfig: strictHtmlOnly
+      ? { temperature: 0.2, maxOutputTokens: 1800 }
+      : undefined
   };
 
   // 3. Appel Edge Function (avec fallback si l'apikey n'est pas transmis)
