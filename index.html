@@ -893,7 +893,7 @@ async function sendMessage(){
     // --- NOUVEAUTÉ : Mise à jour automatique ---
     let vitrineMaj = await detecterCheckpoint(r);
 
-    if (htmlBlockVideSeulement && !vitrineMaj) {
+    if (!vitrineMaj) {
       const rRetry = await callMistral(currentEquipe.id, currentEquipe.etape_courante, {
         forceHtml: true,
         latestUserRequest: txt
@@ -914,7 +914,7 @@ async function sendMessage(){
       vitrineMaj = await detecterCheckpoint(rRetry);
 
       if (!vitrineMaj) {
-        showToast('SPARK a renvoyé un bloc HTML vide. Réessaie.','error');
+        showToast('SPARK n\'a pas appliqué de modification HTML. Réessaie.','error');
       }
     }
     
