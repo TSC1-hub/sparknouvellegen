@@ -334,46 +334,6 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
 .toast.visible{transform:translateX(-50%) translateY(0);}
 .toast.success{background:var(--moss);}
 .toast.error{background:var(--terra);}
-async function openConvDrawer(eqId, nom, college, etape){
-  document.querySelectorAll('.team-card').forEach(c=>c.classList.remove('active-drawer'));
-  const activeCard=document.getElementById('card-eq-'+eqId);
-  if(activeCard) activeCard.classList.add('active-drawer');
-
-  const main=document.getElementById('fac-main');
-
-  if(!document.getElementById('conv-drawer')){
-    const grid=document.getElementById('teams-grid');
-    const header=main.firstElementChild;
-    main.innerHTML='';
-    main.style.cssText='display:flex;gap:0;padding:0;overflow:hidden;';
-    const col=document.createElement('div');
-    col.className='teams-col';
-    col.appendChild(header);
-    col.appendChild(grid);
-    grid.style.cssText='display:flex;flex-direction:column;gap:10px;';
-    main.appendChild(col);
-    const drawer=document.createElement('div');
-    drawer.className='conv-drawer'; drawer.id='conv-drawer';
-    main.appendChild(drawer);
-  }
-
-  const drawer=document.getElementById('conv-drawer');
-  drawer.innerHTML=`
-    <div class="drawer-hdr">
-      <div>
-        <div class="drawer-title">🌿 ${nom}</div>
-        <div class="drawer-sub">${college||'—'} · Jour ${etape}/5</div>
-      </div>
-      <button class="btn-drawer-close" onclick="closeConvDrawer()">✕</button>
-    </div>
-    <div class="drawer-tabs">
-      <div class="drawer-tab active" id="tab-conv" onclick="switchDrawerTab('conv',${eqId})">💬 Conversation</div>
-      <div class="drawer-tab" id="tab-vitrine" onclick="switchDrawerTab('vitrine',${eqId})">🎨 Vitrine</div>
-    </div>
-    <div id="drawer-content" style="flex:1;display:flex;flex-direction:column;overflow:hidden;"></div>`;
-
-  await loadDrawerConv(eqId);
-}
 /* DRAWER CONVERSATION FAC */
 .fac-main.drawer-open{display:grid;grid-template-columns:1fr;gap:16px;}
 .fac-layout.drawer-open .fac-main{display:flex;gap:0;padding:0;overflow:hidden;}
@@ -399,6 +359,18 @@ async function openConvDrawer(eqId, nom, college, etape){
 .drawer-empty{align-self:center;margin-top:40px;font-size:.75rem;color:var(--light);font-style:italic;}
 
 .team-card.active-drawer{border-color:var(--fac);box-shadow:0 0 0 2px rgba(29,111,164,.15);}
+/* VITRINE */
+.drawer-tabs{display:flex;gap:0;border-bottom:1px solid rgba(0,0,0,.07);flex-shrink:0;background:white;}
+.drawer-tab{padding:11px 20px;font-size:.75rem;font-weight:600;cursor:pointer;color:#4a6b85;border-bottom:3px solid transparent;transition:all .2s;}
+.drawer-tab.active{color:var(--fac);border-bottom-color:var(--fac);background:rgba(29,111,164,.04);}
+.drawer-tab:hover{color:var(--fac);}
+.vitrine-etapes{display:flex;gap:6px;padding:10px 16px;flex-shrink:0;border-bottom:1px solid rgba(0,0,0,.07);flex-wrap:wrap;background:#f8fafc;}
+.vitrine-pill{padding:4px 12px;border-radius:20px;font-size:.67rem;font-weight:600;cursor:pointer;background:white;border:1px solid rgba(29,111,164,.2);color:#4a6b85;transition:all .2s;}
+.vitrine-pill.active{background:var(--fac);color:white;border-color:var(--fac);}
+.vitrine-split{flex:1;display:flex;overflow:hidden;}
+.vitrine-preview{flex:1;border:none;border-right:1px solid rgba(0,0,0,.07);}
+.vitrine-code{flex:1;overflow-y:auto;padding:14px;background:#1e1e2e;font-family:monospace;font-size:.72rem;color:#cdd6f4;white-space:pre-wrap;word-break:break-all;line-height:1.6;}
+.vitrine-empty{flex:1;display:flex;align-items:center;justify-content:center;font-size:.75rem;color:var(--light);font-style:italic;}
 </style>
 </head>
 <body>
@@ -1104,16 +1076,9 @@ async function loadDrawerConv(eqId){
   }
   msgs.forEach(m=>{
     const d=document.createElement('div');
-    if(m.role==='assistant'){
-      d.className='msg spark-msg';
-      d.innerHTML=`<div class="msg-av">⚡</div><div class="msg-col"><div class="msg-who">SPARK ⚡</div><div class="msg-bubble">${formatTxt(m.message)}</div></div>`;
-    } else if(m.role==='user'){
-      d.className='msg eleve-msg';
-      d.innerHTML=`<div class="msg-av">👥</div><div class="msg-col"><div class="msg-who">${m.pseudo||'La Team'}</div><div class="msg-bubble">${formatTxt(m.message)}</div></div>`;
-    } else if(m.role==='mentor'){
-      d.className='msg mentor-msg';
-      d.innerHTML=`<div class="msg-av">🎓</div><div class="msg-col"><div class="msg-who">${m.pseudo||'Mentor'}</div><div class="msg-bubble">${formatTxt(m.message)}</div></div>`;
-    }
+    if(m.role==='assistant'){d.className='msg spark-msg';d.innerHTML=`<div class="msg-av">⚡</div><div class="msg-col"><div class="msg-who">SPARK ⚡</div><div class="msg-bubble">${formatTxt(m.message)}</div></div>`;}
+    else if(m.role==='user'){d.className='msg eleve-msg';d.innerHTML=`<div class="msg-av">👥</div><div class="msg-col"><div class="msg-who">${m.pseudo||'La Team'}</div><div class="msg-bubble">${formatTxt(m.message)}</div></div>`;}
+    else if(m.role==='mentor'){d.className='msg mentor-msg';d.innerHTML=`<div class="msg-av">🎓</div><div class="msg-col"><div class="msg-who">${m.pseudo||'Mentor'}</div><div class="msg-bubble">${formatTxt(m.message)}</div></div>`;}
     msgs_el.appendChild(d);
   });
   msgs_el.scrollTop=msgs_el.scrollHeight;
@@ -1127,17 +1092,12 @@ async function loadDrawerVitrine(eqId){
     c.innerHTML='<div class="vitrine-empty">Aucune vitrine générée pour l\'instant.</div>';
     return;
   }
-  // Pills par étape
   const pills=vitrines.map((v,i)=>
     `<div class="vitrine-pill${i===0?' active':''}" id="pill-${v.etape}" onclick="showVitrineEtape(${v.etape})">${v.etape===0?'Étape 0':'Étape '+v.etape}</div>`
   ).join('');
-  c.innerHTML=`
-    <div class="vitrine-etapes">${pills}</div>
-    <div class="vitrine-layout" id="vitrine-layout"></div>`;
-  // Afficher la première étape
-  showVitrineEtape(vitrines[0].etape, vitrines);
-  // Stocker les données pour navigation
+  c.innerHTML=`<div class="vitrine-etapes">${pills}</div><div class="vitrine-split" id="vitrine-split"></div>`;
   c.dataset.vitrines=JSON.stringify(vitrines);
+  showVitrineEtape(vitrines[0].etape, vitrines);
 }
 
 function showVitrineEtape(etape, vitrinesData){
@@ -1145,24 +1105,18 @@ function showVitrineEtape(etape, vitrinesData){
   const vitrines=vitrinesData||JSON.parse(c.dataset.vitrines||'[]');
   const v=vitrines.find(x=>x.etape===etape);
   if(!v) return;
-  // Mettre à jour les pills
   document.querySelectorAll('.vitrine-pill').forEach(p=>p.classList.remove('active'));
   const pill=document.getElementById('pill-'+etape);
   if(pill) pill.classList.add('active');
-  // Rendu splitté
-  const layout=document.getElementById('vitrine-layout');
-  layout.innerHTML='';
-  // Iframe pour le rendu
+  const split=document.getElementById('vitrine-split');
+  split.innerHTML='';
   const iframe=document.createElement('iframe');
   iframe.className='vitrine-preview';
-  layout.appendChild(iframe);
-  // Code source
+  split.appendChild(iframe);
   const code=document.createElement('div');
   code.className='vitrine-code';
   code.textContent=v.html_section;
-  layout.appendChild(code);
-  // Injecter le HTML dans l'iframe
-  iframe.onload=()=>{};
+  split.appendChild(code);
   const doc=iframe.contentDocument||iframe.contentWindow.document;
   doc.open(); doc.write(v.html_section); doc.close();
 }
