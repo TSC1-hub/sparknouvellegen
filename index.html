@@ -872,18 +872,29 @@ async function sendMessage(){
   try{
     const r=await callMistral(currentEquipe.id, currentEquipe.etape_courante); 
     hideTyping();
+
+    const htmlBlocks = [...r.matchAll(/```html\s*([\s\S]*?)```/gi)];
+    const hasHtmlBlock = htmlBlocks.length > 0;
+    const hasNonEmptyHtmlBlock = htmlBlocks.some(b => (b[1] || '').trim().length > 0);
+    const htmlBlockVideSeulement = hasHtmlBlock && !hasNonEmptyHtmlBlock;
     
     // On extrait le texte visible (sans les balises de code) pour le chat
     // on supprime les blocs de code délimités par des ```` afin de ne
     // conserver que le texte narratif dans le flux de conversation
     const rVisible = r.replace(/```[\s\S]*?```/gi, '').trim();
-    
-    renderMsg('assistant', rVisible, 'SPARK ⚡');
-    await saveMsg('assistant', rVisible, 'SPARK ⚡');
+
+    if (rVisible && !htmlBlockVideSeulement) {
+      renderMsg('assistant', rVisible, 'SPARK ⚡');
+      await saveMsg('assistant', rVisible, 'SPARK ⚡');
+    }
     conversationHistory.push({role:'model',parts:[{text:r}]});
     
     // --- NOUVEAUTÉ : Mise à jour automatique ---
-    await detecterCheckpoint(r); 
+    const vitrineMaj = await detecterCheckpoint(r);
+
+    if (htmlBlockVideSeulement && !vitrineMaj) {
+      showToast('SPARK a renvoyé un bloc HTML vide. Réessaie.','error');
+    }
     
     scrollBot();
   } catch(e) {
@@ -1350,6 +1361,8 @@ function afficherToastCarnet(etapeNom){
 async function detecterCheckpoint(texte) {
   if (!currentEquipe) return;
 
+  let vitrineMaj = false;
+
   const blocs = [];
   const regexMarkers = /SPARK_HTML_START([\s\S]*?)SPARK_HTML_END/gi;
   let match;
@@ -1365,7 +1378,7 @@ async function detecterCheckpoint(texte) {
     }
   }
 
-  if (blocs.length === 0) return;
+  if (blocs.length === 0) return false;
 
   for (const bloc of blocs) {
     let html = (bloc || '').trim();
@@ -1387,6 +1400,7 @@ async function detecterCheckpoint(texte) {
         { equipe_id: currentEquipe.id, etape, html_section: html },
         { onConflict: 'equipe_id,etape' }
       );
+      vitrineMaj = true;
 
       // 2. MISE À JOUR VISUELLE DANS L'IFRAME
       const iframe = document.getElementById('vitrine-rendu');
@@ -1416,6 +1430,8 @@ async function detecterCheckpoint(texte) {
       console.error("Erreur sauvegarde:", err);
     }
   }
+
+  return vitrineMaj;
 }
 
 function listenVitrine(){
