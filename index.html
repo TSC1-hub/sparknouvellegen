@@ -17,6 +17,8 @@
   --fac:#1d6fa4;--fac-l:rgba(29,111,164,0.09);--fac-b:rgba(29,111,164,0.22);
 }
 html,body{height:100%;overflow:hidden;}
+body.ready{visibility:visible!important;}
+body{visibility:hidden;}
 body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);display:flex;flex-direction:column;}
 body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
   background:radial-gradient(ellipse 60% 50% at 80% 10%,rgba(122,182,72,.07) 0%,transparent 60%),
@@ -1216,6 +1218,7 @@ window.addEventListener('popstate', e=>{
 });
 
 window.addEventListener('load', async ()=>{
+  document.body.classList.add('ready');
   const saved = sessionStorage.getItem('spark_user');
   if(!saved) go('login', false);
   if(saved){
