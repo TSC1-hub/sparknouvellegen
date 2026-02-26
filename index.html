@@ -1027,12 +1027,12 @@ async function openConvDrawer(eqId, nom, college, etape){
     const grid=document.getElementById('teams-grid');
     const header=main.firstElementChild;
     main.innerHTML='';
-    main.style.cssText='display:flex;gap:0;padding:0;overflow:hidden;';
+    main.style.cssText='display:flex;gap:0;padding:0;overflow:hidden;flex-direction:row;';
     const col=document.createElement('div');
     col.className='teams-col';
     col.appendChild(header);
     col.appendChild(grid);
-    grid.style.cssText='display:flex;flex-direction:column;gap:10px;';
+    grid.style.cssText='display:flex;flex-direction:column;gap:10px;width:240px;flex-shrink:0;';
     main.appendChild(col);
     const drawer=document.createElement('div');
     drawer.className='conv-drawer'; drawer.id='conv-drawer';
