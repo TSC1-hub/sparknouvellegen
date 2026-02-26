@@ -1059,14 +1059,11 @@ async function appliquerFallbackVisuelLocal(demande){
   if(!htmlNettoye) return false;
 
   if(derniereVitrine?.id){
-    const { error: errUpdateFallback } = await sb.from('vitrines').update({html_section: htmlNettoye}).eq('id', derniereVitrine.id);
+    const errUpdateFallback = await updateVitrineSecurisee(derniereVitrine.id, htmlNettoye);
     if(signalerErreurSupabase('fallback-update', errUpdateFallback)) return false;
   } else {
     const etape = Number(currentEquipe.etape_courante || 0);
-    const { error: errInsertFallback } = await sb.from('vitrines').upsert(
-      { equipe_id: currentEquipe.id, etape, html_section: htmlNettoye },
-      { onConflict: 'equipe_id,etape' }
-    );
+    const errInsertFallback = await upsertVitrineSecurisee(currentEquipe.id, etape, htmlNettoye);
     if(signalerErreurSupabase('fallback-upsert', errInsertFallback)) return false;
   }
   await chargerCarnet();
@@ -1130,14 +1127,23 @@ MODE STRICT HTML UNIQUEMENT :
       : undefined
   };
 
-  // 3. Appel Edge Function (avec fallback si l'apikey n'est pas transmis)
-  let { data, error } = await sb.functions.invoke('proxy-mistral', {
-    body: payload
-  });
+  const data = await invokeProxyMistral(payload);
+
+  const contenu = data?.choices?.[0]?.message?.content;
+  if (!contenu) {
+    throw new Error('Réponse SPARK invalide (contenu vide).');
+  }
+
+  // 4. On renvoie la réponse de l'IA au format Mistral
+  return contenu;
+}
+
+async function invokeProxyMistral(payload){
+  let { data, error } = await sb.functions.invoke('proxy-mistral', { body: payload });
 
   const errMsg = (error?.message || '').toLowerCase();
   if (error && errMsg.includes('no api key found')) {
-    const resp = await fetch(`${SUPABASE_URL}/functions/v1/proxy-mistral`, {
+    const resp = await fetch(EDGE_URL, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -1157,17 +1163,38 @@ MODE STRICT HTML UNIQUEMENT :
   }
 
   if (error) {
-    console.error("Erreur Edge Function:", error);
+    console.error('Erreur Edge Function:', error);
     throw new Error(error.message || 'Erreur Edge Function');
   }
 
-  const contenu = data?.choices?.[0]?.message?.content;
-  if (!contenu) {
-    throw new Error('Réponse SPARK invalide (contenu vide).');
-  }
+  return data;
+}
 
-  // 4. On renvoie la réponse de l'IA au format Mistral
-  return contenu;
+async function upsertVitrineSecurisee(equipeId, etape, htmlSection){
+  try {
+    await invokeProxyMistral({
+      action: 'vitrine_upsert',
+      equipe_id: equipeId,
+      etape,
+      html_section: htmlSection
+    });
+    return null;
+  } catch (err) {
+    return { message: err?.message || 'Échec vitrine_upsert' };
+  }
+}
+
+async function updateVitrineSecurisee(vitrineId, htmlSection){
+  try {
+    await invokeProxyMistral({
+      action: 'vitrine_update',
+      id: vitrineId,
+      html_section: htmlSection
+    });
+    return null;
+  } catch (err) {
+    return { message: err?.message || 'Échec vitrine_update' };
+  }
 }
 
 async function saveMsg(role,message,pseudo){
@@ -1521,7 +1548,7 @@ async function sauvegarderCarnet(){
   if(!vitrines || vitrines.length === 0) return;
   // Sauvegarder sur la dernière étape
   const derniere = vitrines[vitrines.length-1];
-  const { error: errSaveCarnet } = await sb.from('vitrines').update({html_section: htmlNettoye}).eq('id', derniere.id);
+  const errSaveCarnet = await updateVitrineSecurisee(derniere.id, htmlNettoye);
   if(signalerErreurSupabase('save-carnet', errSaveCarnet)) return;
   showToast('Vitrine sauvegardée', 'success');
   await chargerCarnet();
@@ -1660,10 +1687,7 @@ async function detecterCheckpoint(texte) {
 
     try {
       // 1. Sauvegarde Supabase
-      const { error: errCheckpoint } = await sb.from('vitrines').upsert(
-        { equipe_id: currentEquipe.id, etape, html_section: htmlNettoye },
-        { onConflict: 'equipe_id,etape' }
-      );
+      const errCheckpoint = await upsertVitrineSecurisee(currentEquipe.id, etape, htmlNettoye);
       if (signalerErreurSupabase('checkpoint-upsert', errCheckpoint)) {
         continue;
       }
@@ -1701,7 +1725,8 @@ function listenVitrine(){
 }
 async function sauvegarderVitrineEtape(vitrineId, etape){
   const html=document.getElementById('fac-code-edit-'+etape).value;
-  await sb.from('vitrines').update({html_section:html}).eq('id',vitrineId);
+  const errSaveFac = await updateVitrineSecurisee(vitrineId, html);
+  if(signalerErreurSupabase('fac-save-vitrine', errSaveFac)) return;
   showToast('Vitrine sauvegardée','success');
   // Recharger l'iframe
   const iframe=document.querySelector('.vitrine-preview');

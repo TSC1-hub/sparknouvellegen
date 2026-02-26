@@ -1,6 +1,8 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 
 const MISTRAL_API_KEY = Deno.env.get("MISTRAL_API_KEY");
+const SUPABASE_URL = Deno.env.get("SUPABASE_URL");
+const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
 const MISTRAL_URL = "https://api.mistral.ai/v1/chat/completions";
 
 const corsHeaders = {
@@ -14,11 +16,79 @@ serve(async (req) => {
   }
 
   try {
+    const body = await req.json();
+
+    if (body?.action === "vitrine_upsert") {
+      if (!SUPABASE_URL || !SUPABASE_SERVICE_ROLE_KEY) {
+        throw new Error("Secrets Supabase manquants pour vitrine_upsert.");
+      }
+
+      const equipeId = body?.equipe_id;
+      const etape = Number(body?.etape);
+      const htmlSection = body?.html_section;
+
+      if (!equipeId || Number.isNaN(etape) || typeof htmlSection !== "string") {
+        throw new Error("Payload vitrine_upsert invalide.");
+      }
+
+      const upsertResp = await fetch(`${SUPABASE_URL}/rest/v1/vitrines?on_conflict=equipe_id,etape`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "apikey": SUPABASE_SERVICE_ROLE_KEY,
+          "Authorization": `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`,
+          "Prefer": "resolution=merge-duplicates,return=representation",
+        },
+        body: JSON.stringify([{ equipe_id: equipeId, etape, html_section: htmlSection }]),
+      });
+
+      const upsertData = await upsertResp.json().catch(() => null);
+      if (!upsertResp.ok) {
+        throw new Error(upsertData?.message || `Erreur vitrine_upsert: ${upsertResp.status}`);
+      }
+
+      return new Response(JSON.stringify({ ok: true, data: upsertData }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    if (body?.action === "vitrine_update") {
+      if (!SUPABASE_URL || !SUPABASE_SERVICE_ROLE_KEY) {
+        throw new Error("Secrets Supabase manquants pour vitrine_update.");
+      }
+
+      const vitrineId = body?.id;
+      const htmlSection = body?.html_section;
+
+      if (!vitrineId || typeof htmlSection !== "string") {
+        throw new Error("Payload vitrine_update invalide.");
+      }
+
+      const updateResp = await fetch(`${SUPABASE_URL}/rest/v1/vitrines?id=eq.${encodeURIComponent(vitrineId)}`, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+          "apikey": SUPABASE_SERVICE_ROLE_KEY,
+          "Authorization": `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`,
+          "Prefer": "return=representation",
+        },
+        body: JSON.stringify({ html_section: htmlSection }),
+      });
+
+      const updateData = await updateResp.json().catch(() => null);
+      if (!updateResp.ok) {
+        throw new Error(updateData?.message || `Erreur vitrine_update: ${updateResp.status}`);
+      }
+
+      return new Response(JSON.stringify({ ok: true, data: updateData }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
     if (!MISTRAL_API_KEY) {
       throw new Error("MISTRAL_API_KEY manquante dans les secrets Supabase.");
     }
 
-    const body = await req.json();
     const systemText = body.system_instruction?.parts?.[0]?.text;
     let contents = body.contents || [];
     let messages = [];
