@@ -879,22 +879,35 @@ async function sendMessage(){
   document.getElementById('btn-send').disabled=false; inp.focus();
 }
 
-async function callMistral(){
-  const res=await fetch(EDGE_URL,{
-    method:'POST',
-    headers:{
-      'Content-Type':'application/json',
-      'Authorization': `Bearer ${SUPABASE_KEY}`,
-      'apikey': SUPABASE_KEY
+async function callMistral() {
+  // 1. On récupère le contenu actuel du carnet pour que l'IA sache où on en est
+  const carnetPhysique = document.getElementById('carnet-content')?.innerText || "Vide pour le moment";
+
+  const payload = {
+    system_instruction: { 
+      parts: [{ 
+        text: masterPrompt + `\n\nCONTEXTE ACTUEL DU PROJET :\n${carnetPhysique}\n\nConsigne : Aide l'élève en te basant sur ce qui est déjà écrit dans le carnet ci-dessus.` 
+      }] 
     },
-    body:JSON.stringify({
-      system_instruction:{parts:[{text:masterPrompt}]},
-      contents:conversationHistory,
-      generationConfig:{temperature:0.9,maxOutputTokens:8192}
-    })
+    // On garde une fenêtre de 10 messages pour la fluidité de la discussion
+    contents: conversationHistory.slice(-10), 
+    generationConfig: { 
+      temperature: 0.7, 
+      maxOutputTokens: 4000 
+    }
+  };
+
+  const res = await fetch(EDGE_URL, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${sb.supabaseKey}`,
+      'apikey': sb.supabaseKey
+    },
+    body: JSON.stringify(payload)
   });
-  const d=await res.json();
-  if(!res.ok) throw new Error(d.error||'Erreur');
+
+  const d = await res.json();
   return d.choices[0].message.content;
 }
 
