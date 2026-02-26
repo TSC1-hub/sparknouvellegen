@@ -890,57 +890,34 @@ async function sendMessage(){
 }
 
 async function callMistral(equipeId, etapeSlug) {
-  // 1. On récupère le contenu actuel du carnet (le code HTML actuel)
+  // 1. On récupère le contenu actuel du carnet pour la mémoire de l'IA
   const carnetPhysique = document.getElementById('carnet-code-edit')?.value || "Le carnet est encore vide.";
 
-  // 2. On prépare le paquet pour l'Edge Function
+  // 2. On prépare le paquet de données (payload)
   const payload = {
-    // Les deux clés cruciales pour l'enregistrement automatique
     equipe_id: equipeId,
     etape_slug: String(etapeSlug), 
-    
-    // Le cerveau (Master Prompt + Mémoire du carnet)
     system_instruction: { 
       parts: [{ 
         text: masterPrompt + `\n\nCONTEXTE ACTUEL DU PROJET (CODE HTML) :\n${carnetPhysique}\n\nConsigne : Aide l'élève en te basant sur ce qui est déjà écrit dans le carnet ci-dessus.` 
       }] 
     },
-    
-    // L'historique des messages (les 10 derniers)
     contents: conversationHistory.slice(-10)
   };
 
-  // 3. L'appel à l'Edge Function Supabase
-  // Remplace 'votre_nom_de_fonction' par le nom que tu as donné dans Supabase
+  // 3. L'appel propre à ton Edge Function Supabase
+  // ATTENTION : remplace 'votre_nom_de_fonction' par le nom de ta fonction (ex: 'mistral-chat')
   const { data, error } = await sb.functions.invoke('votre_nom_de_fonction', {
     body: payload
   });
 
-  if (error) throw error;
+  if (error) {
+    console.error("Erreur Edge Function:", error);
+    throw error;
+  }
 
-  // On renvoie le texte de l'assistant (Mistral)
-  // Note : data.choices[0].message.content est le format standard de Mistral
+  // 4. On renvoie la réponse de l'IA au format Mistral
   return data.choices[0].message.content;
-}
-  }; // <--- ICI on ferme le payload
-
-  // 2. ON ENVOIE LA REQUÊTE (Ce qu'il te manquait)
-  const res = await fetch(EDGE_URL, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${sb.supabaseKey}`,
-      'apikey': sb.supabaseKey
-    },
-    body: JSON.stringify(payload)
-  });
-
-  // 3. ON TRAITE LA RÉPONSE
-  const d = await res.json();
-  if (!res.ok) throw new Error(d.error || 'Erreur API');
-  
-  // On renvoie le contenu du message à la fonction qui l'a appelé
-  return d.choices[0].message.content;
 }
 
   const res = await fetch(EDGE_URL, {
