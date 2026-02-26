@@ -622,7 +622,10 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
       <iframe class="carnet-iframe" id="carnet-iframe"></iframe>
     </div>
     <div class="carnet-panel" id="carnet-panel-code">
-      <div class="carnet-code" id="carnet-code"></div>
+      <textarea class="carnet-code" id="carnet-code-edit" spellcheck="false" style="flex:1;resize:none;outline:none;border:none;"></textarea>
+      <div style="padding:8px 16px;background:#1e1e2e;border-top:1px solid rgba(255,255,255,.08);flex-shrink:0;">
+        <button onclick="sauvegarderCarnet()" style="padding:7px 18px;background:#7ab648;border:none;border-radius:8px;color:white;font-family:'DM Sans',sans-serif;font-size:.75rem;font-weight:600;cursor:pointer;">💾 Sauvegarder</button>
+      </div>
     </div>
   </div>
 </div>
@@ -820,6 +823,7 @@ async function initEleve(){
   if(conversationHistory.length===0) await sparkGreet();
   go('eleve');
   listenMentorMessages();
+  listenVitrine();
 }
 
 function updateSteps(etape){
@@ -886,7 +890,7 @@ async function callMistral(){
     body:JSON.stringify({
       system_instruction:{parts:[{text:masterPrompt}]},
       contents:conversationHistory,
-      generationConfig:{temperature:0.9,maxOutputTokens:2048}
+      generationConfig:{temperature:0.9,maxOutputTokens:8192}
     })
   });
   const d=await res.json();
@@ -1198,10 +1202,21 @@ function showVitrineEtape(etape, vitrinesData){
   const iframe=document.createElement('iframe');
   iframe.className='vitrine-preview';
   split.appendChild(iframe);
-  const code=document.createElement('div');
+  const codeWrap=document.createElement('div');
+  codeWrap.style.cssText='flex:1;display:flex;flex-direction:column;overflow:hidden;';
+  const code=document.createElement('textarea');
   code.className='vitrine-code';
-  code.textContent=v.html_section;
-  split.appendChild(code);
+  code.id='fac-code-edit-'+etape;
+  code.value=v.html_section;
+  code.style.cssText='flex:1;resize:none;outline:none;border:none;';
+  code.spellcheck=false;
+  const saveBtn=document.createElement('button');
+  saveBtn.textContent='💾 Sauvegarder';
+  saveBtn.style.cssText='padding:7px 18px;background:#7ab648;border:none;color:white;font-family:\'DM Sans\',sans-serif;font-size:.75rem;font-weight:600;cursor:pointer;flex-shrink:0;';
+  saveBtn.onclick=()=>sauvegarderVitrineEtape(v.id, etape);
+  codeWrap.appendChild(code);
+  codeWrap.appendChild(saveBtn);
+  split.appendChild(codeWrap);
   const doc=iframe.contentDocument||iframe.contentWindow.document;
   doc.open(); doc.write(v.html_section); doc.close();
 }
@@ -1217,7 +1232,18 @@ function fermerCarnet(){
   document.getElementById('carnet-drawer').classList.remove('open');
   document.getElementById('carnet-overlay').classList.remove('open');
 }
-
+async function sauvegarderCarnet(){
+  if(!currentEquipe) return;
+  const html=document.getElementById('carnet-code-edit').value;
+  const{data:vitrines}=await sb.from('vitrines')
+    .select('*').eq('equipe_id',currentEquipe.id).order('etape',{ascending:true});
+  if(!vitrines||vitrines.length===0) return;
+  // Sauvegarder sur la dernière étape
+  const derniere=vitrines[vitrines.length-1];
+  await sb.from('vitrines').update({html_section:html}).eq('id',derniere.id);
+  showToast('Vitrine sauvegardée','success');
+  await chargerCarnet();
+}
 function switchCarnetTab(tab, btn){
   document.querySelectorAll('.carnet-tab').forEach(t=>t.classList.remove('active'));
   document.querySelectorAll('.carnet-panel').forEach(p=>p.classList.remove('active'));
@@ -1246,7 +1272,7 @@ async function chargerCarnet(){
   const doc=iframe.contentDocument||iframe.contentWindow.document;
   doc.open();doc.write(htmlComplet);doc.close();
   // Code
-  document.getElementById('carnet-code').textContent=htmlComplet;
+  document.getElementById('carnet-code-edit').value=htmlComplet;
   // Sous-titre
   document.getElementById('carnet-sub').textContent=
     `${currentEquipe.nom||currentEquipe.code_equipe} — Jour ${currentEquipe.etape_courante}/5`;
@@ -1299,6 +1325,14 @@ function listenVitrine(){
       filter:`equipe_id=eq.${currentEquipe.id}`},()=>{
       chargerCarnet();
     }).subscribe();
+}
+async function sauvegarderVitrineEtape(vitrineId, etape){
+  const html=document.getElementById('fac-code-edit-'+etape).value;
+  await sb.from('vitrines').update({html_section:html}).eq('id',vitrineId);
+  showToast('Vitrine sauvegardée','success');
+  // Recharger l'iframe
+  const iframe=document.querySelector('.vitrine-preview');
+  if(iframe){const doc=iframe.contentDocument||iframe.contentWindow.document;doc.open();doc.write(html);doc.close();}
 }
 function closeConvDrawer(){
   // Retirer le highlight
