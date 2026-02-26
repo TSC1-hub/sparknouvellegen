@@ -1364,20 +1364,24 @@ async function chargerCarnet(){
     const iframe=document.getElementById('vitrine-rendu');
     const doc=iframe.contentDocument||iframe.contentWindow.document;
     doc.open();doc.write('<p style="font-family:sans-serif;padding:20px;color:#888;">Votre vitrine se construira ici au fil des étapes !</p>');doc.close();
+    document.getElementById('carnet-code-edit').value='';
     return;
   }
-  // Assembler tout le HTML
-  const htmlComplet=`<!DOCTYPE html><html lang="fr"><head><meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width,initial-scale=1.0">
-    <title>${currentEquipe.nom||'Vitrine'}</title></head><body style="margin:0;padding:0;">
-    ${vitrines.map(v=>v.html_section).join('\n')}
-    </body></html>`;
+  // Afficher uniquement la dernière version active pour éviter un retour visuel vers d'anciennes étapes
+  const derniere=vitrines[vitrines.length-1];
+  const htmlActuel=(derniere?.html_section||'').trim();
   // Iframe
   const iframe=document.getElementById('vitrine-rendu');
   const doc=iframe.contentDocument||iframe.contentWindow.document;
-  doc.open();doc.write(htmlComplet);doc.close();
+  if(htmlActuel){
+    doc.open();
+    doc.write(`<!DOCTYPE html><html lang="fr"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"></head><body style="margin:0;padding:0;">${htmlActuel}</body></html>`);
+    doc.close();
+  }else{
+    doc.open();doc.write('<p style="font-family:sans-serif;padding:20px;color:#888;">Votre vitrine est vide.</p>');doc.close();
+  }
   // Code
-  document.getElementById('carnet-code-edit').value=htmlComplet;
+  document.getElementById('carnet-code-edit').value=htmlActuel;
   // Sous-titre
   document.getElementById('carnet-sub').textContent=
     `${currentEquipe.nom||currentEquipe.code_equipe} — Jour ${currentEquipe.etape_courante}/5`;
