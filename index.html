@@ -890,10 +890,31 @@ async function sendMessage(){
     conversationHistory.push({role:'model',parts:[{text:r}]});
     
     // --- NOUVEAUTÉ : Mise à jour automatique ---
-    const vitrineMaj = await detecterCheckpoint(r);
+    let vitrineMaj = await detecterCheckpoint(r);
 
     if (htmlBlockVideSeulement && !vitrineMaj) {
-      showToast('SPARK a renvoyé un bloc HTML vide. Réessaie.','error');
+      const rRetry = await callMistral(currentEquipe.id, currentEquipe.etape_courante, {
+        forceHtml: true,
+        latestUserRequest: txt
+      });
+
+      const retryHtmlBlocks = [...rRetry.matchAll(/```html\s*([\s\S]*?)```/gi)];
+      const retryHasHtmlBlock = retryHtmlBlocks.length > 0;
+      const retryHasNonEmptyHtmlBlock = retryHtmlBlocks.some(b => (b[1] || '').trim().length > 0);
+      const retryHtmlBlockVideSeulement = retryHasHtmlBlock && !retryHasNonEmptyHtmlBlock;
+      const rRetryVisible = rRetry.replace(/```[\s\S]*?```/gi, '').trim();
+
+      if (rRetryVisible && !retryHtmlBlockVideSeulement) {
+        renderMsg('assistant', rRetryVisible, 'SPARK ⚡');
+        await saveMsg('assistant', rRetryVisible, 'SPARK ⚡');
+      }
+
+      conversationHistory.push({role:'model',parts:[{text:rRetry}]});
+      vitrineMaj = await detecterCheckpoint(rRetry);
+
+      if (!vitrineMaj) {
+        showToast('SPARK a renvoyé un bloc HTML vide. Réessaie.','error');
+      }
     }
     
     scrollBot();
@@ -922,7 +943,9 @@ function renderVitrine(html) {
     </html>
   `;
 }
-async function callMistral(equipeId, etapeSlug) {
+async function callMistral(equipeId, etapeSlug, options = {}) {
+  const { forceHtml = false, latestUserRequest = '' } = options;
+
   // 1. On récupère le contenu actuel du carnet pour la mémoire de l'IA
   const carnetPhysique = document.getElementById('carnet-code-edit')?.value || "Le carnet est encore vide.";
   const consigneSortie = `
@@ -934,6 +957,14 @@ RÈGLE DE SORTIE OBLIGATOIRE :
 \`\`\`
 - N'envoie jamais un bloc HTML vide.
 `;
+  const consigneRelance = forceHtml ? `
+CORRECTION OBLIGATOIRE (réponse précédente invalide) :
+- Tu DOIS répondre avec un seul bloc \`\`\`html ... \`\`\` NON VIDE.
+- Applique précisément cette demande : "${latestUserRequest || 'mise à jour demandée'}".
+- Renvoie le HTML complet final (pas un extrait).
+- Le HTML renvoyé doit être réellement MODIFIÉ par rapport au code actuel du carnet.
+- Pas de texte hors du bloc HTML.
+` : '';
 
   // 2. On prépare le paquet de données (payload)
   const payload = {
@@ -941,7 +972,7 @@ RÈGLE DE SORTIE OBLIGATOIRE :
     etape_slug: String(etapeSlug), 
     system_instruction: { 
       parts: [{ 
-        text: masterPrompt + `\n\nCONTEXTE ACTUEL DU PROJET (CODE HTML) :\n${carnetPhysique}\n\nConsigne : Aide l'élève en te basant sur ce qui est déjà écrit dans le carnet ci-dessus.\n${consigneSortie}` 
+        text: masterPrompt + `\n\nCONTEXTE ACTUEL DU PROJET (CODE HTML) :\n${carnetPhysique}\n\nConsigne : Aide l'élève en te basant sur ce qui est déjà écrit dans le carnet ci-dessus.\n${consigneSortie}${consigneRelance}` 
       }] 
     },
     contents: conversationHistory.slice(-10)
@@ -1413,6 +1444,17 @@ async function detecterCheckpoint(texte) {
     html = html.replace(/^```html\s*/i, '').replace(/```\s*$/i, '').trim();
     if (!html) continue;
 
+    const codeEditor = document.getElementById('carnet-code-edit');
+    const htmlActuel = (codeEditor?.value || '').trim();
+    const normaliserHtml = (source) => (source || '')
+      .replace(/\s+/g, ' ')
+      .replace(/>\s+</g, '><')
+      .trim();
+
+    if (htmlActuel && normaliserHtml(htmlActuel) === normaliserHtml(html)) {
+      continue;
+    }
+
     const checkpointMatch = html.match(/SPARK_CHECKPOINT:([\w-]+)/) || texte.match(/SPARK_CHECKPOINT:([\w-]+)/i);
     const slug = checkpointMatch ? checkpointMatch[1] : 'etape0-preparation';
 
@@ -1446,7 +1488,6 @@ async function detecterCheckpoint(texte) {
       }
 
       // 3. Mise à jour du texte dans l'éditeur de code (l'onglet Code)
-      const codeEditor = document.getElementById('carnet-code-edit');
       if (codeEditor) codeEditor.value = html;
 
       // 4. Notifications et ouverture
