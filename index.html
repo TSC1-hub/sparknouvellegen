@@ -1350,21 +1350,36 @@ function afficherToastCarnet(etapeNom){
 async function detecterCheckpoint(texte) {
   if (!currentEquipe) return;
 
-  const regex = /SPARK_HTML_START([\s\S]*?)SPARK_HTML_END/gi;
+  const blocs = [];
+  const regexMarkers = /SPARK_HTML_START([\s\S]*?)SPARK_HTML_END/gi;
   let match;
 
-  while ((match = regex.exec(texte)) !== null) {
-    let html = match[1].trim();
-    html = html.replace(/^```html\s*/i, '').replace(/```\s*$/i, '').trim();
+  while ((match = regexMarkers.exec(texte)) !== null) {
+    blocs.push(match[1]);
+  }
 
-    const checkpointMatch = html.match(/SPARK_CHECKPOINT:([\w-]+)/);
+  if (blocs.length === 0) {
+    const regexFencedHtml = /```html\s*([\s\S]*?)```/gi;
+    while ((match = regexFencedHtml.exec(texte)) !== null) {
+      blocs.push(match[1]);
+    }
+  }
+
+  if (blocs.length === 0) return;
+
+  for (const bloc of blocs) {
+    let html = (bloc || '').trim();
+    html = html.replace(/^```html\s*/i, '').replace(/```\s*$/i, '').trim();
+    if (!html) continue;
+
+    const checkpointMatch = html.match(/SPARK_CHECKPOINT:([\w-]+)/) || texte.match(/SPARK_CHECKPOINT:([\w-]+)/i);
     const slug = checkpointMatch ? checkpointMatch[1] : 'etape0-preparation';
 
     const etapeMap = {
       'etape0-preparation': 0, 'jour1-questionner': 1, 'jour2-concevoir': 2,
       'jour3-fabriquer': 3, 'jour4-diffuser': 4, 'jour5-convaincre': 5
     };
-    const etape = etapeMap[slug] ?? 0;
+    const etape = etapeMap[slug] ?? Number(currentEquipe.etape_courante || 0);
 
     try {
       // 1. Sauvegarde Supabase
