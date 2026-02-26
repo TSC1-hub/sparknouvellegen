@@ -820,7 +820,6 @@ async function initEleve(){
   if(conversationHistory.length===0) await sparkGreet();
   go('eleve');
   listenMentorMessages();
-  listenVitrine();
 }
 
 function updateSteps(etape){
@@ -865,8 +864,10 @@ async function sendMessage(){
   scrollBot(); showTyping();
   try{
     const r=await callMistral();
-    hideTyping(); renderMsg('assistant',r,'SPARK ⚡');
-    await saveMsg('assistant',r,'SPARK ⚡');
+    hideTyping();
+    const rVisible=r.replace(/SPARK_HTML_START[\s\S]*?SPARK_HTML_END/gi,'').trim();
+    renderMsg('assistant',rVisible,'SPARK ⚡');
+    await saveMsg('assistant',rVisible,'SPARK ⚡');
     conversationHistory.push({role:'model',parts:[{text:r}]});
     await detecterCheckpoint(r);
     scrollBot();
@@ -1268,7 +1269,7 @@ function afficherToastCarnet(etapeNom){
 
 async function detecterCheckpoint(texte){
   if(!currentEquipe) return;
-  const regex=/```html([\s\S]*?SPARK_CHECKPOINT:([\w-]+)[\s\S]*?)```/gi;
+  const regex=/SPARK_HTML_START([\s\S]*?SPARK_CHECKPOINT:([\w-]+)[\s\S]*?)SPARK_HTML_END/gi;
   let match;
   while((match=regex.exec(texte))!==null){
     const html=match[1].trim();
