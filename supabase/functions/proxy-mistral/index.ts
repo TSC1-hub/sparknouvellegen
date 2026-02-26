@@ -112,7 +112,7 @@ serve(async (req) => {
       model: "mistral-small-latest",
       messages,
       temperature: Math.min(body.generationConfig?.temperature ?? 0.9, 0.8),
-      max_tokens: Math.min(body.generationConfig?.maxOutputTokens ?? 2048, 1500),
+      max_tokens: Math.min(body.generationConfig?.maxOutputTokens ?? 4096, 8192),
       top_p: 0.9,
     };
 

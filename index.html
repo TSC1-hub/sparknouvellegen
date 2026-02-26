@@ -1087,11 +1087,13 @@ async function callMistral(equipeId, etapeSlug, options = {}) {
   const consigneSortie = `
 RÈGLE DE SORTIE OBLIGATOIRE :
 - Si l'élève demande un changement visuel/fonctionnel de la vitrine (même petit, ex: "mets en bleu"), renvoie la version COMPLÈTE et à jour du HTML.
-- Mets ce HTML dans un bloc unique au format :
-\`\`\`html
+- Quand tu renvoies du HTML, entoure-le TOUJOURS avec exactement ces marqueurs :
+SPARK_HTML_START
 ...HTML complet...
-\`\`\`
+SPARK_HTML_END
 - N'envoie jamais un bloc HTML vide.
+- Le HTML doit rester COMPLET et cohérent (doctype, head, body si présents au départ).
+- Quand tu modifies le design, garde TOUJOURS toutes les informations existantes du projet (nom, règles, étapes, photos, textes). Ne supprime jamais le contenu existant.
 `;
   const consigneRelance = forceHtml ? `
 CORRECTION OBLIGATOIRE (réponse précédente invalide) :
@@ -1123,8 +1125,8 @@ MODE STRICT HTML UNIQUEMENT :
       ? [{ role: 'user', parts: [{ text: `Applique cette demande à la vitrine et renvoie le HTML final uniquement : ${latestUserRequest || 'mise à jour demandée'}` }] }]
       : conversationHistory.slice(-10),
     generationConfig: strictHtmlOnly
-      ? { temperature: 0.2, maxOutputTokens: 1800 }
-      : undefined
+      ? { temperature: 0.2, maxOutputTokens: 8192 }
+      : { temperature: 0.9, maxOutputTokens: 8192 }
   };
 
   const data = await invokeProxyMistral(payload);
