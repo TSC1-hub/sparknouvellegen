@@ -3,7 +3,17 @@ import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 const MISTRAL_API_KEY = Deno.env.get("MISTRAL_API_KEY");
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL");
 const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
+const AUTH_REQUIRE_SESSION = Deno.env.get("AUTH_REQUIRE_SESSION") === "true";
+const AUTH_ENFORCE_ACTOR_BINDING = Deno.env.get("AUTH_ENFORCE_ACTOR_BINDING") === "true";
 const MISTRAL_URL = "https://api.mistral.ai/v1/chat/completions";
+
+const RATE_LIMITS: Record<string, { limit: number; windowMs: number }> = {
+  mistral_chat: { limit: 60, windowMs: 60_000 },
+  vitrine_upsert: { limit: 120, windowMs: 60_000 },
+  vitrine_update: { limit: 120, windowMs: 60_000 },
+};
+
+const rateLimitBuckets = new Map<string, { count: number; resetAt: number }>();
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -20,6 +30,70 @@ function logEvent(level: "info" | "error", event: string, meta: Record<string, u
   const line = JSON.stringify(payload);
   if (level === "error") console.error(line);
   else console.log(line);
+}
+
+function getClientIp(req: Request) {
+  const header = req.headers.get("x-forwarded-for") || req.headers.get("x-real-ip") || "";
+  const first = header.split(",")[0]?.trim();
+  return first || "unknown";
+}
+
+function applyRateLimit(action: string, actorCode: string | null, req: Request) {
+  const config = RATE_LIMITS[action];
+  if (!config) {
+    return { allowed: true, remaining: null, retryAfterSec: 0 };
+  }
+
+  const principal = actorCode || `ip:${getClientIp(req)}`;
+  const key = `${action}:${principal}`;
+  const now = Date.now();
+  const existing = rateLimitBuckets.get(key);
+
+  if (!existing || now >= existing.resetAt) {
+    rateLimitBuckets.set(key, { count: 1, resetAt: now + config.windowMs });
+    return { allowed: true, remaining: config.limit - 1, retryAfterSec: 0 };
+  }
+
+  if (existing.count >= config.limit) {
+    const retryAfterSec = Math.max(1, Math.ceil((existing.resetAt - now) / 1000));
+    return { allowed: false, remaining: 0, retryAfterSec };
+  }
+
+  existing.count += 1;
+  rateLimitBuckets.set(key, existing);
+  return { allowed: true, remaining: config.limit - existing.count, retryAfterSec: 0 };
+}
+
+function extractBearerToken(req: Request) {
+  const auth = req.headers.get("authorization") || "";
+  if (!auth.toLowerCase().startsWith("bearer ")) return null;
+  const token = auth.slice(7).trim();
+  return token || null;
+}
+
+async function verifySessionToken(req: Request) {
+  const token = extractBearerToken(req);
+  if (!token || !SUPABASE_URL || !SUPABASE_SERVICE_ROLE_KEY) {
+    return { mode: "legacy" as const, userId: null };
+  }
+
+  try {
+    const resp = await fetch(`${SUPABASE_URL}/auth/v1/user`, {
+      headers: {
+        "apikey": SUPABASE_SERVICE_ROLE_KEY,
+        "Authorization": `Bearer ${token}`,
+      },
+    });
+
+    if (!resp.ok) {
+      return { mode: "invalid" as const, userId: null };
+    }
+
+    const user = await resp.json().catch(() => null);
+    return { mode: "session" as const, userId: user?.id || null };
+  } catch {
+    return { mode: "invalid" as const, userId: null };
+  }
 }
 
 async function restQuery(path: string, init: RequestInit = {}) {
@@ -45,13 +119,70 @@ async function restQuery(path: string, init: RequestInit = {}) {
 }
 
 async function getUtilisateurParCode(actorCode: string) {
-  const users = await restQuery(
-    `/rest/v1/utilisateurs?select=id,code,role_id,actif,roles(nom)&code=eq.${encodeURIComponent(actorCode)}&actif=eq.true&limit=1`
-  );
-  return Array.isArray(users) && users.length > 0 ? users[0] : null;
+  try {
+    const users = await restQuery(
+      `/rest/v1/utilisateurs?select=id,code,role_id,actif,auth_user_id,roles(nom)&code=eq.${encodeURIComponent(actorCode)}&actif=eq.true&limit=1`
+    );
+    return Array.isArray(users) && users.length > 0 ? users[0] : null;
+  } catch (err) {
+    const message = err instanceof Error ? err.message : String(err);
+    if (!message.includes("auth_user_id")) {
+      throw err;
+    }
+    const users = await restQuery(
+      `/rest/v1/utilisateurs?select=id,code,role_id,actif,roles(nom)&code=eq.${encodeURIComponent(actorCode)}&actif=eq.true&limit=1`
+    );
+    return Array.isArray(users) && users.length > 0 ? users[0] : null;
+  }
 }
 
-async function verifierAccesEcritureVitrine(actorCode: string, equipeId: number | string) {
+function verifierBindingActeur(
+  utilisateur: any,
+  authContext: { mode: "legacy" | "invalid" | "session"; userId: string | null },
+  reqId: string,
+  action: string,
+  actorCode: string,
+) {
+  if (authContext.mode !== "session" || !authContext.userId) {
+    return;
+  }
+
+  const linkedAuthUserId = utilisateur?.auth_user_id || null;
+  if (!linkedAuthUserId) {
+    logEvent("info", "auth.binding.missing", {
+      reqId,
+      action,
+      actorCode,
+      authUserId: authContext.userId,
+    });
+    return;
+  }
+
+  if (linkedAuthUserId === authContext.userId) {
+    return;
+  }
+
+  logEvent("error", "auth.binding.mismatch", {
+    reqId,
+    action,
+    actorCode,
+    expectedAuthUserId: linkedAuthUserId,
+    gotAuthUserId: authContext.userId,
+    enforced: AUTH_ENFORCE_ACTOR_BINDING,
+  });
+
+  if (AUTH_ENFORCE_ACTOR_BINDING) {
+    throw new Error("Session invalide pour ce code utilisateur.");
+  }
+}
+
+async function verifierAccesEcritureVitrine(
+  actorCode: string,
+  equipeId: number | string,
+  authContext: { mode: "legacy" | "invalid" | "session"; userId: string | null },
+  reqId: string,
+  action: string,
+) {
   if (!actorCode) {
     throw new Error("actor_code requis pour l'écriture vitrine.");
   }
@@ -60,6 +191,8 @@ async function verifierAccesEcritureVitrine(actorCode: string, equipeId: number 
   if (!utilisateur) {
     throw new Error("Utilisateur non autorisé.");
   }
+
+  verifierBindingActeur(utilisateur, authContext, reqId, action, actorCode);
 
   const equipes = await restQuery(
     `/rest/v1/equipes?select=id,code_equipe,facilitateur_id&id=eq.${encodeURIComponent(String(equipeId))}&limit=1`
@@ -89,7 +222,7 @@ async function verifierAccesEcritureVitrine(actorCode: string, equipeId: number 
   return { utilisateur, equipe };
 }
 
-serve(async (req) => {
+serve(async (req: Request) => {
   const reqId = crypto.randomUUID();
   const t0 = Date.now();
 
@@ -102,13 +235,48 @@ serve(async (req) => {
     const body = await req.json();
     const action = String(body?.action || "mistral_chat");
     const actorCode = String(body?.actor_code || "").trim().toUpperCase() || null;
+    const authContext = await verifySessionToken(req);
 
     logEvent("info", "edge.request.start", {
       reqId,
       action,
       actorCode,
+      authMode: authContext.mode,
+      authUserId: authContext.userId,
       equipeId: body?.equipe_id ?? null,
     });
+
+    if (AUTH_REQUIRE_SESSION && authContext.mode !== "session") {
+      return new Response(JSON.stringify({
+        error: "Session requise. Reconnecte-toi puis réessaie.",
+        req_id: reqId,
+      }), {
+        status: 401,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    const rateLimit = applyRateLimit(action, actorCode, req);
+    if (!rateLimit.allowed) {
+      logEvent("error", "rate_limit.hit", {
+        reqId,
+        action,
+        actorCode,
+        retryAfterSec: rateLimit.retryAfterSec,
+      });
+      return new Response(JSON.stringify({
+        error: "Trop de requêtes, réessaie dans quelques secondes.",
+        retry_after: rateLimit.retryAfterSec,
+        req_id: reqId,
+      }), {
+        status: 429,
+        headers: {
+          ...corsHeaders,
+          "Content-Type": "application/json",
+          "Retry-After": String(rateLimit.retryAfterSec),
+        },
+      });
+    }
 
     if (body?.action === "vitrine_upsert") {
       if (!SUPABASE_URL || !SUPABASE_SERVICE_ROLE_KEY) {
@@ -124,7 +292,7 @@ serve(async (req) => {
         throw new Error("Payload vitrine_upsert invalide.");
       }
 
-      await verifierAccesEcritureVitrine(actorCode, equipeId);
+      await verifierAccesEcritureVitrine(actorCode, equipeId, authContext, reqId, "vitrine_upsert");
 
       const upsertData = await restQuery(`/rest/v1/vitrines?on_conflict=equipe_id,etape`, {
         method: "POST",
@@ -169,7 +337,7 @@ serve(async (req) => {
         throw new Error("Vitrine introuvable.");
       }
 
-      await verifierAccesEcritureVitrine(actorCode, vitrine.equipe_id);
+      await verifierAccesEcritureVitrine(actorCode, vitrine.equipe_id, authContext, reqId, "vitrine_update");
 
       const updateData = await restQuery(`/rest/v1/vitrines?id=eq.${encodeURIComponent(String(vitrineId))}`, {
         method: "PATCH",

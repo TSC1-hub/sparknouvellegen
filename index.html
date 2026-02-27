@@ -712,6 +712,64 @@ function updatePP() {
   if (name && input) name.textContent = input.value.trim() || 'Ton pseudo ici';
 }
 
+async function ensureEdgeSession(){
+  try {
+    const { data } = await sb.auth.getSession();
+    if (data?.session?.access_token) return true;
+    const { error } = await sb.auth.signInAnonymously();
+    if (error) {
+      console.warn('Session anonyme indisponible:', error.message || error);
+      return false;
+    }
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+async function bindAuthUserToMetierUser(metierUserId){
+  try {
+    const { data: authData } = await sb.auth.getUser();
+    const authUserId = authData?.user?.id;
+    if(!authUserId || !metierUserId) return false;
+
+    const { data: row, error: rowError } = await sb
+      .from('utilisateurs')
+      .select('id,auth_user_id')
+      .eq('id', metierUserId)
+      .maybeSingle();
+
+    if(rowError){
+      const msg = String(rowError.message || rowError);
+      if(msg.includes('auth_user_id')) return false;
+      throw rowError;
+    }
+
+    if(!row) return false;
+    if(row.auth_user_id && row.auth_user_id !== authUserId){
+      console.warn('Binding auth_user_id déjà pris par une autre session pour cet utilisateur.');
+      return false;
+    }
+    if(row.auth_user_id === authUserId) return true;
+
+    const { error: updateError } = await sb
+      .from('utilisateurs')
+      .update({ auth_user_id: authUserId })
+      .eq('id', metierUserId)
+      .is('auth_user_id', null);
+
+    if(updateError){
+      const msg = String(updateError.message || updateError);
+      if(msg.includes('auth_user_id')) return false;
+      throw updateError;
+    }
+    return true;
+  } catch (e) {
+    console.warn('Impossible de lier auth_user_id (mode progressif):', e?.message || e);
+    return false;
+  }
+}
+
 async function doLogin() {
   const code = document.getElementById('code-input').value.trim().toUpperCase();
   const errEl = document.getElementById('login-error');
@@ -759,6 +817,9 @@ async function doLogin() {
     }
 
     currentUser = user;
+
+    await ensureEdgeSession();
+    await bindAuthUserToMetierUser(user.id);
 
     // Mise à jour de la dernière connexion
     await sb.from('utilisateurs').update({ derniere_connexion: new Date().toISOString() }).eq('id', user.id);
@@ -1071,6 +1132,7 @@ async function appliquerFallbackVisuelLocal(demande){
 }
 async function callMistral(equipeId, etapeSlug, options = {}) {
   const { forceHtml = false, latestUserRequest = '', strictHtmlOnly = false } = options;
+  const actorCode = String(currentUser?.code || '').trim().toUpperCase();
 
   // 1. On récupère le contenu actuel du carnet pour la mémoire de l'IA
   let carnetPhysique = document.getElementById('carnet-code-edit')?.value || '';
@@ -1114,6 +1176,8 @@ MODE STRICT HTML UNIQUEMENT :
 
   // 2. On prépare le paquet de données (payload)
   const payload = {
+    action: 'mistral_chat',
+    actor_code: actorCode || null,
     equipe_id: equipeId,
     etape_slug: String(etapeSlug), 
     system_instruction: { 
@@ -1140,8 +1204,22 @@ MODE STRICT HTML UNIQUEMENT :
   return contenu;
 }
 
+async function getEdgeAuthHeaders(){
+  try {
+    const { data } = await sb.auth.getSession();
+    const token = data?.session?.access_token;
+    return token ? { 'Authorization': `Bearer ${token}` } : {};
+  } catch {
+    return {};
+  }
+}
+
 async function invokeProxyMistral(payload){
-  let { data, error } = await sb.functions.invoke('proxy-mistral', { body: payload });
+  const authHeaders = await getEdgeAuthHeaders();
+  let { data, error } = await sb.functions.invoke('proxy-mistral', {
+    body: payload,
+    headers: authHeaders
+  });
 
   if (error) {
     const resp = await fetch(EDGE_URL, {
@@ -1149,7 +1227,7 @@ async function invokeProxyMistral(payload){
       headers: {
         'Content-Type': 'application/json',
         'apikey': SUPABASE_KEY,
-        'Authorization': `Bearer ${SUPABASE_KEY}`
+        ...authHeaders
       },
       body: JSON.stringify(payload)
     });
@@ -1848,6 +1926,8 @@ window.addEventListener('load', async ()=>{
   if(!saved) go('login', false);
   if(saved){
     currentUser = JSON.parse(saved);
+    await ensureEdgeSession();
+    if(currentUser?.id) await bindAuthUserToMetierUser(currentUser.id);
     const{data:p}=await sb.from('prompts').select('contenu').eq('actif',true).limit(1).maybeSingle();
     if(p) masterPrompt=p.contenu;
     const roleName = currentUser.roles?.nom||'eleve';
