@@ -227,62 +227,75 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
 /* VUE MENTOR */
 #s-mentor{flex-direction:column;}
 .mentor-workspace{flex:1;display:flex;overflow:hidden;}
-.mentor-sidebar{width:210px;background:linear-gradient(180deg,#1e1035 0%,#150b28 100%);
+.mentor-sidebar{width:200px;background:linear-gradient(180deg,#1e1035 0%,#150b28 100%);
   display:flex;flex-direction:column;flex-shrink:0;border-right:1px solid rgba(123,94,167,.15);}
-.ms-title{font-size:.55rem;font-weight:700;letter-spacing:2.5px;text-transform:uppercase;color:rgba(212,184,248,.22);padding:14px 14px 8px;}
-.ms-team{display:flex;align-items:center;gap:9px;padding:9px 12px;cursor:pointer;border-left:3px solid transparent;transition:all .2s;}
+.ms-title{font-size:.52rem;font-weight:700;letter-spacing:2.5px;text-transform:uppercase;color:rgba(212,184,248,.22);padding:14px 14px 6px;}
+.ms-team{display:flex;align-items:center;gap:9px;padding:8px 12px;cursor:pointer;border-left:3px solid transparent;transition:all .2s;}
 .ms-team:hover{background:rgba(123,94,167,.08);}
 .ms-team.sel{background:rgba(123,94,167,.14);border-left-color:var(--mentor);}
-.ms-team-av{width:30px;height:30px;border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:.9rem;flex-shrink:0;}
-.ms-team-name{font-family:'Fraunces',serif;font-size:.8rem;font-weight:700;color:rgba(212,184,248,.8);}
-.ms-team-day{font-size:.58rem;color:rgba(212,184,248,.3);margin-top:1px;}
+.ms-team-av{width:28px;height:28px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:.85rem;flex-shrink:0;}
+.ms-team-name{font-family:'Fraunces',serif;font-size:.77rem;font-weight:700;color:rgba(212,184,248,.8);}
+.ms-team-day{font-size:.56rem;color:rgba(212,184,248,.3);margin-top:1px;}
 .ms-notif{margin-left:auto;background:var(--mentor);color:white;font-size:.58rem;font-weight:700;padding:2px 6px;border-radius:20px;}
 .ms-identity{margin:auto 10px 10px;padding:10px 12px;background:rgba(123,94,167,.1);
-  border:1px solid rgba(123,94,167,.18);border-radius:12px;display:flex;align-items:center;gap:10px;}
-.ms-id-av{width:32px;height:32px;border-radius:9px;background:var(--mentor);display:flex;align-items:center;justify-content:center;font-size:1rem;flex-shrink:0;}
-.ms-id-name{font-family:'Fraunces',serif;font-size:.8rem;font-weight:700;color:#d4b8f8;}
-.ms-id-code{font-size:.6rem;color:rgba(212,184,248,.4);font-family:monospace;margin-top:1px;}
-
-.mentor-chat{flex:1;display:flex;flex-direction:column;padding:16px;gap:10px;background:#faf8ff;overflow:hidden;}
-.mentor-chat-hdr{background:white;border:1px solid var(--mentor-b);border-radius:12px;
-  padding:10px 14px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;}
-.mch-name{font-family:'Fraunces',serif;font-weight:700;font-size:.92rem;color:var(--text);}
-.mch-day{font-size:.65rem;color:var(--light);margin-top:1px;}
-.prog-dots{display:flex;gap:4px;}
-.pdot{width:8px;height:8px;border-radius:50%;}
-.pdot.d{background:var(--leaf);}
-.pdot.a{background:var(--sun);}
-.pdot.p{background:rgba(0,0,0,.1);}
-.mentor-msgs{flex:1;overflow-y:auto;display:flex;flex-direction:column;gap:10px;padding:2px 4px;}
-.mentor-msgs::-webkit-scrollbar{width:3px;}
-.mentor-msgs::-webkit-scrollbar-thumb{background:rgba(123,94,167,.2);border-radius:2px;}
-.read-note{align-self:center;font-size:.62rem;color:var(--light);font-style:italic;padding:3px 12px;background:rgba(123,94,167,.06);border:1px solid rgba(123,94,167,.1);border-radius:20px;}
-.quick-reps{display:flex;gap:6px;flex-wrap:wrap;flex-shrink:0;}
-.qr{padding:4px 10px;background:var(--mentor-l);border:1px solid var(--mentor-b);border-radius:20px;font-size:.67rem;color:var(--mentor);cursor:pointer;transition:all .2s;}
-.qr:hover{background:var(--mentor);color:white;}
-.mentor-compose{background:white;border:1.5px solid var(--mentor-b);border-radius:14px;padding:12px 14px;display:flex;flex-direction:column;gap:8px;flex-shrink:0;}
-.compose-lbl{font-size:.62rem;font-weight:700;letter-spacing:.5px;color:var(--mentor);display:flex;align-items:center;gap:6px;}
-.compose-ta{border:none;outline:none;resize:none;min-height:48px;font-family:'DM Sans',sans-serif;font-size:.82rem;color:var(--text);background:transparent;line-height:1.55;}
-.compose-ta::placeholder{color:var(--light);}
-.compose-foot{display:flex;align-items:center;justify-content:space-between;}
-.compose-warn{font-size:.6rem;color:var(--mentor);opacity:.6;display:flex;align-items:center;gap:4px;}
-.btn-mentor-send{padding:8px 18px;background:var(--mentor);border:none;border-radius:10px;color:white;font-family:'DM Sans',sans-serif;font-size:.75rem;font-weight:600;cursor:pointer;transition:all .2s;}
-.btn-mentor-send:hover{background:#6a4f90;transform:translateY(-1px);}
+  border:1px solid rgba(123,94,167,.18);border-radius:12px;display:flex;align-items:center;gap:8px;}
+.ms-id-av{width:30px;height:30px;border-radius:8px;background:var(--mentor);display:flex;align-items:center;justify-content:center;font-size:.9rem;flex-shrink:0;}
+.ms-id-name{font-family:'Fraunces',serif;font-size:.77rem;font-weight:700;color:#d4b8f8;}
+.ms-id-code{font-size:.57rem;color:rgba(212,184,248,.4);font-family:monospace;margin-top:1px;}
 
 .mentor-main{position:relative;flex:1;overflow:hidden;display:flex;flex-direction:column;background:#1a0f2e;}
-.mentor-team-bar{height:44px;display:flex;align-items:center;justify-content:space-between;padding:0 20px;background:#1e1035;border-bottom:1px solid rgba(123,94,167,.15);flex-shrink:0;}
-.mentor-vitrine-etapes{display:flex;gap:6px;padding:10px 16px;flex-shrink:0;border-bottom:1px solid rgba(123,94,167,.15);flex-wrap:wrap;background:#f7f2ff;}
-.mentor-vitrine-pill{padding:4px 12px;border-radius:20px;font-size:.67rem;font-weight:600;cursor:pointer;background:white;border:1px solid rgba(123,94,167,.28);color:var(--mentor);transition:all .2s;}
-.mentor-vitrine-pill.active{background:var(--mentor);color:white;border-color:var(--mentor);}
+.mentor-team-bar{padding:10px 20px;background:#1e1035;border-bottom:1px solid rgba(123,94,167,.15);display:flex;align-items:center;gap:12px;flex-shrink:0;}
+.mch-name{font-family:'Fraunces',serif;font-weight:700;font-size:1rem;color:#d4b8f8;}
+.mch-day{font-size:.65rem;color:rgba(212,184,248,.4);margin-top:1px;}
+.prog-dots{display:flex;gap:3px;margin-left:auto;}
+.pdot{width:22px;height:5px;border-radius:3px;}
+.pdot.d{background:var(--leaf);}
+.pdot.a{background:var(--sun);}
+.pdot.p{background:rgba(255,255,255,.1);}
+
+.mentor-vitrine-etapes{display:flex;gap:5px;padding:8px 16px;border-bottom:1px solid rgba(123,94,167,.1);flex-wrap:wrap;background:#16092a;flex-shrink:0;align-items:center;}
+.mentor-vitrine-pill{padding:3px 12px;border-radius:20px;font-size:.62rem;font-weight:600;cursor:pointer;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);color:rgba(212,184,248,.4);transition:all .2s;}
+.mentor-vitrine-pill.done{background:rgba(122,182,72,.1);color:var(--leaf);border-color:rgba(122,182,72,.2);}
+.mentor-vitrine-pill.active{background:rgba(123,94,167,.3);color:#d4b8f8;border-color:rgba(123,94,167,.5);}
+.mentor-vitrine-lbl{margin-left:auto;font-size:.6rem;color:rgba(212,184,248,.3);display:flex;align-items:center;gap:5px;}
 .mentor-vitrine{flex:1;border:none;width:100%;background:white;}
-.mentor-float-btns{position:absolute;right:20px;top:50%;transform:translateY(-50%);display:flex;flex-direction:column;gap:10px;z-index:15;}
-.mentor-float-btn{background:rgba(30,16,53,.92);border:1px solid rgba(123,94,167,.3);color:#d4b8f8;cursor:pointer;border-radius:14px;padding:10px 16px;font-size:.75rem;font-weight:600;transition:all .3s;display:flex;align-items:center;gap:8px;font-family:'DM Sans',sans-serif;}
-.mentor-float-btn:hover{background:rgba(46,24,80,.96);border-color:rgba(123,94,167,.5);transform:translateX(-2px);}
-.mentor-panel{position:absolute;top:0;right:0;bottom:0;width:320px;transform:translateX(100%);transition:transform .4s;z-index:20;background:white;display:flex;flex-direction:column;box-shadow:-8px 0 40px rgba(0,0,0,.4);}
+.mentor-vitrine-readonly{padding:6px 16px;background:rgba(240,192,64,.06);border-top:1px solid rgba(240,192,64,.1);font-size:.6rem;color:rgba(240,192,64,.5);display:flex;align-items:center;gap:5px;flex-shrink:0;}
+
+.mentor-float-btns{position:absolute;right:20px;top:50%;transform:translateY(-50%);display:flex;flex-direction:column;gap:10px;z-index:30;}
+.mentor-float-btn{display:flex;align-items:center;gap:8px;padding:10px 14px;border-radius:14px;cursor:pointer;transition:all .3s;border:none;font-family:'DM Sans',sans-serif;font-weight:600;font-size:.75rem;white-space:nowrap;box-shadow:0 4px 20px rgba(0,0,0,.3);}
+#btn-mentor-conv{background:linear-gradient(135deg,#2d4a2d,#3d5c3a);color:rgba(245,240,232,.85);border:1px solid rgba(122,182,72,.2);}
+#btn-mentor-conv:hover,#btn-mentor-conv.active{background:linear-gradient(135deg,#3d5c3a,#5a7a5a);color:white;transform:translateX(-4px);}
+#btn-mentor-canal{background:linear-gradient(135deg,#2d1f4a,#3d2a5a);color:#d4b8f8;border:1px solid rgba(123,94,167,.3);}
+#btn-mentor-canal:hover,#btn-mentor-canal.active{background:linear-gradient(135deg,#4a2d70,#5a3a80);color:white;transform:translateX(-4px);}
+.mentor-canal-badge{background:var(--terra);color:white;font-size:.55rem;font-weight:700;padding:2px 6px;border-radius:10px;min-width:18px;text-align:center;display:none;}
+
+.mentor-panel-overlay{position:absolute;inset:0;background:rgba(0,0,0,.3);z-index:10;opacity:0;pointer-events:none;transition:opacity .3s;}
+.mentor-panel-overlay.show{opacity:1;pointer-events:auto;}
+
+.mentor-panel{position:absolute;top:0;right:0;bottom:0;width:320px;transform:translateX(100%);transition:transform .4s cubic-bezier(.25,.46,.45,.94);z-index:20;display:flex;flex-direction:column;box-shadow:-8px 0 40px rgba(0,0,0,.4);}
 .mentor-panel.open{transform:translateX(0);}
-.mentor-panel-hdr{padding:12px 16px;border-bottom:1px solid rgba(0,0,0,.07);display:flex;align-items:center;gap:8px;flex-shrink:0;justify-content:space-between;}
-.mentor-panel-msgs{flex:1;overflow-y:auto;padding:10px;display:flex;flex-direction:column;gap:8px;background:#faf8ff;}
-.mentor-canal-badge{margin-left:auto;background:var(--mentor);color:white;font-size:.58rem;font-weight:700;padding:2px 6px;border-radius:20px;display:none;}
+.mentor-panel-hdr{padding:12px 16px;display:flex;align-items:center;gap:8px;flex-shrink:0;border-bottom:1px solid rgba(0,0,0,.07);}
+.mentor-panel-icon{width:30px;height:30px;border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:.9rem;flex-shrink:0;}
+#panel-conv-mentor{background:#faf8ff;}
+#panel-canal-mentor{background:#fdfbff;}
+#panel-conv-mentor .mentor-panel-icon{background:rgba(61,92,58,.1);}
+#panel-canal-mentor .mentor-panel-icon{background:rgba(123,94,167,.12);}
+.mentor-panel-title{font-family:'Fraunces',serif;font-weight:700;font-size:.85rem;color:var(--text);}
+.mentor-panel-sub{font-size:.6rem;color:var(--light);margin-top:1px;}
+.mentor-panel-msgs{flex:1;overflow-y:auto;padding:10px;display:flex;flex-direction:column;gap:8px;}
+.mentor-panel-msgs::-webkit-scrollbar{width:2px;}
+.mentor-panel-msgs::-webkit-scrollbar-thumb{background:rgba(90,122,90,.2);border-radius:2px;}
+.read-note{align-self:center;font-size:.6rem;color:var(--light);background:rgba(123,94,167,.06);border:1px solid rgba(123,94,167,.1);border-radius:20px;padding:3px 12px;margin:4px 0;}
+.quick-reps{display:flex;gap:5px;padding:7px 10px;flex-wrap:wrap;flex-shrink:0;border-top:1px solid rgba(123,94,167,.1);}
+.qr{padding:3px 8px;background:var(--mentor-l);border:1px solid var(--mentor-b);border-radius:20px;font-size:.6rem;color:var(--mentor);cursor:pointer;transition:all .2s;}
+.qr:hover{background:var(--mentor);color:white;}
+.mentor-compose{background:white;border-top:1.5px solid rgba(123,94,167,.15);padding:10px 12px;display:flex;flex-direction:column;gap:6px;flex-shrink:0;margin:0!important;}
+.compose-lbl{font-size:.6rem;font-weight:700;color:var(--mentor);display:flex;align-items:center;gap:5px;}
+.compose-ta{flex:1;border:1.5px solid rgba(123,94,167,.2);border-radius:10px;padding:7px 10px;font-family:'DM Sans',sans-serif;font-size:.75rem;color:var(--text);resize:none;min-height:36px;outline:none;background:white;line-height:1.5;}
+.compose-ta:focus{border-color:var(--mentor);}
+.compose-foot{display:flex;align-items:center;justify-content:space-between;gap:8px;}
+.compose-warn{font-size:.6rem;color:#8a6a00;display:flex;align-items:center;gap:5px;}
+.btn-mentor-send{padding:7px 14px;background:var(--mentor);border:none;border-radius:9px;color:white;font-family:'DM Sans',sans-serif;font-size:.72rem;font-weight:600;cursor:pointer;}
 
 /* VUE FACILITATEUR */
 #s-fac{flex-direction:column;}
@@ -590,19 +603,26 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
         <div><div class="mch-name" id="mentor-team-name">Sélectionnez une équipe</div><div class="mch-day" id="mentor-team-info">—</div></div>
         <div class="prog-dots" id="mentor-prog"></div>
       </div>
-      <div id="mentor-vitrine-etapes" class="mentor-vitrine-etapes"></div>
+      <div id="mentor-vitrine-etapes" class="mentor-vitrine-etapes">
+        <div class="mentor-vitrine-lbl">👁 Aperçu en direct</div>
+      </div>
       <iframe id="mentor-vitrine" class="mentor-vitrine"></iframe>
+      <div class="mentor-vitrine-readonly">👁 Lecture seule — Code non accessible au mentor</div>
 
       <div class="mentor-float-btns">
         <button id="btn-mentor-conv" class="mentor-float-btn" onclick="ouvrirPanelMentor('conv')">💬 Conversation SPARK</button>
-        <button id="btn-mentor-canal" class="mentor-float-btn" onclick="ouvrirPanelMentor('canal')">🎓 Canal Mentor <span id="mentor-canal-notif" class="mentor-canal-badge">●</span></button>
+        <button id="btn-mentor-canal" class="mentor-float-btn" onclick="ouvrirPanelMentor('canal')">🎓 Canal Mentor <span id="mentor-canal-notif" class="mentor-canal-badge">2</span></button>
       </div>
 
-      <div id="mentor-panel-overlay" style="position:absolute;inset:0;background:rgba(0,0,0,.3);z-index:10;display:none;" onclick="fermerPanelsMentor()"></div>
+      <div id="mentor-panel-overlay" class="mentor-panel-overlay" onclick="fermerPanelsMentor()"></div>
 
       <div id="panel-conv-mentor" class="mentor-panel">
         <div class="mentor-panel-hdr">
-          <strong>💬 Conversation SPARK</strong>
+          <div class="mentor-panel-icon">💬</div>
+          <div>
+            <div class="mentor-panel-title">Conversation SPARK</div>
+            <div class="mentor-panel-sub" id="mentor-conv-sub">Sélectionnez une équipe · Lecture seule</div>
+          </div>
           <button class="btn-drawer-close" onclick="fermerPanelsMentor()">✕</button>
         </div>
         <div id="mentor-conv-msgs" class="mentor-panel-msgs"><div class="read-note">📖 Sélectionnez une équipe</div></div>
@@ -610,21 +630,25 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
 
       <div id="panel-canal-mentor" class="mentor-panel">
         <div class="mentor-panel-hdr">
-          <strong>🎓 Canal Mentor</strong>
+          <div class="mentor-panel-icon">🎓</div>
+          <div>
+            <div class="mentor-panel-title">Canal Mentor</div>
+            <div class="mentor-panel-sub" id="mentor-canal-sub">Direct avec l'équipe sélectionnée</div>
+          </div>
           <button class="btn-drawer-close" onclick="fermerPanelsMentor()">✕</button>
         </div>
         <div id="mentor-canal-msgs" class="mentor-panel-msgs"></div>
-        <div class="quick-reps" style="padding:10px 12px 0;">
+        <div class="quick-reps">
           <div class="qr" onclick="fillCompose(this)">👏 Bravo, continuez !</div>
           <div class="qr" onclick="fillCompose(this)">💡 Creusez vos idées</div>
           <div class="qr" onclick="fillCompose(this)">🎯 Bel effort d'équipe</div>
           <div class="qr" onclick="fillCompose(this)">❓ Dites-m'en plus</div>
         </div>
-        <div class="mentor-compose" style="margin:10px 12px 12px;">
+        <div class="mentor-compose">
           <div class="compose-lbl">🎓 Écrire à l'équipe</div>
           <textarea class="compose-ta" id="mentor-compose-ta" placeholder="Votre message d'encouragement..." onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendMentorMsg();}"></textarea>
           <div class="compose-foot">
-            <div class="compose-warn">🔒 Soumis au facilitateur avant affichage</div>
+            <div class="compose-warn">⚡ Soumis au facilitateur avant affichage</div>
             <button class="btn-mentor-send" onclick="sendMentorMsg()">Envoyer ✉️</button>
           </div>
         </div>
@@ -720,6 +744,7 @@ let mentorVitrineChannel = null;
 let mentorConversationChannel = null;
 let mentorVitrinesData = [];
 let mentorEtapeAffichee = null;
+let mentorEtapeCourante = 0;
 
 function getEtapeActiveEquipe(){
   const etape = Number(currentEquipe?.etape_courante ?? 0);
@@ -1508,8 +1533,13 @@ async function loadMentorTeam(eq,el){
   document.querySelectorAll('.ms-team').forEach(t=>t.classList.remove('sel'));
   el.classList.add('sel');
   selectedEquipeId=eq.id;
+  mentorEtapeCourante = Number(eq.etape_courante || 0);
   document.getElementById('mentor-team-name').textContent=`🌿 ${eq.nom||eq.code_equipe}`;
   document.getElementById('mentor-team-info').textContent=`${eq.college||''} · Jour ${eq.etape_courante}/5`;
+  const convSub=document.getElementById('mentor-conv-sub');
+  if(convSub) convSub.textContent=`${eq.nom||eq.code_equipe} · Lecture seule`;
+  const canalSub=document.getElementById('mentor-canal-sub');
+  if(canalSub) canalSub.textContent=`Direct avec ${eq.nom||eq.code_equipe}`;
   const pg=document.getElementById('mentor-prog');
   pg.innerHTML='';
   for(let i=0;i<5;i++){const d=document.createElement('div');d.className='pdot '+(i<eq.etape_courante?'d':i===eq.etape_courante?'a':'p');pg.appendChild(d);}
@@ -1526,18 +1556,18 @@ function afficherVitrineMentorEtape(etape){
   if(!iframe) return;
   const doc = iframe.contentDocument || iframe.contentWindow.document;
 
-  const vitrine = mentorVitrinesData.find(v=>Number(v.etape)===Number(etape));
-  if(!vitrine){
-    doc.open();
-    doc.write('<p style="font-family:sans-serif;padding:20px;color:#888;">Aucune section pour cette étape.</p>');
-    doc.close();
-    return;
-  }
-
-  mentorEtapeAffichee = Number(vitrine.etape);
+  mentorEtapeAffichee = Number(etape);
   document.querySelectorAll('.mentor-vitrine-pill').forEach(p=>p.classList.remove('active'));
   const activePill=document.getElementById('mentor-pill-'+mentorEtapeAffichee);
   if(activePill) activePill.classList.add('active');
+
+  const vitrine = mentorVitrinesData.find(v=>Number(v.etape)===Number(etape));
+  if(!vitrine){
+    doc.open();
+    doc.write(`<!DOCTYPE html><html lang="fr"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"></head><body style="margin:0;padding:24px;font-family:'DM Sans',sans-serif;color:#64748b;background:#ffffff;"><div style="border:1px dashed rgba(123,94,167,.35);border-radius:12px;padding:16px;background:#faf8ff;">Aucune section publiée pour cette étape.</div></body></html>`);
+    doc.close();
+    return;
+  }
 
   const htmlComplet=`<!DOCTYPE html><html lang="fr"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>Vitrine Mentor</title></head><body style="margin:0;padding:0;">${normaliserBlocVitrine(vitrine.html_section||'')}</body></html>`;
   doc.open();
@@ -1554,27 +1584,28 @@ async function chargerVitrinesMentor(eqId, etapePreferee = null){
   if(!iframe || !pillsWrap) return;
   const doc = iframe.contentDocument || iframe.contentWindow.document;
 
-  if(!vitrines || vitrines.length===0){
-    mentorVitrinesData = [];
-    mentorEtapeAffichee = null;
-    pillsWrap.innerHTML='';
-    doc.open();
-    doc.write('<p style="font-family:sans-serif;padding:20px;color:#888;">Aucune vitrine générée pour cette équipe.</p>');
-    doc.close();
-    return;
-  }
+  mentorVitrinesData = vitrines || [];
+  const etapesFixes = [0,1,2,3,4,5];
+  pillsWrap.innerHTML = `${etapesFixes
+    .map(etape=>{
+      const classes=['mentor-vitrine-pill'];
+      if(etape < mentorEtapeCourante) classes.push('done');
+      return `<div class="${classes.join(' ')}" id="mentor-pill-${etape}" onclick="afficherVitrineMentorEtape(${etape})">${etape===0?'Étape 0':'Jour '+etape}</div>`;
+    })
+    .join('')}<div class="mentor-vitrine-lbl">👁 Aperçu en direct</div>`;
 
-  mentorVitrinesData = vitrines;
-  pillsWrap.innerHTML = vitrines
-    .map(v=>`<div class="mentor-vitrine-pill" id="mentor-pill-${v.etape}" onclick="afficherVitrineMentorEtape(${v.etape})">${Number(v.etape)===0?'Étape 0':'Étape '+v.etape}</div>`)
-    .join('');
-
-  const etapesDisponibles = vitrines.map(v=>Number(v.etape));
-  const etapeCible = etapesDisponibles.includes(Number(etapePreferee))
+  const etapesDisponibles = mentorVitrinesData.map(v=>Number(v.etape));
+  const etapeCible = etapesFixes.includes(Number(etapePreferee))
     ? Number(etapePreferee)
-    : etapesDisponibles.includes(Number(mentorEtapeAffichee))
+    : etapesFixes.includes(Number(mentorEtapeAffichee))
       ? Number(mentorEtapeAffichee)
-      : Number(vitrines[0].etape);
+      : Math.max(0, Math.min(5, Number(mentorEtapeCourante || 0)));
+
+  if(!mentorVitrinesData.length){
+    doc.open();
+    doc.write(`<!DOCTYPE html><html lang="fr"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"></head><body style="margin:0;padding:24px;font-family:'DM Sans',sans-serif;color:#64748b;background:#ffffff;"><div style="border:1px dashed rgba(123,94,167,.35);border-radius:12px;padding:16px;background:#faf8ff;">Aucune vitrine générée pour cette équipe pour le moment.</div></body></html>`);
+    doc.close();
+  }
 
   afficherVitrineMentorEtape(etapeCible);
 }
@@ -1635,13 +1666,17 @@ function alimenterCanalMentor(){
 async function ouvrirPanelMentor(id){
   const overlay=document.getElementById('mentor-panel-overlay');
   const target=id==='conv'?document.getElementById('panel-conv-mentor'):document.getElementById('panel-canal-mentor');
+  const btnConv=document.getElementById('btn-mentor-conv');
+  const btnCanal=document.getElementById('btn-mentor-canal');
   if(!target) return;
   const wasOpen=target.classList.contains('open');
 
   document.querySelectorAll('.mentor-panel').forEach(p=>p.classList.remove('open'));
+  if(btnConv) btnConv.classList.remove('active');
+  if(btnCanal) btnCanal.classList.remove('active');
 
   if(wasOpen){
-    if(overlay) overlay.style.display='none';
+    if(overlay) overlay.classList.remove('show');
     if(mentorConversationChannel){
       try{ sb.removeChannel(mentorConversationChannel); }catch(_){ }
       mentorConversationChannel = null;
@@ -1650,7 +1685,9 @@ async function ouvrirPanelMentor(id){
   }
 
   target.classList.add('open');
-  if(overlay) overlay.style.display='block';
+  if(overlay) overlay.classList.add('show');
+  if(id==='conv' && btnConv) btnConv.classList.add('active');
+  if(id==='canal' && btnCanal) btnCanal.classList.add('active');
 
   if(id==='canal'){
     const badge=document.getElementById('mentor-canal-notif');
@@ -1681,7 +1718,11 @@ async function ouvrirPanelMentor(id){
 function fermerPanelsMentor(){
   document.querySelectorAll('.mentor-panel').forEach(p=>p.classList.remove('open'));
   const overlay=document.getElementById('mentor-panel-overlay');
-  if(overlay) overlay.style.display='none';
+  if(overlay) overlay.classList.remove('show');
+  const btnConv=document.getElementById('btn-mentor-conv');
+  const btnCanal=document.getElementById('btn-mentor-canal');
+  if(btnConv) btnConv.classList.remove('active');
+  if(btnCanal) btnCanal.classList.remove('active');
   if(mentorConversationChannel){
     try{ sb.removeChannel(mentorConversationChannel); }catch(_){ }
     mentorConversationChannel = null;
