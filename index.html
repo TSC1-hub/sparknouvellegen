@@ -28,8 +28,8 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
 .screen.on{display:flex;}
 
 /* LOGIN */
-#s-login{align-items:center;justify-content:center;}
-.login-card{background:white;border-radius:28px;width:420px;
+#s-login{align-items:center;justify-content:center;padding:12px;}
+.login-card{background:white;border-radius:28px;width:min(420px,calc(100vw - 24px));max-height:calc(100vh - 24px);display:flex;flex-direction:column;
   box-shadow:0 12px 50px rgba(44,58,40,.13);border:1px solid var(--border);overflow:hidden;
   animation:cardIn .5s cubic-bezier(.175,.885,.32,1.275);}
 @keyframes cardIn{from{opacity:0;transform:translateY(24px) scale(.97);}to{opacity:1;transform:none;}}
@@ -39,7 +39,7 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
 .login-logo{font-family:'Fraunces',serif;font-weight:900;font-size:2.2rem;
   color:var(--sun);letter-spacing:2px;line-height:1;position:relative;}
 .login-sub{font-size:.72rem;color:rgba(245,240,232,.4);font-style:italic;letter-spacing:1px;margin-top:4px;position:relative;}
-.login-body{padding:26px 30px;}
+.login-body{padding:26px 30px;overflow-y:auto;}
 
 .role-cards{display:flex;flex-direction:column;gap:9px;margin-bottom:20px;}
 .role-card{display:flex;align-items:center;gap:13px;padding:13px 15px;border-radius:15px;
@@ -101,6 +101,18 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
 .rgpd-box{margin-top:12px;padding:9px 12px;background:rgba(61,92,58,.04);
   border:1px solid rgba(61,92,58,.1);border-radius:10px;font-size:.62rem;color:var(--mid);line-height:1.6;}
 .rgpd-box strong{color:var(--moss);}
+.consent-wrap{margin-top:10px;padding:10px 12px;background:rgba(61,92,58,.03);border:1px solid rgba(61,92,58,.12);border-radius:10px;}
+.consent-line{display:flex;gap:8px;align-items:flex-start;}
+.consent-check{margin-top:2px;accent-color:var(--moss);}
+.consent-text{font-size:.68rem;line-height:1.5;color:var(--mid);}
+.consent-note{margin-top:6px;font-size:.62rem;line-height:1.5;color:var(--light);}
+
+@media (max-height: 760px){
+  .login-top{padding:22px 24px 18px;}
+  .login-body{padding:18px 20px;}
+  .role-cards{gap:7px;margin-bottom:14px;}
+  .role-card{padding:10px 12px;}
+}
 
 /* HEADER */
 .app-header{position:relative;z-index:20;padding:0 20px;height:54px;
@@ -485,7 +497,16 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
 
       <button class="btn-connect eleve" id="btn-connect" onclick="doLogin()">Rejoindre l'atelier 🌱</button>
       <div class="login-error" id="login-error">Code invalide.</div>
-      <div class="rgpd-box"><strong>🔒 Confidentialité</strong> — Aucune donnée personnelle stockée. Les messages mentors sont soumis à validation avant affichage.</div>
+      <div class="consent-wrap">
+        <div class="consent-line">
+          <input type="checkbox" id="rgpd-consent" class="consent-check" />
+          <label for="rgpd-consent" class="consent-text">
+            Je comprends et j'accepte le traitement des données nécessaires au fonctionnement de l'atelier (authentification, échanges de messages, suivi de progression).
+          </label>
+        </div>
+        <div class="consent-note">Vous pouvez demander la suppression ou la rectification de vos données auprès de l'équipe facilitatrice.</div>
+      </div>
+      <div class="rgpd-box"><strong>🔒 RGPD</strong> — Les données sont utilisées uniquement pour l'atelier, avec accès limité aux personnes autorisées.</div>
     </div>
   </div>
 </div>
@@ -772,11 +793,17 @@ async function bindAuthUserToMetierUser(metierUserId){
 
 async function doLogin() {
   const code = document.getElementById('code-input').value.trim().toUpperCase();
+  const rgpdConsent = document.getElementById('rgpd-consent')?.checked;
   const errEl = document.getElementById('login-error');
   const btn = document.getElementById('btn-connect');
 
   if (!code) {
     showErr('Veuillez entrer un code.');
+    return;
+  }
+
+  if (!rgpdConsent) {
+    showErr('Veuillez accepter le consentement RGPD pour continuer.');
     return;
   }
 
