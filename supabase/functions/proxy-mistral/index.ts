@@ -10,6 +10,18 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
+function logEvent(level: "info" | "error", event: string, meta: Record<string, unknown> = {}) {
+  const payload = {
+    ts: new Date().toISOString(),
+    level,
+    event,
+    ...meta,
+  };
+  const line = JSON.stringify(payload);
+  if (level === "error") console.error(line);
+  else console.log(line);
+}
+
 async function restQuery(path: string, init: RequestInit = {}) {
   if (!SUPABASE_URL || !SUPABASE_SERVICE_ROLE_KEY) {
     throw new Error("Secrets Supabase manquants.");
@@ -78,12 +90,25 @@ async function verifierAccesEcritureVitrine(actorCode: string, equipeId: number 
 }
 
 serve(async (req) => {
+  const reqId = crypto.randomUUID();
+  const t0 = Date.now();
+
   if (req.method === "OPTIONS") {
+    logEvent("info", "edge.options", { reqId });
     return new Response("ok", { headers: corsHeaders });
   }
 
   try {
     const body = await req.json();
+    const action = String(body?.action || "mistral_chat");
+    const actorCode = String(body?.actor_code || "").trim().toUpperCase() || null;
+
+    logEvent("info", "edge.request.start", {
+      reqId,
+      action,
+      actorCode,
+      equipeId: body?.equipe_id ?? null,
+    });
 
     if (body?.action === "vitrine_upsert") {
       if (!SUPABASE_URL || !SUPABASE_SERVICE_ROLE_KEY) {
@@ -107,6 +132,15 @@ serve(async (req) => {
           "Prefer": "resolution=merge-duplicates,return=representation",
         },
         body: JSON.stringify([{ equipe_id: equipeId, etape, html_section: htmlSection }]),
+      });
+
+      logEvent("info", "vitrine.upsert.ok", {
+        reqId,
+        actorCode,
+        equipeId,
+        etape,
+        htmlLength: htmlSection.length,
+        durationMs: Date.now() - t0,
       });
 
       return new Response(JSON.stringify({ ok: true, data: upsertData }), {
@@ -143,6 +177,15 @@ serve(async (req) => {
           "Prefer": "return=representation",
         },
         body: JSON.stringify({ html_section: htmlSection }),
+      });
+
+      logEvent("info", "vitrine.update.ok", {
+        reqId,
+        actorCode,
+        vitrineId,
+        equipeId: vitrine.equipe_id,
+        htmlLength: htmlSection.length,
+        durationMs: Date.now() - t0,
       });
 
       return new Response(JSON.stringify({ ok: true, data: updateData }), {
@@ -196,13 +239,26 @@ serve(async (req) => {
       throw new Error(data.error?.message || `Erreur Mistral: ${mistralResponse.status}`);
     }
 
+    logEvent("info", "mistral.chat.ok", {
+      reqId,
+      model: mistralBody.model,
+      maxTokens: mistralBody.max_tokens,
+      messagesCount: messages.length,
+      durationMs: Date.now() - t0,
+    });
+
     return new Response(JSON.stringify(data), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
 
   } catch (err) {
-    console.error("Erreur Edge Function:", err.message);
-    return new Response(JSON.stringify({ error: err.message }), {
+    const message = err instanceof Error ? err.message : String(err);
+    logEvent("error", "edge.request.error", {
+      reqId,
+      durationMs: Date.now() - t0,
+      error: message,
+    });
+    return new Response(JSON.stringify({ error: message, req_id: reqId }), {
       status: 500,
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
