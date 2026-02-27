@@ -456,6 +456,12 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
 .carnet-pill.active{background:var(--moss);color:white;border-color:var(--moss);}
 .carnet-etapes-lbl{margin-left:auto;font-size:.62rem;color:var(--light);display:flex;align-items:center;gap:5px;}
 
+.carnet-edit-etapes{display:flex;gap:6px;flex-wrap:wrap;margin:10px 16px 0;}
+.carnet-edit-pill{padding:4px 11px;border-radius:20px;font-size:.65rem;font-weight:700;cursor:pointer;background:#273341;border:1px solid rgba(255,255,255,.16);color:#aeb9c7;transition:all .2s;}
+.carnet-edit-pill:hover{border-color:rgba(122,182,72,.45);color:#d4e2cf;}
+.carnet-edit-pill.active{background:rgba(122,182,72,.2);border-color:rgba(122,182,72,.45);color:#d9f0c8;}
+.carnet-edit-lbl{margin-left:auto;font-size:.62rem;color:#8ea1b8;display:flex;align-items:center;gap:5px;}
+
 .carnet-iframe, #vitrine-rendu {flex:1;border:none;}
 .carnet-code{flex:1;overflow-y:auto;padding:16px;background:#1e1e2e;
   font-family:monospace;font-size:.72rem;color:#cdd6f4;white-space:pre-wrap;
@@ -728,9 +734,10 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
     </div>
     <div class="carnet-panel" id="carnet-panel-code">
       <div id="carnet-lock-badge" style="margin:10px 16px 0;padding:7px 10px;border-radius:10px;background:rgba(122,182,72,.12);border:1px solid rgba(122,182,72,.3);font-size:.67rem;color:var(--sage);font-weight:600;">✍️ Édition verrouillée — Jour 0/5</div>
+      <div id="carnet-edit-etapes" class="carnet-edit-etapes"></div>
       <textarea class="carnet-code" id="carnet-code-edit" spellcheck="false" style="flex:1;resize:none;outline:none;border:none;"></textarea>
       <div style="padding:8px 16px;background:#1e1e2e;border-top:1px solid rgba(255,255,255,.08);flex-shrink:0;">
-        <div style="margin-bottom:8px;font-size:.62rem;color:#9ca3af;">Les changements s'appliquent uniquement à l'étape active.</div>
+        <div id="carnet-edit-note" style="margin-bottom:8px;font-size:.62rem;color:#9ca3af;">Les changements s'appliquent à l'étape sélectionnée (jusqu'au jour actif).</div>
         <button onclick="sauvegarderCarnet()" style="padding:7px 18px;background:#7ab648;border:none;border-radius:8px;color:white;font-family:'DM Sans',sans-serif;font-size:.75rem;font-weight:600;cursor:pointer;">💾 Sauvegarder</button>
       </div>
     </div>
@@ -762,6 +769,7 @@ let mentorEtapeAffichee = null;
 let mentorEtapeCourante = 0;
 let eleveVitrinesData = [];
 let eleveEtapeAffichee = null;
+let eleveEtapeEdition = null;
 let facDrawerEquipeId = null;
 let facDrawerVitrines = [];
 
@@ -1942,23 +1950,57 @@ function fermerCarnet(){
 async function sauvegarderCarnet(){
   if(!currentEquipe) return;
   const etapeActive = getEtapeActiveEquipe();
+  const etapeEdition = Math.max(0, Math.min(etapeActive, Number(eleveEtapeEdition ?? etapeActive)));
   const html = document.getElementById('carnet-code-edit').value;
   const htmlNettoye = normaliserBlocVitrine(html);
   const { data: vitrineEtapeActive } = await sb.from('vitrines')
     .select('id')
     .eq('equipe_id', currentEquipe.id)
-    .eq('etape', etapeActive)
+    .eq('etape', etapeEdition)
     .maybeSingle();
 
   let errSaveCarnet = null;
   if(vitrineEtapeActive?.id){
     errSaveCarnet = await updateVitrineSecurisee(vitrineEtapeActive.id, htmlNettoye);
   } else {
-    errSaveCarnet = await upsertVitrineSecurisee(currentEquipe.id, etapeActive, htmlNettoye);
+    errSaveCarnet = await upsertVitrineSecurisee(currentEquipe.id, etapeEdition, htmlNettoye);
   }
   if(signalerErreurSupabase('save-carnet', errSaveCarnet)) return;
-  showToast(`Vitrine sauvegardée sur Jour ${etapeActive}/5`, 'success');
+  showToast(`Vitrine sauvegardée sur Jour ${etapeEdition}/5`, 'success');
   await chargerCarnet();
+}
+
+function renderCarnetEditionEtapes(etapeActive){
+  const wrap = document.getElementById('carnet-edit-etapes');
+  if(!wrap) return;
+  const etapes = Array.from({ length: etapeActive + 1 }, (_, i) => i);
+  if(eleveEtapeEdition === null || Number(eleveEtapeEdition) > etapeActive){
+    eleveEtapeEdition = etapeActive;
+  }
+  wrap.innerHTML = `${etapes.map(etape=>
+    `<div class="carnet-edit-pill" id="carnet-edit-pill-${etape}" onclick="choisirCarnetEtapeEdition(${etape})">${etape===0?'Étape 0':'Jour '+etape}</div>`
+  ).join('')}<div class="carnet-edit-lbl">✍️ Étape à éditer</div>`;
+}
+
+function choisirCarnetEtapeEdition(etape){
+  const etapeActive = getEtapeActiveEquipe();
+  const cible = Math.max(0, Math.min(etapeActive, Number(etape)));
+  eleveEtapeEdition = cible;
+
+  document.querySelectorAll('.carnet-edit-pill').forEach(p=>p.classList.remove('active'));
+  const pill = document.getElementById('carnet-edit-pill-'+cible);
+  if(pill) pill.classList.add('active');
+
+  const section = eleveVitrinesData.find(v=>Number(v.etape)===cible);
+  const html = normaliserBlocVitrine(section?.html_section || '');
+  const edit = document.getElementById('carnet-code-edit');
+  if(edit) edit.value = html;
+  renderVitrine(html);
+
+  const lockBadge = document.getElementById('carnet-lock-badge');
+  if(lockBadge) lockBadge.textContent = `✍️ Édition autorisée — Jour ${cible}/5 (actuel: ${etapeActive}/5)`;
+  const editNote = document.getElementById('carnet-edit-note');
+  if(editNote) editNote.textContent = `Les changements seront enregistrés sur Jour ${cible}/5.`;
 }
 
 function renderCarnetEtapes(etapeActive){
@@ -2010,22 +2052,25 @@ async function chargerCarnet(){
     .select('*').eq('equipe_id',currentEquipe.id).order('etape',{ascending:true});
   eleveVitrinesData = vitrines || [];
   renderCarnetEtapes(etapeActive);
+  renderCarnetEditionEtapes(etapeActive);
 
   const etapeCible = [0,1,2,3,4,5].includes(Number(eleveEtapeAffichee))
     ? Number(eleveEtapeAffichee)
     : etapeActive;
 
+  const etapeEdition = Number(eleveEtapeEdition);
+  if(Number.isNaN(etapeEdition) || etapeEdition > etapeActive || etapeEdition < 0){
+    eleveEtapeEdition = etapeActive;
+  }
+
   if(!vitrines||vitrines.length===0){
     afficherVitrineTeamEtape(etapeCible);
-    document.getElementById('carnet-code-edit').value='';
+    choisirCarnetEtapeEdition(eleveEtapeEdition);
     return;
   }
 
   afficherVitrineTeamEtape(etapeCible);
-  const sectionActive = vitrines.find(v=>Number(v.etape)===etapeActive);
-  document.getElementById('carnet-code-edit').value=normaliserBlocVitrine(sectionActive?.html_section||'');
-  const lockBadge = document.getElementById('carnet-lock-badge');
-  if(lockBadge) lockBadge.textContent = `✍️ Édition verrouillée — Jour ${etapeActive}/5`;
+  choisirCarnetEtapeEdition(eleveEtapeEdition);
   // Sous-titre
   document.getElementById('carnet-sub').textContent=
     `${currentEquipe.nom||currentEquipe.code_equipe} — Jour ${etapeActive}/5`;
