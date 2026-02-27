@@ -1,62 +1,179 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>SPARK ⚡ — Nouvelle Génération</title>
-<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,700;0,9..144,900&family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600&display=swap" rel="stylesheet">
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<style>
-*{margin:0;padding:0;box-sizing:border-box;}
-:root{
-  --moss:#3d5c3a;--sage:#5a7a5a;--leaf:#7ab648;
-  --warm:#faf7f2;--terra:#d4694a;--sun:#f0c040;
-  --text:#2c3a28;--mid:#5a6b54;--light:#8fa085;
-  --bg:#e8e2d0;--border:rgba(44,58,40,0.12);--shadow:rgba(44,58,40,0.08);
-  --mentor:#7b5ea7;--mentor-l:rgba(123,94,167,0.09);--mentor-b:rgba(123,94,167,0.22);
-  --fac:#1d6fa4;--fac-l:rgba(29,111,164,0.09);--fac-b:rgba(29,111,164,0.22);
+async function initMentor(){
+  const av=currentUser.avatar||'🎓';
+  const ps=currentUser.pseudo||'Mentor';
+  ['mentor-h-av','mentor-sid-av'].forEach(id=>document.getElementById(id).textContent=av);
+  ['mentor-h-name','mentor-sid-name'].forEach(id=>document.getElementById(id).textContent=ps);
+  document.getElementById('mentor-sid-code').textContent=currentUser.code;
+
+  const{data:a}=await sb.from('mentor_equipes')
+    .select('equipe_id,equipes(id,nom,college,etape_courante,code_equipe)')
+    .eq('mentor_id',currentUser.id);
+
+  const list=document.getElementById('mentor-teams-list');
+  list.innerHTML='';
+  if(a&&a.length>0){
+    a.forEach((x,i)=>{
+      const eq=x.equipes;
+      const div=document.createElement('div');
+      div.className='ms-team'+(i===0?' sel':'');
+      div.innerHTML=`<div class="ms-team-av" style="background:linear-gradient(135deg,#7ab648,#3d5c3a);">🌿</div><div><div class="ms-team-name">${eq.nom||eq.code_equipe}</div><div class="ms-team-day">Jour ${eq.etape_courante}/5</div></div>`;
+      div.onclick=()=>loadMentorTeam(eq,div);
+      list.appendChild(div);
+    });
+    await loadMentorTeam(a[0].equipes,list.firstChild);
+  }
+  go('mentor');
 }
-html,body{height:100%;overflow:hidden;}
-body.ready{visibility:visible!important;}
-body{visibility:hidden;}
-body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);display:flex;flex-direction:column;}
-body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
-  background:radial-gradient(ellipse 60% 50% at 80% 10%,rgba(122,182,72,.07) 0%,transparent 60%),
-    radial-gradient(ellipse 40% 60% at 10% 90%,rgba(139,99,71,.05) 0%,transparent 60%);}
 
-.screen{display:none;flex:1;flex-direction:column;overflow:hidden;position:relative;z-index:1;}
-.screen.on{display:flex;}
+async function loadMentorTeam(eq,el){
+  document.querySelectorAll('.ms-team').forEach(t=>t.classList.remove('sel'));
+  el.classList.add('sel');
+  selectedEquipeId=eq.id;
+  document.getElementById('mentor-team-name').textContent=`🌿 ${eq.nom||eq.code_equipe}`;
+  document.getElementById('mentor-team-info').textContent=`${eq.college||''} · Jour ${eq.etape_courante}/5`;
+  const pg=document.getElementById('mentor-prog');
+  pg.innerHTML='';
+  for(let i=0;i<5;i++){const d=document.createElement('div');d.className='pdot '+(i<eq.etape_courante?'d':i===eq.etape_courante?'a':'p');pg.appendChild(d);}
+  await chargerVitrinesMentor(eq.id);
+  listenVitrinesMentor(eq.id);
 
-/* LOGIN */
-#s-login{align-items:center;justify-content:center;padding:12px;}
-.login-card{background:white;border-radius:28px;width:min(420px,calc(100vw - 24px));max-height:calc(100vh - 24px);display:flex;flex-direction:column;
-  box-shadow:0 12px 50px rgba(44,58,40,.13);border:1px solid var(--border);overflow:hidden;
-  animation:cardIn .5s cubic-bezier(.175,.885,.32,1.275);}
-@keyframes cardIn{from{opacity:0;transform:translateY(24px) scale(.97);}to{opacity:1;transform:none;}}
-.login-top{background:var(--moss);padding:28px 32px 22px;text-align:center;position:relative;overflow:hidden;}
-.login-top::before{content:'';position:absolute;inset:0;
-  background:radial-gradient(ellipse 80% 60% at 50% 120%,rgba(122,182,72,.18) 0%,transparent 70%);}
-.login-logo{font-family:'Fraunces',serif;font-weight:900;font-size:2.2rem;
-  color:var(--sun);letter-spacing:2px;line-height:1;position:relative;}
-.login-sub{font-size:.72rem;color:rgba(245,240,232,.4);font-style:italic;letter-spacing:1px;margin-top:4px;position:relative;}
-.login-body{padding:26px 30px;overflow-y:auto;}
+  if(document.getElementById('panel-conv-mentor')?.classList.contains('open')){
+    await ouvrirPanelMentor('conv');
+  }
+}
 
-.role-cards{display:flex;flex-direction:column;gap:9px;margin-bottom:20px;}
-.role-card{display:flex;align-items:center;gap:13px;padding:13px 15px;border-radius:15px;
-  border:2px solid var(--border);cursor:pointer;transition:all .22s;background:var(--warm);}
-.role-card:hover{transform:translateX(4px);}
-.role-card.active-eleve{border-color:var(--terra);background:rgba(212,105,74,.06);box-shadow:0 0 0 4px rgba(212,105,74,.07);}
-.role-card.active-mentor{border-color:var(--mentor);background:var(--mentor-l);box-shadow:0 0 0 4px rgba(123,94,167,.07);}
-.role-card.active-fac{border-color:var(--fac);background:var(--fac-l);box-shadow:0 0 0 4px rgba(29,111,164,.07);}
-.rc-icon{width:40px;height:40px;border-radius:12px;display:flex;align-items:center;justify-content:center;
-  font-size:1.25rem;flex-shrink:0;background:rgba(0,0,0,.04);}
-.role-card.active-eleve .rc-icon{background:rgba(212,105,74,.14);}
-.role-card.active-mentor .rc-icon{background:var(--mentor-l);}
-.role-card.active-fac .rc-icon{background:var(--fac-l);}
-.rc-text{flex:1;}
-.rc-title{font-family:'Fraunces',serif;font-weight:700;font-size:.88rem;color:var(--text);}
-.rc-desc{font-size:.63rem;color:var(--light);margin-top:2px;line-height:1.4;}
-.rc-check{width:20px;height:20px;border-radius:50%;border:2px solid var(--border);
+async function chargerVitrinesMentor(eqId){
+  const { data: vitrines } = await sb.from('vitrines')
+    .select('*').eq('equipe_id', eqId).order('etape', { ascending: true });
+
+  const iframe = document.getElementById('mentor-vitrine');
+  if(!iframe) return;
+  const doc = iframe.contentDocument || iframe.contentWindow.document;
+
+  if(!vitrines || vitrines.length===0){
+    doc.open();
+    doc.write('<p style="font-family:sans-serif;padding:20px;color:#888;">Aucune vitrine générée pour cette équipe.</p>');
+    doc.close();
+    return;
+  }
+
+  const htmlComplet=`<!DOCTYPE html><html lang="fr"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>Vitrine Mentor</title></head><body style="margin:0;padding:0;">${vitrines.map(v=>normaliserBlocVitrine(v.html_section||'')).join('\n')}</body></html>`;
+  doc.open();
+  doc.write(htmlComplet);
+  doc.close();
+}
+
+function listenVitrinesMentor(eqId){
+  if(mentorVitrineChannel){
+    try{ sb.removeChannel(mentorVitrineChannel); }catch(_){ }
+    mentorVitrineChannel = null;
+  }
+
+  mentorVitrineChannel = sb.channel('vitrine-mentor-'+eqId)
+    .on('postgres_changes',{event:'INSERT',schema:'public',table:'vitrines',filter:`equipe_id=eq.${eqId}`}, async ()=>{
+      await chargerVitrinesMentor(eqId);
+      if(!document.getElementById('panel-canal-mentor')?.classList.contains('open')){
+        const badge=document.getElementById('mentor-canal-notif');
+        if(badge) badge.style.display='inline-block';
+      }
+    })
+    .on('postgres_changes',{event:'UPDATE',schema:'public',table:'vitrines',filter:`equipe_id=eq.${eqId}`}, async ()=>{
+      await chargerVitrinesMentor(eqId);
+      if(!document.getElementById('panel-canal-mentor')?.classList.contains('open')){
+        const badge=document.getElementById('mentor-canal-notif');
+        if(badge) badge.style.display='inline-block';
+      }
+    })
+    .subscribe();
+}
+
+async function chargerConversationMentor(eqId){
+  const c=document.getElementById('mentor-conv-msgs');
+  if(!c) return;
+  const { data: msgs } = await sb.from('conversations')
+    .select('*').eq('equipe_id',eqId).eq('statut','visible')
+    .order('created_at',{ascending:true});
+
+  c.innerHTML='';
+  if(!msgs || msgs.length===0){
+    c.innerHTML='<div class="read-note">📖 Aucun message pour l\'instant</div>';
+    return;
+  }
+
+  msgs.forEach(m=>{
+    const d=document.createElement('div');
+    if(m.role==='assistant'){d.className='msg spark-msg';d.innerHTML=`<div class="msg-av">⚡</div><div class="msg-col"><div class="msg-who">SPARK ⚡</div><div class="msg-bubble">${formatTxt(m.message)}</div></div>`;}
+    else if(m.role==='user'){d.className='msg eleve-msg';d.innerHTML=`<div class="msg-av">👥</div><div class="msg-col"><div class="msg-who">${m.pseudo||'La Team'}</div><div class="msg-bubble">${formatTxt(m.message)}</div></div>`;}
+    else if(m.role==='mentor'){d.className='msg mentor-msg';d.innerHTML=`<div class="msg-av">🎓</div><div class="msg-col"><div class="msg-who">${m.pseudo||'Mentor'}</div><div class="msg-bubble">${formatTxt(m.message)}</div></div>`;}
+    c.appendChild(d);
+  });
+  c.scrollTop=c.scrollHeight;
+}
+
+function alimenterCanalMentor(){
+  const c=document.getElementById('mentor-canal-msgs');
+  if(!c) return;
+  c.innerHTML='<div class="read-note">🎓 Envoie un message à l\'équipe sélectionnée. Il sera validé par le facilitateur avant affichage.</div>';
+}
+
+async function ouvrirPanelMentor(id){
+  const overlay=document.getElementById('mentor-panel-overlay');
+  const target=id==='conv'?document.getElementById('panel-conv-mentor'):document.getElementById('panel-canal-mentor');
+  if(!target) return;
+  const wasOpen=target.classList.contains('open');
+
+  document.querySelectorAll('.mentor-panel').forEach(p=>p.classList.remove('open'));
+
+  if(wasOpen){
+    if(overlay) overlay.style.display='none';
+    if(mentorConversationChannel){
+      try{ sb.removeChannel(mentorConversationChannel); }catch(_){ }
+      mentorConversationChannel = null;
+    }
+    return;
+  }
+
+  target.classList.add('open');
+  if(overlay) overlay.style.display='block';
+
+  if(id==='canal'){
+    const badge=document.getElementById('mentor-canal-notif');
+    if(badge) badge.style.display='none';
+    alimenterCanalMentor();
+    if(mentorConversationChannel){
+      try{ sb.removeChannel(mentorConversationChannel); }catch(_){ }
+      mentorConversationChannel = null;
+    }
+    return;
+  }
+
+  if(!selectedEquipeId) return;
+  await chargerConversationMentor(selectedEquipeId);
+
+  if(mentorConversationChannel){
+    try{ sb.removeChannel(mentorConversationChannel); }catch(_){ }
+    mentorConversationChannel = null;
+  }
+
+  mentorConversationChannel = sb.channel('mentor-conv-'+selectedEquipeId)
+    .on('postgres_changes',{event:'INSERT',schema:'public',table:'conversations',filter:`equipe_id=eq.${selectedEquipeId}`}, async ()=>{
+      await chargerConversationMentor(selectedEquipeId);
+    })
+    .subscribe();
+}
+
+function fermerPanelsMentor(){
+  document.querySelectorAll('.mentor-panel').forEach(p=>p.classList.remove('open'));
+  const overlay=document.getElementById('mentor-panel-overlay');
+  if(overlay) overlay.style.display='none';
+  if(mentorConversationChannel){
+    try{ sb.removeChannel(mentorConversationChannel); }catch(_){ }
+    mentorConversationChannel = null;
+  }
+}
   flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:.6rem;transition:all .22s;}
 .role-card.active-eleve .rc-check{background:var(--terra);border-color:var(--terra);color:white;}
 .role-card.active-mentor .rc-check{background:var(--mentor);border-color:var(--mentor);color:white;}
@@ -263,6 +380,21 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
 .compose-warn{font-size:.6rem;color:var(--mentor);opacity:.6;display:flex;align-items:center;gap:4px;}
 .btn-mentor-send{padding:8px 18px;background:var(--mentor);border:none;border-radius:10px;color:white;font-family:'DM Sans',sans-serif;font-size:.75rem;font-weight:600;cursor:pointer;transition:all .2s;}
 .btn-mentor-send:hover{background:#6a4f90;transform:translateY(-1px);}
+
+.mentor-main{position:relative;flex:1;overflow:hidden;display:flex;flex-direction:column;background:#1a0f2e;}
+.mentor-team-bar{height:44px;display:flex;align-items:center;justify-content:space-between;padding:0 20px;background:#1e1035;border-bottom:1px solid rgba(123,94,167,.15);flex-shrink:0;}
+.mentor-vitrine-etapes{display:flex;gap:6px;padding:10px 16px;flex-shrink:0;border-bottom:1px solid rgba(123,94,167,.15);flex-wrap:wrap;background:#f7f2ff;}
+.mentor-vitrine-pill{padding:4px 12px;border-radius:20px;font-size:.67rem;font-weight:600;cursor:pointer;background:white;border:1px solid rgba(123,94,167,.28);color:var(--mentor);transition:all .2s;}
+.mentor-vitrine-pill.active{background:var(--mentor);color:white;border-color:var(--mentor);}
+.mentor-vitrine{flex:1;border:none;width:100%;background:white;}
+.mentor-float-btns{position:absolute;right:20px;top:50%;transform:translateY(-50%);display:flex;flex-direction:column;gap:10px;z-index:15;}
+.mentor-float-btn{background:rgba(30,16,53,.92);border:1px solid rgba(123,94,167,.3);color:#d4b8f8;cursor:pointer;border-radius:14px;padding:10px 16px;font-size:.75rem;font-weight:600;transition:all .3s;display:flex;align-items:center;gap:8px;font-family:'DM Sans',sans-serif;}
+.mentor-float-btn:hover{background:rgba(46,24,80,.96);border-color:rgba(123,94,167,.5);transform:translateX(-2px);}
+.mentor-panel{position:absolute;top:0;right:0;bottom:0;width:320px;transform:translateX(100%);transition:transform .4s;z-index:20;background:white;display:flex;flex-direction:column;box-shadow:-8px 0 40px rgba(0,0,0,.4);}
+.mentor-panel.open{transform:translateX(0);}
+.mentor-panel-hdr{padding:12px 16px;border-bottom:1px solid rgba(0,0,0,.07);display:flex;align-items:center;gap:8px;flex-shrink:0;justify-content:space-between;}
+.mentor-panel-msgs{flex:1;overflow-y:auto;padding:10px;display:flex;flex-direction:column;gap:8px;background:#faf8ff;}
+.mentor-canal-badge{margin-left:auto;background:var(--mentor);color:white;font-size:.58rem;font-weight:700;padding:2px 6px;border-radius:20px;display:none;}
 
 /* VUE FACILITATEUR */
 #s-fac{flex-direction:column;}
@@ -565,24 +697,48 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
         <div><div class="ms-id-name" id="mentor-sid-name">Mentor</div><div class="ms-id-code" id="mentor-sid-code">—</div></div>
       </div>
     </div>
-    <div class="mentor-chat">
-      <div class="mentor-chat-hdr">
+    <div class="mentor-main">
+      <div class="mentor-team-bar">
         <div><div class="mch-name" id="mentor-team-name">Sélectionnez une équipe</div><div class="mch-day" id="mentor-team-info">—</div></div>
         <div class="prog-dots" id="mentor-prog"></div>
       </div>
-      <div class="mentor-msgs" id="mentor-messages"><div class="read-note">📖 Sélectionnez une équipe</div></div>
-      <div class="quick-reps">
-        <div class="qr" onclick="fillCompose(this)">👏 Bravo, continuez !</div>
-        <div class="qr" onclick="fillCompose(this)">💡 Creusez vos idées</div>
-        <div class="qr" onclick="fillCompose(this)">🎯 Bel effort d'équipe</div>
-        <div class="qr" onclick="fillCompose(this)">❓ Dites-m'en plus</div>
+      <div id="mentor-vitrine-etapes" class="mentor-vitrine-etapes"></div>
+      <iframe id="mentor-vitrine" class="mentor-vitrine"></iframe>
+
+      <div class="mentor-float-btns">
+        <button id="btn-mentor-conv" class="mentor-float-btn" onclick="ouvrirPanelMentor('conv')">💬 Conversation SPARK</button>
+        <button id="btn-mentor-canal" class="mentor-float-btn" onclick="ouvrirPanelMentor('canal')">🎓 Canal Mentor <span id="mentor-canal-notif" class="mentor-canal-badge">●</span></button>
       </div>
-      <div class="mentor-compose">
-        <div class="compose-lbl"><span id="compose-av">🦁</span> Écrire à l'équipe</div>
-        <textarea class="compose-ta" id="mentor-compose-ta" placeholder="Votre message d'encouragement..." onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendMentorMsg();}"></textarea>
-        <div class="compose-foot">
-          <div class="compose-warn">🔒 Soumis au facilitateur avant affichage</div>
-          <button class="btn-mentor-send" onclick="sendMentorMsg()">Envoyer ✉️</button>
+
+      <div id="mentor-panel-overlay" style="position:absolute;inset:0;background:rgba(0,0,0,.3);z-index:10;display:none;" onclick="fermerPanelsMentor()"></div>
+
+      <div id="panel-conv-mentor" class="mentor-panel">
+        <div class="mentor-panel-hdr">
+          <strong>💬 Conversation SPARK</strong>
+          <button class="btn-drawer-close" onclick="fermerPanelsMentor()">✕</button>
+        </div>
+        <div id="mentor-conv-msgs" class="mentor-panel-msgs"><div class="read-note">📖 Sélectionnez une équipe</div></div>
+      </div>
+
+      <div id="panel-canal-mentor" class="mentor-panel">
+        <div class="mentor-panel-hdr">
+          <strong>🎓 Canal Mentor</strong>
+          <button class="btn-drawer-close" onclick="fermerPanelsMentor()">✕</button>
+        </div>
+        <div id="mentor-canal-msgs" class="mentor-panel-msgs"></div>
+        <div class="quick-reps" style="padding:10px 12px 0;">
+          <div class="qr" onclick="fillCompose(this)">👏 Bravo, continuez !</div>
+          <div class="qr" onclick="fillCompose(this)">💡 Creusez vos idées</div>
+          <div class="qr" onclick="fillCompose(this)">🎯 Bel effort d'équipe</div>
+          <div class="qr" onclick="fillCompose(this)">❓ Dites-m'en plus</div>
+        </div>
+        <div class="mentor-compose" style="margin:10px 12px 12px;">
+          <div class="compose-lbl">🎓 Écrire à l'équipe</div>
+          <textarea class="compose-ta" id="mentor-compose-ta" placeholder="Votre message d'encouragement..." onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendMentorMsg();}"></textarea>
+          <div class="compose-foot">
+            <div class="compose-warn">🔒 Soumis au facilitateur avant affichage</div>
+            <button class="btn-mentor-send" onclick="sendMentorMsg()">Envoyer ✉️</button>
+          </div>
         </div>
       </div>
     </div>
@@ -644,8 +800,10 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
       <iframe class="carnet-iframe" id="vitrine-rendu"></iframe>
     </div>
     <div class="carnet-panel" id="carnet-panel-code">
+      <div id="carnet-lock-badge" style="margin:10px 16px 0;padding:7px 10px;border-radius:10px;background:rgba(122,182,72,.12);border:1px solid rgba(122,182,72,.3);font-size:.67rem;color:var(--sage);font-weight:600;">✍️ Édition verrouillée — Jour 0/5</div>
       <textarea class="carnet-code" id="carnet-code-edit" spellcheck="false" style="flex:1;resize:none;outline:none;border:none;"></textarea>
       <div style="padding:8px 16px;background:#1e1e2e;border-top:1px solid rgba(255,255,255,.08);flex-shrink:0;">
+        <div style="margin-bottom:8px;font-size:.62rem;color:#9ca3af;">Les changements s'appliquent uniquement à l'étape active.</div>
         <button onclick="sauvegarderCarnet()" style="padding:7px 18px;background:#7ab648;border:none;border-radius:8px;color:white;font-family:'DM Sans',sans-serif;font-size:.75rem;font-weight:600;cursor:pointer;">💾 Sauvegarder</button>
       </div>
     </div>
@@ -669,6 +827,16 @@ let conversationHistory = [];
 let masterPrompt = '';
 let selectedEquipeId = null;
 let resetEquipeId = null;
+let mentorVitrineChannel = null;
+let mentorConversationChannel = null;
+let mentorVitrinesData = [];
+let mentorEtapeAffichee = null;
+
+function getEtapeActiveEquipe(){
+  const etape = Number(currentEquipe?.etape_courante ?? 0);
+  if(Number.isNaN(etape)) return 0;
+  return Math.max(0, Math.min(5, etape));
+}
 
 // ── FONCTIONS DE LOGIN ──
 
@@ -1093,6 +1261,7 @@ function detecterCouleurDepuisTexte(texte){
 
 async function appliquerFallbackVisuelLocal(demande){
   if(!currentEquipe) return false;
+  const etapeActive = getEtapeActiveEquipe();
 
   const texteDemande=(demande||'').toLowerCase();
   const couleur=detecterCouleurDepuisTexte(texteDemande);
@@ -1104,15 +1273,14 @@ async function appliquerFallbackVisuelLocal(demande){
   const cibleTitre=cibleTitreExpr;
 
   let htmlSource=document.getElementById('carnet-code-edit')?.value||'';
-  let derniereVitrine=null;
+  let vitrineEtapeActive=null;
   if(!htmlSource.trim()){
     const { data: vitrineDb } = await sb.from('vitrines')
       .select('id,etape,html_section')
       .eq('equipe_id', currentEquipe.id)
-      .order('etape', { ascending: false })
-      .limit(1)
+      .eq('etape', etapeActive)
       .maybeSingle();
-    derniereVitrine = vitrineDb || null;
+    vitrineEtapeActive = vitrineDb || null;
     htmlSource = vitrineDb?.html_section || '';
   }
   if(!htmlSource.trim()){
@@ -1146,12 +1314,11 @@ async function appliquerFallbackVisuelLocal(demande){
   const htmlNettoye=normaliserBlocVitrine(htmlFinal);
   if(!htmlNettoye) return false;
 
-  if(derniereVitrine?.id){
-    const errUpdateFallback = await updateVitrineSecurisee(derniereVitrine.id, htmlNettoye);
+  if(vitrineEtapeActive?.id){
+    const errUpdateFallback = await updateVitrineSecurisee(vitrineEtapeActive.id, htmlNettoye);
     if(signalerErreurSupabase('fallback-update', errUpdateFallback)) return false;
   } else {
-    const etape = Number(currentEquipe.etape_courante || 0);
-    const errInsertFallback = await upsertVitrineSecurisee(currentEquipe.id, etape, htmlNettoye);
+    const errInsertFallback = await upsertVitrineSecurisee(currentEquipe.id, etapeActive, htmlNettoye);
     if(signalerErreurSupabase('fallback-upsert', errInsertFallback)) return false;
   }
   await chargerCarnet();
@@ -1160,17 +1327,17 @@ async function appliquerFallbackVisuelLocal(demande){
 async function callMistral(equipeId, etapeSlug, options = {}) {
   const { forceHtml = false, latestUserRequest = '', strictHtmlOnly = false } = options;
   const actorCode = String(currentUser?.code || '').trim().toUpperCase();
+  const etapeActive = getEtapeActiveEquipe();
 
   // 1. On récupère le contenu actuel du carnet pour la mémoire de l'IA
   let carnetPhysique = document.getElementById('carnet-code-edit')?.value || '';
   if (!carnetPhysique.trim() && currentEquipe?.id) {
-    const { data: derniereVitrine } = await sb.from('vitrines')
+    const { data: vitrineEtapeActive } = await sb.from('vitrines')
       .select('html_section')
       .eq('equipe_id', currentEquipe.id)
-      .order('etape', { ascending: false })
-      .limit(1)
+      .eq('etape', etapeActive)
       .maybeSingle();
-    carnetPhysique = derniereVitrine?.html_section || '';
+    carnetPhysique = vitrineEtapeActive?.html_section || '';
   }
   if (!carnetPhysique.trim()) carnetPhysique = "Le carnet est encore vide.";
   const consigneSortie = `
@@ -1206,7 +1373,7 @@ MODE STRICT HTML UNIQUEMENT :
     action: 'mistral_chat',
     actor_code: actorCode || null,
     equipe_id: equipeId,
-    etape_slug: String(etapeSlug), 
+    etape_slug: String(etapeActive), 
     system_instruction: { 
       parts: [{ 
         text: masterPrompt + `\n\nCONTEXTE ACTUEL DU PROJET (CODE HTML) :\n${carnetPhysique}\n\nConsigne : Aide l'élève en te basant sur ce qui est déjà écrit dans le carnet ci-dessus.\n${consigneSortie}${consigneRelance}${consigneStrict}` 
@@ -1235,9 +1402,11 @@ async function getEdgeAuthHeaders(){
   try {
     const { data } = await sb.auth.getSession();
     const token = data?.session?.access_token;
-    return token ? { 'Authorization': `Bearer ${token}` } : {};
+    return token
+      ? { 'Authorization': `Bearer ${token}` }
+      : { 'Authorization': `Bearer ${SUPABASE_KEY}` };
   } catch {
-    return {};
+    return { 'Authorization': `Bearer ${SUPABASE_KEY}` };
   }
 }
 
@@ -1422,7 +1591,7 @@ function listenMentorMessages(){
 async function initMentor(){
   const av=currentUser.avatar||'🎓';
   const ps=currentUser.pseudo||'Mentor';
-  ['mentor-h-av','mentor-sid-av','compose-av'].forEach(id=>document.getElementById(id).textContent=av);
+  ['mentor-h-av','mentor-sid-av'].forEach(id=>document.getElementById(id).textContent=av);
   ['mentor-h-name','mentor-sid-name'].forEach(id=>document.getElementById(id).textContent=ps);
   document.getElementById('mentor-sid-code').textContent=currentUser.code;
 
@@ -1448,32 +1617,186 @@ async function initMentor(){
 
 async function loadMentorTeam(eq,el){
   document.querySelectorAll('.ms-team').forEach(t=>t.classList.remove('sel'));
-  el.classList.add('sel'); selectedEquipeId=eq.id;
+  el.classList.add('sel');
+  selectedEquipeId=eq.id;
   document.getElementById('mentor-team-name').textContent=`🌿 ${eq.nom||eq.code_equipe}`;
   document.getElementById('mentor-team-info').textContent=`${eq.college||''} · Jour ${eq.etape_courante}/5`;
   const pg=document.getElementById('mentor-prog');
   pg.innerHTML='';
   for(let i=0;i<5;i++){const d=document.createElement('div');d.className='pdot '+(i<eq.etape_courante?'d':i===eq.etape_courante?'a':'p');pg.appendChild(d);}
-  const{data:msgs}=await sb.from('conversations').select('*').eq('equipe_id',eq.id).eq('statut','visible').order('created_at',{ascending:true});
-  const c=document.getElementById('mentor-messages');
-  c.innerHTML='<div class="read-note">📖 Conversation en lecture seule</div>';
-  if(msgs) msgs.forEach(m=>{
-    const d=document.createElement('div');
-    if(m.role==='assistant'){d.className='msg spark-msg';d.innerHTML=`<div class="msg-av">⚡</div><div class="msg-col"><div class="msg-who">SPARK ⚡</div><div class="msg-bubble">${formatTxt(m.message)}</div></div>`;}
-    else if(m.role==='user'){d.className='msg eleve-msg';d.innerHTML=`<div class="msg-av">👥</div><div class="msg-col"><div class="msg-who">La Team</div><div class="msg-bubble">${formatTxt(m.message)}</div></div>`;}
-    c.appendChild(d);
-  });
-  c.scrollTop=c.scrollHeight;
-sb.channel('mentor-conv-'+eq.id)
-  .on('postgres_changes',{event:'INSERT',schema:'public',table:'conversations',filter:`equipe_id=eq.${eq.id}`},p=>{
-    const m=p.new;
+  await chargerVitrinesMentor(eq.id, Number(eq.etape_courante || 0));
+  listenVitrinesMentor(eq.id);
+
+  if(document.getElementById('panel-conv-mentor')?.classList.contains('open')){
+    await ouvrirPanelMentor('conv');
+  }
+}
+
+function afficherVitrineMentorEtape(etape){
+  const iframe = document.getElementById('mentor-vitrine');
+  if(!iframe) return;
+  const doc = iframe.contentDocument || iframe.contentWindow.document;
+
+  const vitrine = mentorVitrinesData.find(v=>Number(v.etape)===Number(etape));
+  if(!vitrine){
+    doc.open();
+    doc.write('<p style="font-family:sans-serif;padding:20px;color:#888;">Aucune section pour cette étape.</p>');
+    doc.close();
+    return;
+  }
+
+  mentorEtapeAffichee = Number(vitrine.etape);
+  document.querySelectorAll('.mentor-vitrine-pill').forEach(p=>p.classList.remove('active'));
+  const activePill=document.getElementById('mentor-pill-'+mentorEtapeAffichee);
+  if(activePill) activePill.classList.add('active');
+
+  const htmlComplet=`<!DOCTYPE html><html lang="fr"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>Vitrine Mentor</title></head><body style="margin:0;padding:0;">${normaliserBlocVitrine(vitrine.html_section||'')}</body></html>`;
+  doc.open();
+  doc.write(htmlComplet);
+  doc.close();
+}
+
+async function chargerVitrinesMentor(eqId, etapePreferee = null){
+  const { data: vitrines } = await sb.from('vitrines')
+    .select('*').eq('equipe_id', eqId).order('etape', { ascending: true });
+
+  const pillsWrap = document.getElementById('mentor-vitrine-etapes');
+  const iframe = document.getElementById('mentor-vitrine');
+  if(!iframe || !pillsWrap) return;
+  const doc = iframe.contentDocument || iframe.contentWindow.document;
+
+  if(!vitrines || vitrines.length===0){
+    mentorVitrinesData = [];
+    mentorEtapeAffichee = null;
+    pillsWrap.innerHTML='';
+    doc.open();
+    doc.write('<p style="font-family:sans-serif;padding:20px;color:#888;">Aucune vitrine générée pour cette équipe.</p>');
+    doc.close();
+    return;
+  }
+
+  mentorVitrinesData = vitrines;
+  pillsWrap.innerHTML = vitrines
+    .map(v=>`<div class="mentor-vitrine-pill" id="mentor-pill-${v.etape}" onclick="afficherVitrineMentorEtape(${v.etape})">${Number(v.etape)===0?'Étape 0':'Étape '+v.etape}</div>`)
+    .join('');
+
+  const etapesDisponibles = vitrines.map(v=>Number(v.etape));
+  const etapeCible = etapesDisponibles.includes(Number(etapePreferee))
+    ? Number(etapePreferee)
+    : etapesDisponibles.includes(Number(mentorEtapeAffichee))
+      ? Number(mentorEtapeAffichee)
+      : Number(vitrines[0].etape);
+
+  afficherVitrineMentorEtape(etapeCible);
+}
+
+function listenVitrinesMentor(eqId){
+  if(mentorVitrineChannel){
+    try{ sb.removeChannel(mentorVitrineChannel); }catch(_){ }
+    mentorVitrineChannel = null;
+  }
+
+  mentorVitrineChannel = sb.channel('vitrine-mentor-'+eqId)
+    .on('postgres_changes',{event:'INSERT',schema:'public',table:'vitrines',filter:`equipe_id=eq.${eqId}`}, async ()=>{
+      await chargerVitrinesMentor(eqId);
+      if(!document.getElementById('panel-canal-mentor')?.classList.contains('open')){
+        const badge=document.getElementById('mentor-canal-notif');
+        if(badge) badge.style.display='inline-block';
+      }
+    })
+    .on('postgres_changes',{event:'UPDATE',schema:'public',table:'vitrines',filter:`equipe_id=eq.${eqId}`}, async ()=>{
+      await chargerVitrinesMentor(eqId);
+      if(!document.getElementById('panel-canal-mentor')?.classList.contains('open')){
+        const badge=document.getElementById('mentor-canal-notif');
+        if(badge) badge.style.display='inline-block';
+      }
+    })
+    .subscribe();
+}
+
+async function chargerConversationMentor(eqId){
+  const c=document.getElementById('mentor-conv-msgs');
+  if(!c) return;
+  const { data: msgs } = await sb.from('conversations')
+    .select('*').eq('equipe_id',eqId).eq('statut','visible')
+    .order('created_at',{ascending:true});
+
+  c.innerHTML='';
+  if(!msgs || msgs.length===0){
+    c.innerHTML='<div class="read-note">📖 Aucun message pour l\'instant</div>';
+    return;
+  }
+
+  msgs.forEach(m=>{
     const d=document.createElement('div');
     if(m.role==='assistant'){d.className='msg spark-msg';d.innerHTML=`<div class="msg-av">⚡</div><div class="msg-col"><div class="msg-who">SPARK ⚡</div><div class="msg-bubble">${formatTxt(m.message)}</div></div>`;}
     else if(m.role==='user'){d.className='msg eleve-msg';d.innerHTML=`<div class="msg-av">👥</div><div class="msg-col"><div class="msg-who">${m.pseudo||'La Team'}</div><div class="msg-bubble">${formatTxt(m.message)}</div></div>`;}
     else if(m.role==='mentor'){d.className='msg mentor-msg';d.innerHTML=`<div class="msg-av">🎓</div><div class="msg-col"><div class="msg-who">${m.pseudo||'Mentor'}</div><div class="msg-bubble">${formatTxt(m.message)}</div></div>`;}
     c.appendChild(d);
-    c.scrollTop=c.scrollHeight;
-  }).subscribe();
+  });
+  c.scrollTop=c.scrollHeight;
+}
+
+function alimenterCanalMentor(){
+  const c=document.getElementById('mentor-canal-msgs');
+  if(!c) return;
+  c.innerHTML='<div class="read-note">🎓 Envoie un message à l\'équipe sélectionnée. Il sera validé par le facilitateur avant affichage.</div>';
+}
+
+async function ouvrirPanelMentor(id){
+  const overlay=document.getElementById('mentor-panel-overlay');
+  const target=id==='conv'?document.getElementById('panel-conv-mentor'):document.getElementById('panel-canal-mentor');
+  if(!target) return;
+  const wasOpen=target.classList.contains('open');
+
+  document.querySelectorAll('.mentor-panel').forEach(p=>p.classList.remove('open'));
+
+  if(wasOpen){
+    if(overlay) overlay.style.display='none';
+    if(mentorConversationChannel){
+      try{ sb.removeChannel(mentorConversationChannel); }catch(_){ }
+      mentorConversationChannel = null;
+    }
+    return;
+  }
+
+  target.classList.add('open');
+  if(overlay) overlay.style.display='block';
+
+  if(id==='canal'){
+    const badge=document.getElementById('mentor-canal-notif');
+    if(badge) badge.style.display='none';
+    alimenterCanalMentor();
+    if(mentorConversationChannel){
+      try{ sb.removeChannel(mentorConversationChannel); }catch(_){ }
+      mentorConversationChannel = null;
+    }
+    return;
+  }
+
+  if(!selectedEquipeId) return;
+  await chargerConversationMentor(selectedEquipeId);
+
+  if(mentorConversationChannel){
+    try{ sb.removeChannel(mentorConversationChannel); }catch(_){ }
+    mentorConversationChannel = null;
+  }
+
+  mentorConversationChannel = sb.channel('mentor-conv-'+selectedEquipeId)
+    .on('postgres_changes',{event:'INSERT',schema:'public',table:'conversations',filter:`equipe_id=eq.${selectedEquipeId}`}, async ()=>{
+      await chargerConversationMentor(selectedEquipeId);
+    })
+    .subscribe();
+}
+
+function fermerPanelsMentor(){
+  document.querySelectorAll('.mentor-panel').forEach(p=>p.classList.remove('open'));
+  const overlay=document.getElementById('mentor-panel-overlay');
+  if(overlay) overlay.style.display='none';
+  if(mentorConversationChannel){
+    try{ sb.removeChannel(mentorConversationChannel); }catch(_){ }
+    mentorConversationChannel = null;
+  }
 }
 async function sendMentorMsg(){
   const ta=document.getElementById('mentor-compose-ta');
@@ -1654,16 +1977,23 @@ function fermerCarnet(){
 }
 async function sauvegarderCarnet(){
   if(!currentEquipe) return;
+  const etapeActive = getEtapeActiveEquipe();
   const html = document.getElementById('carnet-code-edit').value;
   const htmlNettoye = normaliserBlocVitrine(html);
-  const {data: vitrines} = await sb.from('vitrines')
-    .select('*').eq('equipe_id', currentEquipe.id).order('etape', {ascending: true});
-  if(!vitrines || vitrines.length === 0) return;
-  // Sauvegarder sur la dernière étape
-  const derniere = vitrines[vitrines.length-1];
-  const errSaveCarnet = await updateVitrineSecurisee(derniere.id, htmlNettoye);
+  const { data: vitrineEtapeActive } = await sb.from('vitrines')
+    .select('id')
+    .eq('equipe_id', currentEquipe.id)
+    .eq('etape', etapeActive)
+    .maybeSingle();
+
+  let errSaveCarnet = null;
+  if(vitrineEtapeActive?.id){
+    errSaveCarnet = await updateVitrineSecurisee(vitrineEtapeActive.id, htmlNettoye);
+  } else {
+    errSaveCarnet = await upsertVitrineSecurisee(currentEquipe.id, etapeActive, htmlNettoye);
+  }
   if(signalerErreurSupabase('save-carnet', errSaveCarnet)) return;
-  showToast('Vitrine sauvegardée', 'success');
+  showToast(`Vitrine sauvegardée sur Jour ${etapeActive}/5`, 'success');
   await chargerCarnet();
 }
 function switchCarnetTab(tab, btn){
@@ -1675,6 +2005,7 @@ function switchCarnetTab(tab, btn){
 
 async function chargerCarnet(){
   if(!currentEquipe) return;
+  const etapeActive = getEtapeActiveEquipe();
   const{data:vitrines}=await sb.from('vitrines')
     .select('*').eq('equipe_id',currentEquipe.id).order('etape',{ascending:true});
   if(!vitrines||vitrines.length===0){
@@ -1694,11 +2025,13 @@ async function chargerCarnet(){
   const iframe=document.getElementById('vitrine-rendu');
   const doc=iframe.contentDocument||iframe.contentWindow.document;
   doc.open();doc.write(htmlComplet);doc.close();
-  // Code
-  document.getElementById('carnet-code-edit').value=htmlComplet;
+  const sectionActive = vitrines.find(v=>Number(v.etape)===etapeActive);
+  document.getElementById('carnet-code-edit').value=normaliserBlocVitrine(sectionActive?.html_section||'');
+  const lockBadge = document.getElementById('carnet-lock-badge');
+  if(lockBadge) lockBadge.textContent = `✍️ Édition verrouillée — Jour ${etapeActive}/5`;
   // Sous-titre
   document.getElementById('carnet-sub').textContent=
-    `${currentEquipe.nom||currentEquipe.code_equipe} — Jour ${currentEquipe.etape_courante}/5`;
+    `${currentEquipe.nom||currentEquipe.code_equipe} — Jour ${etapeActive}/5`;
 }
 
 function afficherToastCarnet(etapeNom){
@@ -1718,19 +2051,19 @@ function afficherToastCarnet(etapeNom){
 
 async function detecterCheckpoint(texte) {
   if (!currentEquipe) return;
+  const etapeActive = getEtapeActiveEquipe();
 
   let vitrineMaj = false;
   let referenceHtmlNettoye = '';
 
   try {
-    const { data: derniereVitrine } = await sb.from('vitrines')
+    const { data: vitrineEtapeActive } = await sb.from('vitrines')
       .select('html_section')
       .eq('equipe_id', currentEquipe.id)
-      .order('etape', { ascending: false })
-      .limit(1)
+      .eq('etape', etapeActive)
       .maybeSingle();
 
-    referenceHtmlNettoye = (derniereVitrine?.html_section || '')
+    referenceHtmlNettoye = (vitrineEtapeActive?.html_section || '')
       .replace(/\s+/g, ' ')
       .replace(/>\s+</g, '><')
       .trim();
@@ -1789,29 +2122,16 @@ async function detecterCheckpoint(texte) {
       continue;
     }
 
-    const checkpointMatch = html.match(/SPARK_CHECKPOINT:([\w-]+)/) || texte.match(/SPARK_CHECKPOINT:([\w-]+)/i);
-    const slug = checkpointMatch ? checkpointMatch[1] : 'etape0-preparation';
-
-    const etapeMap = {
-      'etape0-preparation': 0, 'jour1-questionner': 1, 'jour2-concevoir': 2,
-      'jour3-fabriquer': 3, 'jour4-diffuser': 4, 'jour5-convaincre': 5
-    };
-    const etape = etapeMap[slug] ?? Number(currentEquipe.etape_courante || 0);
-
     try {
-      // 1. Sauvegarde Supabase
-      const errCheckpoint = await upsertVitrineSecurisee(currentEquipe.id, etape, htmlNettoye);
+      const errCheckpoint = await upsertVitrineSecurisee(currentEquipe.id, etapeActive, htmlNettoye);
       if (signalerErreurSupabase('checkpoint-upsert', errCheckpoint)) {
         continue;
       }
       referenceHtmlNettoye = htmlNettoye;
       vitrineMaj = true;
 
-      // 2. Mise à jour canonique depuis l'historique sauvegardé
       await chargerCarnet();
-
-      // 3. Notifications et ouverture
-      updateSteps(etape);
+      updateSteps(etapeActive);
       ouvrirCarnet();
       showToast("Vitrine mise à jour ! 🎨", "success");
 
