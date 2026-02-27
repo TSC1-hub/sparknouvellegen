@@ -1,180 +1,68 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-async function initMentor(){
-  const av=currentUser.avatar||'🎓';
-  const ps=currentUser.pseudo||'Mentor';
-  ['mentor-h-av','mentor-sid-av'].forEach(id=>document.getElementById(id).textContent=av);
-  ['mentor-h-name','mentor-sid-name'].forEach(id=>document.getElementById(id).textContent=ps);
-  document.getElementById('mentor-sid-code').textContent=currentUser.code;
-
-  const{data:a}=await sb.from('mentor_equipes')
-    .select('equipe_id,equipes(id,nom,college,etape_courante,code_equipe)')
-    .eq('mentor_id',currentUser.id);
-
-  const list=document.getElementById('mentor-teams-list');
-  list.innerHTML='';
-  if(a&&a.length>0){
-    a.forEach((x,i)=>{
-      const eq=x.equipes;
-      const div=document.createElement('div');
-      div.className='ms-team'+(i===0?' sel':'');
-      div.innerHTML=`<div class="ms-team-av" style="background:linear-gradient(135deg,#7ab648,#3d5c3a);">🌿</div><div><div class="ms-team-name">${eq.nom||eq.code_equipe}</div><div class="ms-team-day">Jour ${eq.etape_courante}/5</div></div>`;
-      div.onclick=()=>loadMentorTeam(eq,div);
-      list.appendChild(div);
-    });
-    await loadMentorTeam(a[0].equipes,list.firstChild);
-  }
-  go('mentor');
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SPARK ⚡ — Nouvelle Génération</title>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,700;0,9..144,900&family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box;}
+:root{
+  --moss:#3d5c3a;--sage:#5a7a5a;--leaf:#7ab648;
+  --warm:#faf7f2;--terra:#d4694a;--sun:#f0c040;
+  --text:#2c3a28;--mid:#5a6b54;--light:#8fa085;
+  --bg:#e8e2d0;--border:rgba(44,58,40,0.12);--shadow:rgba(44,58,40,0.08);
+  --mentor:#7b5ea7;--mentor-l:rgba(123,94,167,0.09);--mentor-b:rgba(123,94,167,0.22);
+  --fac:#1d6fa4;--fac-l:rgba(29,111,164,0.09);--fac-b:rgba(29,111,164,0.22);
 }
-
-async function loadMentorTeam(eq,el){
-  document.querySelectorAll('.ms-team').forEach(t=>t.classList.remove('sel'));
-  el.classList.add('sel');
-  selectedEquipeId=eq.id;
-  document.getElementById('mentor-team-name').textContent=`🌿 ${eq.nom||eq.code_equipe}`;
-  document.getElementById('mentor-team-info').textContent=`${eq.college||''} · Jour ${eq.etape_courante}/5`;
-  const pg=document.getElementById('mentor-prog');
-  pg.innerHTML='';
-  for(let i=0;i<5;i++){const d=document.createElement('div');d.className='pdot '+(i<eq.etape_courante?'d':i===eq.etape_courante?'a':'p');pg.appendChild(d);}
-  await chargerVitrinesMentor(eq.id);
-  listenVitrinesMentor(eq.id);
-
-  if(document.getElementById('panel-conv-mentor')?.classList.contains('open')){
-    await ouvrirPanelMentor('conv');
-  }
+html,body{height:100%;overflow:hidden;}
+body.ready{visibility:visible!important;}
+body{visibility:hidden;}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);display:flex;flex-direction:column;}
+body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
+  background:radial-gradient(ellipse 60% 50% at 80% 10%,rgba(122,182,72,.07) 0%,transparent 60%),
+    radial-gradient(ellipse 40% 60% at 10% 90%,rgba(139,99,71,.05) 0%,transparent 60%);
 }
+.screen{display:none;flex:1;flex-direction:column;overflow:hidden;position:relative;z-index:1;}
+.screen.on{display:flex;}
 
-async function chargerVitrinesMentor(eqId){
-  const { data: vitrines } = await sb.from('vitrines')
-    .select('*').eq('equipe_id', eqId).order('etape', { ascending: true });
-
-  const iframe = document.getElementById('mentor-vitrine');
-  if(!iframe) return;
-  const doc = iframe.contentDocument || iframe.contentWindow.document;
-
-  if(!vitrines || vitrines.length===0){
-    doc.open();
-    doc.write('<p style="font-family:sans-serif;padding:20px;color:#888;">Aucune vitrine générée pour cette équipe.</p>');
-    doc.close();
-    return;
-  }
-
-  const htmlComplet=`<!DOCTYPE html><html lang="fr"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>Vitrine Mentor</title></head><body style="margin:0;padding:0;">${vitrines.map(v=>normaliserBlocVitrine(v.html_section||'')).join('\n')}</body></html>`;
-  doc.open();
-  doc.write(htmlComplet);
-  doc.close();
+/* LOGIN */
+#s-login{align-items:center;justify-content:center;padding:12px;}
+.login-card{background:white;border-radius:28px;width:min(420px,calc(100vw - 24px));max-height:calc(100vh - 24px);display:flex;flex-direction:column;
+  box-shadow:0 12px 50px rgba(44,58,40,.13);border:1px solid var(--border);overflow:hidden;
+  animation:cardIn .5s cubic-bezier(.175,.885,.32,1.275);
 }
-
-function listenVitrinesMentor(eqId){
-  if(mentorVitrineChannel){
-    try{ sb.removeChannel(mentorVitrineChannel); }catch(_){ }
-    mentorVitrineChannel = null;
-  }
-
-  mentorVitrineChannel = sb.channel('vitrine-mentor-'+eqId)
-    .on('postgres_changes',{event:'INSERT',schema:'public',table:'vitrines',filter:`equipe_id=eq.${eqId}`}, async ()=>{
-      await chargerVitrinesMentor(eqId);
-      if(!document.getElementById('panel-canal-mentor')?.classList.contains('open')){
-        const badge=document.getElementById('mentor-canal-notif');
-        if(badge) badge.style.display='inline-block';
-      }
-    })
-    .on('postgres_changes',{event:'UPDATE',schema:'public',table:'vitrines',filter:`equipe_id=eq.${eqId}`}, async ()=>{
-      await chargerVitrinesMentor(eqId);
-      if(!document.getElementById('panel-canal-mentor')?.classList.contains('open')){
-        const badge=document.getElementById('mentor-canal-notif');
-        if(badge) badge.style.display='inline-block';
-      }
-    })
-    .subscribe();
+@keyframes cardIn{from{opacity:0;transform:translateY(24px) scale(.97);}to{opacity:1;transform:none;}}
+.login-top{background:var(--moss);padding:28px 32px 22px;text-align:center;position:relative;overflow:hidden;}
+.login-top::before{content:'';position:absolute;inset:0;
+  background:radial-gradient(ellipse 80% 60% at 50% 120%,rgba(122,182,72,.18) 0%,transparent 70%);
 }
-
-async function chargerConversationMentor(eqId){
-  const c=document.getElementById('mentor-conv-msgs');
-  if(!c) return;
-  const { data: msgs } = await sb.from('conversations')
-    .select('*').eq('equipe_id',eqId).eq('statut','visible')
-    .order('created_at',{ascending:true});
-
-  c.innerHTML='';
-  if(!msgs || msgs.length===0){
-    c.innerHTML='<div class="read-note">📖 Aucun message pour l\'instant</div>';
-    return;
-  }
-
-  msgs.forEach(m=>{
-    const d=document.createElement('div');
-    if(m.role==='assistant'){d.className='msg spark-msg';d.innerHTML=`<div class="msg-av">⚡</div><div class="msg-col"><div class="msg-who">SPARK ⚡</div><div class="msg-bubble">${formatTxt(m.message)}</div></div>`;}
-    else if(m.role==='user'){d.className='msg eleve-msg';d.innerHTML=`<div class="msg-av">👥</div><div class="msg-col"><div class="msg-who">${m.pseudo||'La Team'}</div><div class="msg-bubble">${formatTxt(m.message)}</div></div>`;}
-    else if(m.role==='mentor'){d.className='msg mentor-msg';d.innerHTML=`<div class="msg-av">🎓</div><div class="msg-col"><div class="msg-who">${m.pseudo||'Mentor'}</div><div class="msg-bubble">${formatTxt(m.message)}</div></div>`;}
-    c.appendChild(d);
-  });
-  c.scrollTop=c.scrollHeight;
+.login-logo{font-family:'Fraunces',serif;font-weight:900;font-size:2.2rem;
+  color:var(--sun);letter-spacing:2px;line-height:1;position:relative;
 }
+.login-sub{font-size:.72rem;color:rgba(245,240,232,.4);font-style:italic;letter-spacing:1px;margin-top:4px;position:relative;}
+.login-body{padding:26px 30px;overflow-y:auto;}
 
-function alimenterCanalMentor(){
-  const c=document.getElementById('mentor-canal-msgs');
-  if(!c) return;
-  c.innerHTML='<div class="read-note">🎓 Envoie un message à l\'équipe sélectionnée. Il sera validé par le facilitateur avant affichage.</div>';
+.role-cards{display:flex;flex-direction:column;gap:9px;margin-bottom:20px;}
+.role-card{display:flex;align-items:center;gap:13px;padding:13px 15px;border-radius:15px;
+  border:2px solid var(--border);cursor:pointer;transition:all .22s;background:var(--warm);
 }
-
-async function ouvrirPanelMentor(id){
-  const overlay=document.getElementById('mentor-panel-overlay');
-  const target=id==='conv'?document.getElementById('panel-conv-mentor'):document.getElementById('panel-canal-mentor');
-  if(!target) return;
-  const wasOpen=target.classList.contains('open');
-
-  document.querySelectorAll('.mentor-panel').forEach(p=>p.classList.remove('open'));
-
-  if(wasOpen){
-    if(overlay) overlay.style.display='none';
-    if(mentorConversationChannel){
-      try{ sb.removeChannel(mentorConversationChannel); }catch(_){ }
-      mentorConversationChannel = null;
-    }
-    return;
-  }
-
-  target.classList.add('open');
-  if(overlay) overlay.style.display='block';
-
-  if(id==='canal'){
-    const badge=document.getElementById('mentor-canal-notif');
-    if(badge) badge.style.display='none';
-    alimenterCanalMentor();
-    if(mentorConversationChannel){
-      try{ sb.removeChannel(mentorConversationChannel); }catch(_){ }
-      mentorConversationChannel = null;
-    }
-    return;
-  }
-
-  if(!selectedEquipeId) return;
-  await chargerConversationMentor(selectedEquipeId);
-
-  if(mentorConversationChannel){
-    try{ sb.removeChannel(mentorConversationChannel); }catch(_){ }
-    mentorConversationChannel = null;
-  }
-
-  mentorConversationChannel = sb.channel('mentor-conv-'+selectedEquipeId)
-    .on('postgres_changes',{event:'INSERT',schema:'public',table:'conversations',filter:`equipe_id=eq.${selectedEquipeId}`}, async ()=>{
-      await chargerConversationMentor(selectedEquipeId);
-    })
-    .subscribe();
+.role-card:hover{transform:translateX(4px);}
+.role-card.active-eleve{border-color:var(--terra);background:rgba(212,105,74,.06);box-shadow:0 0 0 4px rgba(212,105,74,.07);}
+.role-card.active-mentor{border-color:var(--mentor);background:var(--mentor-l);box-shadow:0 0 0 4px rgba(123,94,167,.07);}
+.role-card.active-fac{border-color:var(--fac);background:var(--fac-l);box-shadow:0 0 0 4px rgba(29,111,164,.07);}
+.rc-icon{width:40px;height:40px;border-radius:12px;display:flex;align-items:center;justify-content:center;
+  font-size:1.25rem;flex-shrink:0;background:rgba(0,0,0,.04);
 }
-
-function fermerPanelsMentor(){
-  document.querySelectorAll('.mentor-panel').forEach(p=>p.classList.remove('open'));
-  const overlay=document.getElementById('mentor-panel-overlay');
-  if(overlay) overlay.style.display='none';
-  if(mentorConversationChannel){
-    try{ sb.removeChannel(mentorConversationChannel); }catch(_){ }
-    mentorConversationChannel = null;
-  }
+.role-card.active-eleve .rc-icon{background:rgba(212,105,74,.14);}
+.role-card.active-mentor .rc-icon{background:var(--mentor-l);}
+.role-card.active-fac .rc-icon{background:var(--fac-l);}
+.rc-text{flex:1;}
+.rc-title{font-family:'Fraunces',serif;font-weight:700;font-size:.88rem;color:var(--text);}
+.rc-desc{font-size:.63rem;color:var(--light);margin-top:2px;line-height:1.4;}
+.rc-check{width:20px;height:20px;border-radius:50%;border:2px solid var(--border);
+  flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:.6rem;transition:all .22s;
 }
-  flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:.6rem;transition:all .22s;}
 .role-card.active-eleve .rc-check{background:var(--terra);border-color:var(--terra);color:white;}
 .role-card.active-mentor .rc-check{background:var(--mentor);border-color:var(--mentor);color:white;}
 .role-card.active-fac .rc-check{background:var(--fac);border-color:var(--fac);color:white;}
@@ -811,6 +699,7 @@ function fermerPanelsMentor(){
 </div>
 <div class="toast" id="toast"></div>
 
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
 // CONFIG — remplacez par vos vraies valeurs
 const SUPABASE_URL = 'https://mqfkjikpdnpmynwtfjep.supabase.co';
