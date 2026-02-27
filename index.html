@@ -1174,8 +1174,11 @@ async function invokeProxyMistral(payload){
 
 async function upsertVitrineSecurisee(equipeId, etape, htmlSection){
   try {
+    const actorCode = String(currentUser?.code || '').trim().toUpperCase();
+    if(!actorCode) throw new Error('Utilisateur non authentifié pour vitrine_upsert');
     await invokeProxyMistral({
       action: 'vitrine_upsert',
+      actor_code: actorCode,
       equipe_id: equipeId,
       etape,
       html_section: htmlSection
@@ -1188,8 +1191,11 @@ async function upsertVitrineSecurisee(equipeId, etape, htmlSection){
 
 async function updateVitrineSecurisee(vitrineId, htmlSection){
   try {
+    const actorCode = String(currentUser?.code || '').trim().toUpperCase();
+    if(!actorCode) throw new Error('Utilisateur non authentifié pour vitrine_update');
     await invokeProxyMistral({
       action: 'vitrine_update',
+      actor_code: actorCode,
       id: vitrineId,
       html_section: htmlSection
     });
