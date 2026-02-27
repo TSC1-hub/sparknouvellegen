@@ -311,13 +311,15 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
 .fs-id-av{width:32px;height:32px;border-radius:9px;background:var(--fac);display:flex;align-items:center;justify-content:center;font-size:1rem;flex-shrink:0;}
 .fs-id-name{font-family:'Fraunces',serif;font-size:.8rem;font-weight:700;color:#93c5e8;}
 .fs-id-role{font-size:.58rem;color:rgba(29,111,164,.6);margin-top:1px;}
-.fac-main{flex:1;overflow-y:auto;background:#f0f4f8;padding:20px;display:flex;flex-direction:column;gap:16px;}
-.fac-page-title{font-family:'Fraunces',serif;font-weight:900;font-size:1.2rem;color:#0a1929;display:flex;align-items:center;gap:8px;}
-.fac-page-sub{font-size:.7rem;color:#4a6b85;margin-top:3px;margin-bottom:10px;}
+.fac-main{flex:1;overflow-y:auto;background:linear-gradient(180deg,#eef4f9 0%,#f7fafc 100%);padding:22px;display:flex;flex-direction:column;gap:16px;}
+.fac-shell{width:min(1180px,100%);margin:0 auto;display:flex;flex-direction:column;gap:14px;}
+.fac-page-head{background:white;border:1px solid rgba(29,111,164,.14);border-radius:16px;padding:16px 18px;box-shadow:0 8px 24px rgba(10,25,41,.06);}
+.fac-page-title{font-family:'Fraunces',serif;font-weight:900;font-size:1.25rem;color:#0a1929;display:flex;align-items:center;gap:8px;}
+.fac-page-sub{font-size:.74rem;color:#4a6b85;margin-top:4px;}
 
-.teams-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:12px;}
-.team-card{background:white;border-radius:14px;border:1px solid rgba(0,0,0,.06);box-shadow:0 2px 10px rgba(0,0,0,.04);overflow:hidden;cursor:pointer;transition:all .25s;}
-.team-card:hover{transform:translateY(-2px);box-shadow:0 6px 20px rgba(0,0,0,.1);}
+.teams-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(270px,1fr));gap:14px;}
+.team-card{background:white;border-radius:16px;border:1px solid rgba(29,111,164,.12);box-shadow:0 8px 20px rgba(10,25,41,.06);overflow:hidden;cursor:pointer;transition:transform .25s,box-shadow .25s,border-color .25s;}
+.team-card:hover{transform:translateY(-3px);box-shadow:0 14px 30px rgba(10,25,41,.12);border-color:rgba(29,111,164,.28);}
 .tc-header{padding:14px 16px 10px;display:flex;align-items:flex-start;gap:10px;}
 .tc-av{width:36px;height:36px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:1.1rem;flex-shrink:0;}
 .tc-name{font-family:'Fraunces',serif;font-weight:700;font-size:.88rem;color:var(--text);}
@@ -326,8 +328,8 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
 .tc-day.active{background:rgba(240,192,64,.15);color:#8a6a00;}
 .tc-day.done{background:rgba(122,182,72,.1);color:var(--sage);}
 .tc-day.pending{background:rgba(0,0,0,.04);color:var(--light);}
-.tc-progress{padding:0 16px 10px;}
-.prog-bg{height:4px;background:rgba(0,0,0,.06);border-radius:4px;overflow:hidden;}
+.tc-progress{padding:0 16px 12px;}
+.prog-bg{height:6px;background:rgba(0,0,0,.06);border-radius:999px;overflow:hidden;}
 .prog-fill{height:100%;border-radius:4px;transition:width .6s ease;}
 .tc-footer{border-top:1px solid rgba(0,0,0,.05);padding:9px 16px;display:flex;align-items:center;justify-content:space-between;}
 .tc-eleves{font-size:.63rem;color:var(--light);}
@@ -337,7 +339,7 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
 .btn-reset{padding:4px 10px;background:transparent;border:1px solid rgba(212,105,74,.25);border-radius:8px;font-size:.63rem;font-weight:600;color:rgba(212,105,74,.5);cursor:pointer;transition:all .2s;font-family:'DM Sans',sans-serif;}
 .btn-reset:hover{background:rgba(212,105,74,.08);border-color:var(--terra);color:var(--terra);}
 
-.val-title{font-family:'Fraunces',serif;font-weight:700;font-size:1rem;color:#0a1929;display:flex;align-items:center;gap:8px;}
+.val-title{font-family:'Fraunces',serif;font-weight:700;font-size:1.05rem;color:#0a1929;display:flex;align-items:center;gap:8px;}
 .val-sub{font-size:.7rem;color:#4a6b85;margin-top:2px;margin-bottom:10px;}
 .val-badge{background:rgba(212,105,74,.1);color:var(--terra);font-size:.63rem;font-weight:700;padding:2px 8px;border-radius:20px;}
 .vcard{background:white;border-radius:14px;padding:14px 16px;margin-bottom:10px;border:1px solid rgba(0,0,0,.06);border-left:4px solid var(--terra);box-shadow:0 2px 10px rgba(0,0,0,.04);transition:all .3s;}
@@ -384,7 +386,7 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
 /* DRAWER CONVERSATION FAC */
 .fac-main.drawer-open{display:grid;grid-template-columns:1fr;gap:16px;}
 .fac-layout.drawer-open .fac-main{display:flex;gap:0;padding:0;overflow:hidden;}
-.teams-col{padding:20px;display:flex;flex-direction:column;gap:16px;overflow-y:auto;width:240px;flex-shrink:0;border-right:1px solid rgba(29,111,164,.1);background:#f0f4f8;}
+.teams-col{padding:18px;display:flex;flex-direction:column;gap:14px;overflow-y:auto;width:320px;flex-shrink:0;border-right:1px solid rgba(29,111,164,.12);background:linear-gradient(180deg,#eef4f9 0%,#f7fafc 100%);}
 .teams-col .teams-grid{grid-template-columns:1fr!important;}
 
 .conv-drawer{flex:1;display:flex;flex-direction:column;background:white;overflow:hidden;
@@ -406,6 +408,11 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
 .drawer-empty{align-self:center;margin-top:40px;font-size:.75rem;color:var(--light);font-style:italic;}
 
 .team-card.active-drawer{border-color:var(--fac);box-shadow:0 0 0 2px rgba(29,111,164,.15);}
+.fac-empty{background:white;border:1px dashed rgba(29,111,164,.28);border-radius:14px;padding:24px;text-align:center;color:#4a6b85;font-size:.8rem;box-shadow:0 4px 14px rgba(10,25,41,.04);}
+
+@media (max-width: 1100px){
+  .teams-col{width:280px;}
+}
 /* CARNET ÉLÈVE */
 .btn-carnet{display:flex;align-items:center;gap:6px;background:rgba(245,240,232,.1);
   border:1px solid rgba(245,240,232,.2);border-radius:20px;padding:5px 14px;
@@ -443,6 +450,12 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
 .carnet-panel{display:none;flex:1;overflow:hidden;flex-direction:column;}
 .carnet-panel.active{display:flex;}
 
+.carnet-etapes{display:flex;gap:6px;padding:10px 16px;flex-shrink:0;border-bottom:1px solid rgba(0,0,0,.07);flex-wrap:wrap;background:#f8fafc;}
+.carnet-pill{padding:4px 12px;border-radius:20px;font-size:.67rem;font-weight:600;cursor:pointer;background:white;border:1px solid rgba(61,92,58,.2);color:var(--mid);transition:all .2s;}
+.carnet-pill.done{background:rgba(122,182,72,.1);border-color:rgba(122,182,72,.35);color:var(--sage);}
+.carnet-pill.active{background:var(--moss);color:white;border-color:var(--moss);}
+.carnet-etapes-lbl{margin-left:auto;font-size:.62rem;color:var(--light);display:flex;align-items:center;gap:5px;}
+
 .carnet-iframe, #vitrine-rendu {flex:1;border:none;}
 .carnet-code{flex:1;overflow-y:auto;padding:16px;background:#1e1e2e;
   font-family:monospace;font-size:.72rem;color:#cdd6f4;white-space:pre-wrap;
@@ -459,12 +472,13 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
 .drawer-tab{padding:11px 20px;font-size:.75rem;font-weight:600;cursor:pointer;color:#4a6b85;border-bottom:3px solid transparent;transition:all .2s;}
 .drawer-tab.active{color:var(--fac);border-bottom-color:var(--fac);background:rgba(29,111,164,.04);}
 .drawer-tab:hover{color:var(--fac);}
-.vitrine-etapes{display:flex;gap:6px;padding:10px 16px;flex-shrink:0;border-bottom:1px solid rgba(0,0,0,.07);flex-wrap:wrap;background:#f8fafc;}
-.vitrine-pill{padding:4px 12px;border-radius:20px;font-size:.67rem;font-weight:600;cursor:pointer;background:white;border:1px solid rgba(29,111,164,.2);color:#4a6b85;transition:all .2s;}
-.vitrine-pill.active{background:var(--fac);color:white;border-color:var(--fac);}
-.vitrine-split{flex:1.5;display:flex;overflow:hidden;}
-.vitrine-preview{flex:1;border:none;border-right:1px solid rgba(0,0,0,.07);}
-.vitrine-code{flex:1;overflow-y:auto;padding:14px;background:#1e1e2e;font-family:monospace;font-size:.72rem;color:#cdd6f4;white-space:pre-wrap;word-break:break-all;line-height:1.6;}
+.vitrine-etapes{display:flex;gap:8px;padding:12px 16px;flex-shrink:0;border-bottom:1px solid rgba(0,0,0,.07);flex-wrap:wrap;background:#f8fbff;}
+.vitrine-pill{padding:5px 12px;border-radius:999px;font-size:.67rem;font-weight:700;cursor:pointer;background:white;border:1px solid rgba(29,111,164,.2);color:#4a6b85;transition:all .2s;}
+.vitrine-pill:hover{border-color:rgba(29,111,164,.45);transform:translateY(-1px);}
+.vitrine-pill.active{background:linear-gradient(135deg,#1d6fa4,#0f5b8c);color:white;border-color:#0f5b8c;box-shadow:0 6px 14px rgba(29,111,164,.25);}
+.vitrine-split{flex:1.5;display:flex;overflow:hidden;background:white;}
+.vitrine-preview{flex:1;border:none;border-right:1px solid rgba(0,0,0,.07);background:white;}
+.vitrine-code{flex:1;overflow-y:auto;padding:14px;background:#151a24;font-family:monospace;font-size:.72rem;color:#d9e1ee;white-space:pre-wrap;word-break:break-all;line-height:1.6;}
 .vitrine-empty{flex:1;display:flex;align-items:center;justify-content:center;font-size:.75rem;color:var(--light);font-style:italic;}
 </style>
 </head>
@@ -708,6 +722,7 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
   </div>
   <div class="carnet-content">
     <div class="carnet-panel active" id="carnet-panel-vitrine">
+      <div class="carnet-etapes" id="carnet-etapes"></div>
       <!-- zone de rendu de la vitrine – l'ID est utilisé par renderVitrine() -->
       <iframe class="carnet-iframe" id="vitrine-rendu"></iframe>
     </div>
@@ -745,6 +760,10 @@ let mentorConversationChannel = null;
 let mentorVitrinesData = [];
 let mentorEtapeAffichee = null;
 let mentorEtapeCourante = 0;
+let eleveVitrinesData = [];
+let eleveEtapeAffichee = null;
+let facDrawerEquipeId = null;
+let facDrawerVitrines = [];
 
 function getEtapeActiveEquipe(){
   const etape = Number(currentEquipe?.etape_courante ?? 0);
@@ -1751,9 +1770,9 @@ async function initFac(){
 async function renderFacEquipes(){
   const{data:eqs}=await sb.from('equipes').select('*').eq('facilitateur_id',currentUser.id).order('created_at',{ascending:true});
   const main=document.getElementById('fac-main');
-  main.innerHTML=`<div><div class="fac-page-title">📋 Mes équipes</div><div class="fac-page-sub">Cliquez sur 💬 Voir pour lire la conversation d'une équipe.</div></div><div class="teams-grid" id="teams-grid"></div>`;
+  main.innerHTML=`<div class="fac-shell"><div class="fac-page-head"><div class="fac-page-title">📋 Mes équipes</div><div class="fac-page-sub">Cliquez sur 💬 Voir pour lire la conversation d'une équipe.</div></div><div class="teams-grid" id="teams-grid"></div></div>`;
   const grid=document.getElementById('teams-grid');
-  if(!eqs||eqs.length===0){grid.innerHTML='<p style="font-size:.8rem;color:var(--light);">Aucune équipe assignée.</p>';return;}
+  if(!eqs||eqs.length===0){grid.innerHTML='<div class="fac-empty">Aucune équipe assignée pour le moment.</div>';return;}
   eqs.forEach(eq=>{
     const pct=(eq.etape_courante/5)*100;
     const dc=eq.etape_courante===0?'pending':eq.etape_courante>=5?'done':'active';
@@ -1787,14 +1806,14 @@ async function openConvDrawer(eqId, nom, college, etape){
 
   if(!document.getElementById('conv-drawer')){
     const grid=document.getElementById('teams-grid');
-    const header=main.firstElementChild;
+    const header=main.querySelector('.fac-page-head') || main.firstElementChild;
     main.innerHTML='';
     main.style.cssText='display:flex;gap:0;padding:0;overflow:hidden;flex-direction:row;';
     const col=document.createElement('div');
     col.className='teams-col';
     col.appendChild(header);
     col.appendChild(grid);
-    grid.style.cssText='display:flex;flex-direction:column;gap:10px;width:240px;flex-shrink:0;';
+    grid.style.cssText='display:flex;flex-direction:column;gap:10px;width:100%;flex-shrink:0;';
     main.appendChild(col);
     const drawer=document.createElement('div');
     drawer.className='conv-drawer'; drawer.id='conv-drawer';
@@ -1846,26 +1865,39 @@ async function loadDrawerConv(eqId){
   msgs_el.scrollTop=msgs_el.scrollHeight;
 }
 
-async function loadDrawerVitrine(eqId){
+async function loadDrawerVitrine(eqId, etapeSelectionnee = 0){
   const{data:vitrines}=await sb.from('vitrines')
     .select('*').eq('equipe_id',eqId).order('etape',{ascending:true});
   const c=document.getElementById('drawer-content');
-  if(!vitrines||vitrines.length===0){
-    c.innerHTML='<div class="vitrine-empty">Aucune vitrine générée pour l\'instant.</div>';
-    return;
-  }
-  const pills=vitrines.map((v,i)=>
-    `<div class="vitrine-pill${i===0?' active':''}" id="pill-${v.etape}" onclick="showVitrineEtape(${v.etape})">${v.etape===0?'Étape 0':'Étape '+v.etape}</div>`
+  if(!c) return;
+
+  facDrawerEquipeId = eqId;
+  const etapesFixes=[0,1,2,3,4,5];
+  const byEtape = new Map((vitrines||[]).map(v=>[Number(v.etape), v]));
+  facDrawerVitrines = etapesFixes.map(etape=>{
+    const row = byEtape.get(etape);
+    return {
+      id: row?.id || null,
+      etape,
+      html_section: row?.html_section || ''
+    };
+  });
+
+  const pills=etapesFixes.map(etape=>
+    `<div class="vitrine-pill" id="pill-${etape}" onclick="showVitrineEtape(${etape})">${etape===0?'Étape 0':'Étape '+etape}</div>`
   ).join('');
+
   c.innerHTML=`<div class="vitrine-etapes">${pills}</div><div class="vitrine-split" id="vitrine-split"></div>`;
-  c.dataset.vitrines=JSON.stringify(vitrines);
-  showVitrineEtape(vitrines[0].etape, vitrines);
+  c.dataset.vitrines=JSON.stringify(facDrawerVitrines);
+
+  const etapeCible = etapesFixes.includes(Number(etapeSelectionnee)) ? Number(etapeSelectionnee) : 0;
+  showVitrineEtape(etapeCible, facDrawerVitrines);
 }
 
 function showVitrineEtape(etape, vitrinesData){
   const c=document.getElementById('drawer-content');
-  const vitrines=vitrinesData||JSON.parse(c.dataset.vitrines||'[]');
-  const v=vitrines.find(x=>x.etape===etape);
+  const vitrines=vitrinesData||facDrawerVitrines||JSON.parse(c?.dataset?.vitrines||'[]');
+  const v=vitrines.find(x=>Number(x.etape)===Number(etape));
   if(!v) return;
   document.querySelectorAll('.vitrine-pill').forEach(p=>p.classList.remove('active'));
   const pill=document.getElementById('pill-'+etape);
@@ -1880,18 +1912,20 @@ function showVitrineEtape(etape, vitrinesData){
   const code=document.createElement('textarea');
   code.className='vitrine-code';
   code.id='fac-code-edit-'+etape;
-  code.value=v.html_section;
+  code.value=v.html_section||'';
   code.style.cssText='flex:1;resize:none;outline:none;border:none;';
   code.spellcheck=false;
   const saveBtn=document.createElement('button');
   saveBtn.textContent='💾 Sauvegarder';
   saveBtn.style.cssText='padding:7px 18px;background:#7ab648;border:none;color:white;font-family:\'DM Sans\',sans-serif;font-size:.75rem;font-weight:600;cursor:pointer;flex-shrink:0;';
-  saveBtn.onclick=()=>sauvegarderVitrineEtape(v.id, etape);
+  saveBtn.onclick=()=>sauvegarderVitrineEtape(v.id, etape, facDrawerEquipeId);
   codeWrap.appendChild(code);
   codeWrap.appendChild(saveBtn);
   split.appendChild(codeWrap);
   const doc=iframe.contentDocument||iframe.contentWindow.document;
-  doc.open(); doc.write(v.html_section); doc.close();
+  doc.open();
+  doc.write(v.html_section||'<!DOCTYPE html><html lang="fr"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"></head><body style="margin:0;padding:20px;font-family:sans-serif;color:#6b7280;"><div style="border:1px dashed rgba(29,111,164,.3);border-radius:10px;padding:14px;background:#fff;">Aucune vitrine publiée pour cette étape.</div></body></html>');
+  doc.close();
 }
 // ── CARNET ÉLÈVE ──
 function ouvrirCarnet(){
@@ -1926,6 +1960,42 @@ async function sauvegarderCarnet(){
   showToast(`Vitrine sauvegardée sur Jour ${etapeActive}/5`, 'success');
   await chargerCarnet();
 }
+
+function renderCarnetEtapes(etapeActive){
+  const wrap = document.getElementById('carnet-etapes');
+  if(!wrap) return;
+  const etapes = [0,1,2,3,4,5];
+  wrap.innerHTML = `${etapes.map(etape=>{
+    const cls=['carnet-pill'];
+    if(etape < etapeActive) cls.push('done');
+    return `<div class="${cls.join(' ')}" id="carnet-pill-${etape}" onclick="afficherVitrineTeamEtape(${etape})">${etape===0?'Étape 0':'Jour '+etape}</div>`;
+  }).join('')}<div class="carnet-etapes-lbl">👁 Aperçu par étape</div>`;
+}
+
+function afficherVitrineTeamEtape(etape){
+  const iframe=document.getElementById('vitrine-rendu');
+  if(!iframe) return;
+  const doc=iframe.contentDocument||iframe.contentWindow.document;
+
+  eleveEtapeAffichee = Number(etape);
+  document.querySelectorAll('.carnet-pill').forEach(p=>p.classList.remove('active'));
+  const activePill=document.getElementById('carnet-pill-'+eleveEtapeAffichee);
+  if(activePill) activePill.classList.add('active');
+
+  const vitrineEtape = eleveVitrinesData.find(v=>Number(v.etape)===Number(etape));
+  if(!vitrineEtape){
+    doc.open();
+    doc.write('<!DOCTYPE html><html lang="fr"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"></head><body style="margin:0;padding:20px;font-family:sans-serif;color:#6b7280;"><div style="border:1px dashed rgba(61,92,58,.25);border-radius:10px;padding:14px;background:#fff;">Aucune vitrine publiée pour cette étape.</div></body></html>');
+    doc.close();
+    return;
+  }
+
+  const htmlComplet=`<!DOCTYPE html><html lang="fr"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"></head><body style="margin:0;padding:0;">${normaliserBlocVitrine(vitrineEtape.html_section||'')}</body></html>`;
+  doc.open();
+  doc.write(htmlComplet);
+  doc.close();
+}
+
 function switchCarnetTab(tab, btn){
   document.querySelectorAll('.carnet-tab').forEach(t=>t.classList.remove('active'));
   document.querySelectorAll('.carnet-panel').forEach(p=>p.classList.remove('active'));
@@ -1938,23 +2008,20 @@ async function chargerCarnet(){
   const etapeActive = getEtapeActiveEquipe();
   const{data:vitrines}=await sb.from('vitrines')
     .select('*').eq('equipe_id',currentEquipe.id).order('etape',{ascending:true});
+  eleveVitrinesData = vitrines || [];
+  renderCarnetEtapes(etapeActive);
+
+  const etapeCible = [0,1,2,3,4,5].includes(Number(eleveEtapeAffichee))
+    ? Number(eleveEtapeAffichee)
+    : etapeActive;
+
   if(!vitrines||vitrines.length===0){
-    const iframe=document.getElementById('vitrine-rendu');
-    const doc=iframe.contentDocument||iframe.contentWindow.document;
-    doc.open();doc.write('<p style="font-family:sans-serif;padding:20px;color:#888;">Votre vitrine se construira ici au fil des étapes !</p>');doc.close();
+    afficherVitrineTeamEtape(etapeCible);
     document.getElementById('carnet-code-edit').value='';
     return;
   }
-  // Assembler l'historique complet des étapes dans l'ordre
-  const htmlComplet=`<!DOCTYPE html><html lang="fr"><head><meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width,initial-scale=1.0">
-    <title>${currentEquipe.nom||'Vitrine'}</title></head><body style="margin:0;padding:0;">
-    ${vitrines.map(v=>normaliserBlocVitrine(v.html_section||'')).join('\n')}
-    </body></html>`;
-  // Iframe
-  const iframe=document.getElementById('vitrine-rendu');
-  const doc=iframe.contentDocument||iframe.contentWindow.document;
-  doc.open();doc.write(htmlComplet);doc.close();
+
+  afficherVitrineTeamEtape(etapeCible);
   const sectionActive = vitrines.find(v=>Number(v.etape)===etapeActive);
   document.getElementById('carnet-code-edit').value=normaliserBlocVitrine(sectionActive?.html_section||'');
   const lockBadge = document.getElementById('carnet-lock-badge');
@@ -2086,14 +2153,21 @@ function listenVitrine(){
       chargerCarnet();
     }).subscribe();
 }
-async function sauvegarderVitrineEtape(vitrineId, etape){
+async function sauvegarderVitrineEtape(vitrineId, etape, equipeId = facDrawerEquipeId){
+  if(!equipeId){
+    showToast('Équipe introuvable','error');
+    return;
+  }
   const html=document.getElementById('fac-code-edit-'+etape).value;
-  const errSaveFac = await updateVitrineSecurisee(vitrineId, html);
+  let errSaveFac = null;
+  if(vitrineId){
+    errSaveFac = await updateVitrineSecurisee(vitrineId, html);
+  } else {
+    errSaveFac = await upsertVitrineSecurisee(equipeId, Number(etape), html);
+  }
   if(signalerErreurSupabase('fac-save-vitrine', errSaveFac)) return;
   showToast('Vitrine sauvegardée','success');
-  // Recharger l'iframe
-  const iframe=document.querySelector('.vitrine-preview');
-  if(iframe){const doc=iframe.contentDocument||iframe.contentWindow.document;doc.open();doc.write(html);doc.close();}
+  await loadDrawerVitrine(equipeId, Number(etape));
 }
 function closeConvDrawer(){
   // Retirer le highlight
@@ -2108,8 +2182,11 @@ async function renderFacValidation(){
     .select('*,utilisateurs!messages_mentors_mentor_id_fkey(pseudo,avatar,code),equipes(nom,code_equipe)')
     .eq('statut','en_attente').order('created_at',{ascending:false});
   const main=document.getElementById('fac-main');
-  main.innerHTML=`<div><div class="val-title">📬 Messages en attente <span class="val-badge">${msgs?.length||0}</span></div><div class="val-sub">Ces messages seront affichés aux élèves uniquement après votre approbation.</div></div>`;
-  if(!msgs||msgs.length===0){main.innerHTML+='<p style="font-size:.8rem;color:var(--light);">Aucun message en attente.</p>';return;}
+  const nb=msgs?.length||0;
+  const badge=nb>0?` <span class="val-badge">${nb}</span>`:'';
+  main.innerHTML=`<div class="fac-shell"><div class="fac-page-head"><div class="val-title">📬 Messages en attente${badge}</div><div class="val-sub">Ces messages seront affichés aux élèves uniquement après votre approbation.</div></div><div id="validation-list"></div></div>`;
+  const list=document.getElementById('validation-list');
+  if(!msgs||msgs.length===0){list.innerHTML='<div class="fac-empty">Aucun message en attente.</div>';return;}
   msgs.forEach(msg=>{
     const av=msg.utilisateurs?.avatar||'🎓';
     const ps=`${av} ${msg.utilisateurs?.pseudo||'Mentor'}`;
@@ -2129,7 +2206,7 @@ async function renderFacValidation(){
         <button class="btn-approve" onclick="approveMsg(${msg.id},${msg.equipe_id},'${ps.replace(/'/g,"\\'")}','${msgEsc}')">✓ Approuver</button>
         <button class="btn-reject" onclick="rejectMsg(${msg.id})">✕ Refuser</button>
       </div>`;
-    main.appendChild(card);
+    list.appendChild(card);
   });
 }
 
