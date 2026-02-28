@@ -1143,14 +1143,39 @@ function renderLoginGalaxy(shapeSources = galaxyShapeSources){
   const cx = (cardRect.left - screenRect.left) + cardRect.width / 2;
   const cy = (cardRect.top - screenRect.top) + cardRect.height / 2;
   const maxRadius = Math.min(screenRect.width, screenRect.height) * 0.52;
-  const count = Math.max(16, Math.min(30, shapeSources.length * 3));
+  const minSide = Math.min(screenRect.width, screenRect.height);
+  const startRadius = Math.max(84, Math.min(120, cardRect.width * 0.36));
+  const radiusStep = Math.max(34, Math.min(46, minSide * 0.065));
+  const angleStep = 0.82;
+  const baseCount = Math.max(12, Math.min(20, Math.floor((maxRadius - startRadius) / (radiusStep * 0.62)) + 10));
+  const count = Math.min(baseCount, Math.max(12, shapeSources.length * 2));
+  const placed = [];
 
   for(let i=0;i<count;i++){
-    const theta = (i * 0.62) + 1.9;
-    const radius = Math.min(maxRadius, 58 + (i * 17));
-    const x = cx + Math.cos(theta) * radius;
-    const y = cy + Math.sin(theta) * radius * 0.72;
-    const size = 62 + ((i % 6) * 13);
+    const size = 60 + ((i % 5) * 10);
+    let placedPoint = null;
+
+    for(let attempt=0; attempt<9; attempt++){
+      const theta = 1.7 + ((i + attempt * 0.37) * angleStep);
+      const radius = Math.min(maxRadius, startRadius + (i * radiusStep) + (attempt * 8));
+      const x = cx + Math.cos(theta) * radius;
+      const y = cy + Math.sin(theta) * radius * 0.74;
+
+      const collision = placed.some(p => {
+        const dx = x - p.x;
+        const dy = y - p.y;
+        const minDistance = (size + p.size) * 0.60;
+        return (dx * dx + dy * dy) < (minDistance * minDistance);
+      });
+
+      if(!collision){
+        placedPoint = { x, y, size, theta };
+        break;
+      }
+    }
+
+    if(!placedPoint) continue;
+    placed.push(placedPoint);
 
     const img = document.createElement('img');
     img.className = 'shape lpi-orbit';
@@ -1158,11 +1183,11 @@ function renderLoginGalaxy(shapeSources = galaxyShapeSources){
     img.src = encodeURI(shapeSources[i % shapeSources.length]);
     img.decoding = 'async';
     img.loading = 'lazy';
-    img.style.left = `${x - (size / 2)}px`;
-    img.style.top = `${y - (size / 2)}px`;
-    img.style.width = `${size}px`;
-    img.style.opacity = (0.10 + ((i % 5) * 0.018)).toFixed(3);
-    img.style.transform = `rotate(${(theta * 57.2958).toFixed(2)}deg)`;
+    img.style.left = `${placedPoint.x - (placedPoint.size / 2)}px`;
+    img.style.top = `${placedPoint.y - (placedPoint.size / 2)}px`;
+    img.style.width = `${placedPoint.size}px`;
+    img.style.opacity = (0.11 + ((i % 4) * 0.02)).toFixed(3);
+    img.style.transform = `rotate(${(placedPoint.theta * 57.2958).toFixed(2)}deg)`;
     host.appendChild(img);
   }
 
