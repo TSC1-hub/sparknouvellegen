@@ -188,6 +188,13 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
 .step-item.active .step-label{color:#1a1a2e;font-weight:700;}
 .step-item.done .step-label{color:#009978;font-weight:600;}
 .step-item.locked .step-label{color:#bbb;}
+/* numéro d'étape au-dessus de l'orbe */
+.step-num{font-size:.48rem;font-weight:800;letter-spacing:.8px;
+  padding:1.5px 6px;border-radius:20px;
+  background:#f0f0f0;color:#aaa;}
+.step-item.done .step-num{background:rgba(0,212,160,.12);color:#009978;}
+.step-item.active .step-num{background:linear-gradient(135deg,#f09433,#dc2743);color:#fff;}
+.step-item.locked .step-num{background:#f0f0f0;color:#ccc;}
 /* anciens sélecteurs : masqués (migration vers .step-label) */
 .step-info,.step-day,.step-name{display:none;}
 .spark-id{margin:auto 10px 10px;padding:10px 12px;background:rgba(122,182,72,.07);
@@ -1249,12 +1256,12 @@ body::before{background:radial-gradient(ellipse 60% 50% at 85% 5%,rgba(62,212,24
     <img class="page-bg-shape" id="bg-eleve" src="photoverte.png" alt="">
     <div class="steps-sidebar">
       <div class="ss-title">Votre parcours</div>
-      <div class="step-item active" id="step-0"><div class="step-orb"><div class="step-ring-inner"><span class="step-emoji">🌱</span></div></div><div class="step-label">Découvrir</div></div>
-      <div class="step-item locked" id="step-1"><div class="step-orb"><div class="step-ring-inner"><span class="step-emoji">🔍</span></div></div><div class="step-label">Problé&shy;matiser</div></div>
-      <div class="step-item locked" id="step-2"><div class="step-orb"><div class="step-ring-inner"><span class="step-emoji">✏️</span></div></div><div class="step-label">Imaginer</div></div>
-      <div class="step-item locked" id="step-3"><div class="step-orb"><div class="step-ring-inner"><span class="step-emoji">🔨</span></div></div><div class="step-label">Créer</div></div>
-      <div class="step-item locked" id="step-4"><div class="step-orb"><div class="step-ring-inner"><span class="step-emoji">📢</span></div></div><div class="step-label">Chiffrer &amp; Pitcher</div></div>
-      <div class="step-item locked" id="step-5"><div class="step-orb"><div class="step-ring-inner"><span class="step-emoji">🏆</span></div></div><div class="step-label">S'entraîner<br>finale</div></div>
+      <div class="step-item active" id="step-0"><div class="step-num">0</div><div class="step-orb"><div class="step-ring-inner"><span class="step-emoji">🌱</span></div></div><div class="step-label">Découvrir</div></div>
+      <div class="step-item locked" id="step-1"><div class="step-num">1</div><div class="step-orb"><div class="step-ring-inner"><span class="step-emoji">🔍</span></div></div><div class="step-label">Problé&shy;matiser</div></div>
+      <div class="step-item locked" id="step-2"><div class="step-num">2</div><div class="step-orb"><div class="step-ring-inner"><span class="step-emoji">✏️</span></div></div><div class="step-label">Imaginer</div></div>
+      <div class="step-item locked" id="step-3"><div class="step-num">3</div><div class="step-orb"><div class="step-ring-inner"><span class="step-emoji">🔨</span></div></div><div class="step-label">Créer</div></div>
+      <div class="step-item locked" id="step-4"><div class="step-num">4</div><div class="step-orb"><div class="step-ring-inner"><span class="step-emoji">📢</span></div></div><div class="step-label">Chiffrer &amp; Pitcher</div></div>
+      <div class="step-item locked" id="step-5"><div class="step-num">5</div><div class="step-orb"><div class="step-ring-inner"><span class="step-emoji">🏆</span></div></div><div class="step-label">S'entraîner<br>finale</div></div>
       <div class="spark-id">
         <div class="spark-id-av">⚡</div>
         <div><div class="spark-id-name">SPARK ⚡</div><div class="spark-id-status"><span class="status-dot"></span>En ligne</div></div>
