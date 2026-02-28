@@ -500,23 +500,31 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
 .shape{position:absolute;pointer-events:none;mix-blend-mode:multiply;z-index:0;}
 .lpi-shape{opacity:.22;display:none;animation:lpiSideFloat 17s ease-in-out infinite;}
 
-#login-galaxy{position:absolute;inset:0;pointer-events:none;overflow:hidden;z-index:0;}
-.lpi-orbit{display:block;opacity:.16;transform-origin:center;animation:lpiOrbitDrift var(--dur,18s) ease-in-out var(--delay,0s) infinite;}
+/* LPI shapes — système mockup V2 */
+#s-login .lpi{position:absolute;mix-blend-mode:multiply;pointer-events:none;z-index:1;will-change:transform;}
+#s-login .lpi-nw{width:310px;top:-80px;left:-80px;opacity:.78;animation:orgA 18s ease-in-out infinite;}
+#s-login .lpi-ne{width:260px;top:-55px;right:-70px;opacity:.70;animation:orgB 15s ease-in-out infinite;}
+#s-login .lpi-sw{width:240px;bottom:-65px;left:-55px;opacity:.65;animation:orgC 20s ease-in-out infinite;}
+#s-login .lpi-se{width:280px;bottom:-75px;right:-65px;opacity:.73;animation:orgA 16s ease-in-out infinite reverse;}
+#s-login .lpi-ml{width:160px;top:42%;left:-38px;opacity:.55;animation:orgB 22s ease-in-out infinite;}
+#s-login .lpi-mr{width:150px;top:35%;right:-35px;opacity:.50;animation:orgC 19s ease-in-out infinite reverse;}
+#s-login .lpi-tc{width:120px;top:8%;left:38%;opacity:.32;animation:orgA 24s ease-in-out infinite;}
+#s-login .lpi-bc{width:110px;bottom:12%;right:32%;opacity:.28;animation:orgB 21s ease-in-out infinite reverse;}
 
-@keyframes lpiOrbitDrift{
-  0%,100%{transform:translate3d(0,0,0) rotate(var(--rot,0deg));}
-  50%{transform:translate3d(var(--dx,8px),var(--dy,-10px),0) rotate(calc(var(--rot,0deg) + 4deg));}
+@keyframes orgA{
+  0%,100%{transform:rotate(-14deg) translateY(0) translateX(0);}
+  30%    {transform:rotate(-11deg) translateY(-14px) translateX(8px);}
+  70%    {transform:rotate(-17deg) translateY(10px) translateX(-6px);}
 }
-
-@keyframes lpiSideFloat{
-  0%,100%{transform:translate3d(0,0,0) rotate(-6deg);}
-  50%{transform:translate3d(0,-10px,0) rotate(6deg);}
+@keyframes orgB{
+  0%,100%{transform:rotate(20deg) translateY(0);}
+  45%    {transform:rotate(17deg) translateY(-18px) translateX(7px);}
 }
-
-#s-login .lpi-login-1{width:180px;top:-24px;left:-30px;transform:rotate(12deg);}
-#s-login .lpi-login-2{width:210px;top:-42px;right:-38px;transform:rotate(-18deg);}
-#s-login .lpi-login-3{width:220px;bottom:-36px;left:-40px;transform:rotate(-10deg);}
-#s-login .lpi-login-4{width:170px;bottom:-26px;right:-20px;transform:rotate(16deg);}
+@keyframes orgC{
+  0%,100%{transform:rotate(10deg) translateY(0);}
+  35%    {transform:rotate(13deg) translateY(12px) translateX(-8px);}
+  72%    {transform:rotate(8deg) translateY(-9px) translateX(5px);}
+}
 
 .steps-sidebar,.mentor-sidebar,.fac-sidebar{position:relative;}
 .steps-sidebar .lpi-side-eleve,
@@ -780,7 +788,15 @@ body::before{background:radial-gradient(ellipse 60% 50% at 85% 5%,rgba(62,212,24
 
 <!-- LOGIN -->
 <div class="screen" id="s-login">
-  <div id="login-galaxy" aria-hidden="true"></div>
+  <!-- SHAPES LPI — mockup V2 exact -->
+  <img class="lpi lpi-nw" src="LPI_Shapes_Shape 1 copie.png" alt="">
+  <img class="lpi lpi-ne" src="LPI_Shapes_Shape 2.png" alt="">
+  <img class="lpi lpi-sw" src="LPI_Shapes_Shape 3.png" alt="">
+  <img class="lpi lpi-se" src="LPI_Shapes_Shape 4.png" alt="">
+  <img class="lpi lpi-ml" src="LPI_Shapes_Shape 5.png" alt="">
+  <img class="lpi lpi-mr" src="LPI_Shapes_Shape 2 copie.png" alt="">
+  <img class="lpi lpi-tc" src="LPI_Shapes_Shape 3 copie.png" alt="">
+  <img class="lpi lpi-bc" src="LPI_Shapes_Shape 5 copie.png" alt="">
   <div class="login-card">
     <div class="login-top">
       <div class="login-logo">🌿 SPARK <span class="login-logo-spark">⚡</span></div>
