@@ -3696,8 +3696,10 @@ function handleKey(e){
 function go(id){
   document.querySelectorAll('.screen').forEach(s=>s.classList.remove('on'));
   document.getElementById('s-'+id).classList.add('on');
-  if(id==='login' && galaxyShapeSources.length){
-    requestAnimationFrame(()=>renderLoginGalaxy(galaxyShapeSources));
+  if(id==='login'){
+    const cb=document.getElementById('rgpd-consent');
+    if(cb) cb.checked=false;
+    if(galaxyShapeSources.length) requestAnimationFrame(()=>renderLoginGalaxy(galaxyShapeSources));
   }
   if(currentUser) sessionStorage.setItem('spark_user', JSON.stringify(currentUser));
   if(id==='login') sessionStorage.removeItem('spark_user');
