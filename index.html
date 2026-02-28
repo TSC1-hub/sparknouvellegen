@@ -861,7 +861,8 @@ body::before{background:radial-gradient(ellipse 60% 50% at 85% 5%,rgba(62,212,24
 .spark-id{background:#f8f8f8;border:1px solid #ececec;margin:auto 6px 8px;padding:8px 6px;
   flex-direction:column;align-items:center;justify-content:center;gap:4px;text-align:center;}
 .spark-id > div{display:flex;flex-direction:column;align-items:center;width:100%;}
-.spark-id-av{background:var(--moss);width:36px;height:36px;font-size:1.2rem;margin:0 auto;}
+.spark-id-av{background:linear-gradient(135deg,#f09433,#e6683c,#dc2743,#cc2366);width:40px;height:40px;border-radius:50%;padding:3px;margin:0 auto;flex-shrink:0;display:flex;align-items:center;justify-content:center;}
+.spark-id-av-inner{background:#fff;width:100%;height:100%;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:1.2rem;}
 .spark-id-name{font-size:.6rem;color:#009978;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:76px;text-align:center;}
 .spark-id-status{font-size:.52rem;color:#009978;justify-content:center;display:flex;align-items:center;}
 .status-dot{background:var(--moss);}
@@ -972,8 +973,8 @@ body::before{background:radial-gradient(ellipse 60% 50% at 85% 5%,rgba(62,212,24
 
 .drawer-hdr,.drawer-tabs,.drawer-tab,.vitrine-etapes,.vitrine-split{background:#fff;}
 .drawer-tab.active{background:var(--fac-l);border-bottom-color:var(--fac);color:#1890b0;}
-.vitrine-pill{border:1.5px solid rgba(29,111,164,.3);color:#2a6b9a;background:rgba(29,111,164,.06);font-weight:700;}
-.vitrine-pill.active{background:var(--fac);border-color:var(--fac);color:#fff;box-shadow:0 3px 10px rgba(29,111,164,.2);}
+.vitrine-pill{border:1.5px solid rgba(29,111,164,.4);color:#155a8a;background:rgba(29,111,164,.09);font-weight:700;}
+.vitrine-pill.active{background:linear-gradient(135deg,#1d6fa4,#0f5b8c);border-color:#0f5b8c;color:#fff;box-shadow:0 4px 12px rgba(29,111,164,.32);}
 
 /* ═══════════════════════════════════════════
    RESPONSIVE MOBILE — max-width: 768px
@@ -1263,7 +1264,7 @@ body::before{background:radial-gradient(ellipse 60% 50% at 85% 5%,rgba(62,212,24
       <div class="step-item locked" id="step-4"><div class="step-num">4</div><div class="step-orb"><div class="step-ring-inner"><span class="step-emoji">📢</span></div></div><div class="step-label">Chiffrer &amp; Pitcher</div></div>
       <div class="step-item locked" id="step-5"><div class="step-num">5</div><div class="step-orb"><div class="step-ring-inner"><span class="step-emoji">🏆</span></div></div><div class="step-label">S'entraîner<br>finale</div></div>
       <div class="spark-id">
-        <div class="spark-id-av">⚡</div>
+        <div class="spark-id-av"><div class="spark-id-av-inner">⚡</div></div>
         <div><div class="spark-id-status"><span class="status-dot"></span>En ligne</div></div>
       </div>
     </div>
