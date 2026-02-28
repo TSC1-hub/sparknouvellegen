@@ -622,10 +622,10 @@ body::before{background:radial-gradient(ellipse 60% 50% at 85% 5%,rgba(62,212,24
 .mentor-vitrine-readonly{background:rgba(62,212,245,.08);border-top:1px solid rgba(62,212,245,.2);color:#1890b0;}
 
 .mentor-float-btn{background:#fff;border:1.5px solid var(--border);box-shadow:0 2px 12px rgba(0,0,0,.06);}
-#btn-mentor-conv{background:#fff;color:var(--mid);border-color:var(--border);}
-#btn-mentor-conv:hover,#btn-mentor-conv.active{background:rgba(62,212,245,.08);color:var(--text);}
-#btn-mentor-canal{background:#fff;color:#9040b8;border-color:rgba(200,127,240,.3);}
-#btn-mentor-canal:hover,#btn-mentor-canal.active{background:var(--mentor-l);color:#9040b8;}
+#btn-mentor-conv{background:#fff;color:#9040b8;border-color:rgba(200,127,240,.45);}
+#btn-mentor-conv:hover,#btn-mentor-conv.active{background:#fff;color:#7f31a6;border-color:#b768de;}
+#btn-mentor-canal{background:#9040b8;color:#fff;border-color:#9040b8;}
+#btn-mentor-canal:hover,#btn-mentor-canal.active{background:#7f31a6;color:#fff;border-color:#7f31a6;}
 .mentor-canal-badge{background:var(--terra);}
 
 .mentor-panel-overlay{background:rgba(0,0,0,.2);}
@@ -1253,6 +1253,22 @@ function renderLoginGalaxy(shapeSources = galaxyShapeSources){
       if(canPlace(x, y, size, 0.58)){
         placed.push({ x, y, size });
         appendShape(x, y, size, theta, 0.12 + ((i % 3) * 0.02));
+        break;
+      }
+    }
+  }
+
+  const leftCount = Math.max(4, Math.min(8, Math.floor(count * 0.4)));
+  for(let i=0;i<leftCount;i++){
+    const size = 52 + ((i % 3) * 9);
+    for(let attempt=0; attempt<14; attempt++){
+      const theta = 2.45 + (i * 0.42) + (attempt * 0.17);
+      const radius = Math.min(maxRadius, startRadius + (count * radiusStep * 0.4) + (attempt * 9));
+      const x = cx + Math.cos(theta) * radius;
+      const y = cy + Math.sin(theta) * radius * 0.73;
+      if(canPlace(x, y, size, 0.58)){
+        placed.push({ x, y, size });
+        appendShape(x, y, size, theta, 0.12 + ((i % 3) * 0.018));
         break;
       }
     }
