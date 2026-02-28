@@ -525,6 +525,82 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
 body{background:linear-gradient(180deg,#f8fbff 0%,#f5f7fb 100%);}
 body::before{background:radial-gradient(ellipse 60% 50% at 85% 5%,rgba(62,212,245,.13) 0%,transparent 65%),radial-gradient(ellipse 40% 60% at 10% 95%,rgba(200,127,240,.12) 0%,transparent 65%);}
 
+/* LOGIN — style mockup V2 (scopé) */
+#s-login{align-items:center;justify-content:center;background:#fff;position:relative;overflow:hidden;padding:12px;}
+#s-login .login-card{
+  width:min(440px,calc(100vw - 32px));
+  max-height:calc(100vh - 48px);
+  border-radius:28px;
+  border:1.5px solid var(--border);
+  box-shadow:0 8px 60px rgba(0,0,0,.08), 0 2px 12px rgba(0,0,0,.04);
+}
+#s-login .login-top{
+  padding:28px 32px 22px;
+  background:#f8f9fb;
+  border-bottom:1px solid var(--border);
+  text-align:center;
+}
+#s-login .login-logo{
+  font-family:'Syne',sans-serif;
+  font-weight:800;
+  font-size:1.8rem;
+  letter-spacing:2px;
+  color:var(--text);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:10px;
+}
+#s-login .login-logo-spark{color:var(--sun);}
+#s-login .login-sub{
+  margin-top:4px;
+  font-size:.65rem;
+  color:var(--light);
+  letter-spacing:1.5px;
+  text-transform:uppercase;
+  font-style:normal;
+}
+#s-login .lpi-dots{display:flex;gap:6px;justify-content:center;margin-top:10px;}
+#s-login .lpi-dot{width:9px;height:9px;border-radius:50%;}
+#s-login .login-body{padding:20px 26px 22px;overflow-y:auto;}
+
+#s-login .role-cards{gap:7px;margin-bottom:16px;}
+#s-login .role-card{padding:11px 14px;border-radius:14px;border:1.5px solid var(--border);background:#fff;}
+#s-login .role-card:hover{background:#f8f9fb;transform:none;}
+#s-login .role-card.active-eleve{border-color:var(--moss);background:rgba(0,212,160,.05);box-shadow:none;}
+#s-login .role-card.active-mentor{border-color:var(--mentor);background:rgba(200,127,240,.05);box-shadow:none;}
+#s-login .role-card.active-fac{border-color:var(--fac);background:rgba(62,212,245,.05);box-shadow:none;}
+
+#s-login .rc-icon{width:36px;height:36px;border-radius:10px;font-size:1rem;background:#f8f9fb;}
+#s-login .role-card.active-eleve .rc-icon{background:rgba(0,212,160,.1);}
+#s-login .role-card.active-mentor .rc-icon{background:rgba(200,127,240,.1);}
+#s-login .role-card.active-fac .rc-icon{background:rgba(62,212,245,.1);}
+
+#s-login .rc-title{font-family:'Syne',sans-serif;font-weight:700;font-size:.82rem;color:var(--text);}
+#s-login .rc-desc{font-size:.6rem;color:var(--light);margin-top:1px;line-height:1.4;}
+#s-login .rc-check{width:18px;height:18px;border:1.5px solid var(--border);font-size:.55rem;}
+
+#s-login .field-wrap{margin-bottom:10px;}
+#s-login .field-label{font-size:.57rem;letter-spacing:1.2px;color:var(--light);margin-bottom:5px;}
+#s-login .field-input{padding:10px 13px;border:1.5px solid var(--border);border-radius:11px;background:#fff;font-size:.83rem;}
+#s-login .field-input.eleve:focus{border-color:var(--moss);box-shadow:none;}
+#s-login .field-input.mentor:focus{border-color:var(--mentor);box-shadow:none;}
+#s-login .field-input.fac:focus{border-color:var(--fac);box-shadow:none;}
+
+#s-login .btn-connect{margin-top:14px;font-family:'Syne',sans-serif;font-size:.88rem;font-weight:700;letter-spacing:.3px;}
+#s-login .btn-connect.eleve{background:var(--moss);}
+#s-login .btn-connect.eleve:hover{background:#00bfa0;box-shadow:0 6px 20px rgba(0,212,160,.3);}
+#s-login .btn-connect.mentor{background:var(--mentor);}
+#s-login .btn-connect.mentor:hover{background:#b060d8;box-shadow:0 6px 20px rgba(200,127,240,.3);}
+#s-login .btn-connect.fac{background:var(--fac);color:var(--text);}
+#s-login .btn-connect.fac:hover{background:#20c0e0;box-shadow:0 6px 20px rgba(62,212,245,.25);}
+
+#s-login .consent-wrap{margin-top:10px;padding:9px 11px;background:#f8f9fb;border:1px solid var(--border);border-radius:9px;}
+#s-login .consent-check{accent-color:var(--moss);}
+#s-login .consent-text{font-size:.6rem;color:var(--light);line-height:1.55;}
+#s-login .consent-note{font-size:.58rem;color:var(--light);line-height:1.5;}
+#s-login .rgpd-box{margin-top:10px;padding:9px 11px;background:#f8f9fb;border:1px solid var(--border);border-radius:9px;font-size:.6rem;color:var(--mid);line-height:1.55;}
+
 .login-card{position:relative;z-index:5;border-radius:30px;overflow:hidden;}
 .login-card,.team-card,.fac-page-head,.vcard,.modal-card,.conv-drawer,.drawer-hdr,.carnet-drawer,.mentor-panel{border:1.5px solid var(--border);box-shadow:0 14px 40px rgba(23,26,43,.08);}
 .login-top{background:linear-gradient(180deg,#ffffff,#f7faff);border-bottom:1.5px solid var(--border);}
@@ -697,8 +773,14 @@ body::before{background:radial-gradient(ellipse 60% 50% at 85% 5%,rgba(62,212,24
   <div id="login-galaxy" aria-hidden="true"></div>
   <div class="login-card">
     <div class="login-top">
-      <div class="login-logo">🌿 SPARK ⚡</div>
+      <div class="login-logo">🌿 SPARK <span class="login-logo-spark">⚡</span></div>
       <div class="login-sub">The Schools Challenge · Nouvelle Génération</div>
+      <div class="lpi-dots" aria-hidden="true">
+        <span class="lpi-dot" style="background:var(--moss);"></span>
+        <span class="lpi-dot" style="background:var(--fac);"></span>
+        <span class="lpi-dot" style="background:var(--mentor);"></span>
+        <span class="lpi-dot" style="background:var(--sun);"></span>
+      </div>
     </div>
     <div class="login-body">
       <div class="role-cards">
