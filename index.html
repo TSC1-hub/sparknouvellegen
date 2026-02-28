@@ -791,26 +791,49 @@ body::before{background:radial-gradient(ellipse 60% 50% at 85% 5%,rgba(62,212,24
 .btn-carnet:hover{background:rgba(0,212,160,.14);color:#007f66;}
 .notif-dot{color:var(--terra);}
 
-.steps-sidebar{background:linear-gradient(180deg,#e8fdf7 0%,#d4f9ef 100%);border-right:1.5px solid rgba(0,212,160,.2);}
-.mentor-sidebar{background:linear-gradient(180deg,#f8f0ff 0%,#f0e6fd 100%);border-right:1.5px solid rgba(200,127,240,.2);}
-.fac-sidebar{background:linear-gradient(180deg,#e6f8ff 0%,#d4f2fc 100%);border-right:1.5px solid rgba(62,212,245,.2);}
-.ss-title,.ms-title,.fs-title{color:var(--mid);font-size:.5rem;letter-spacing:2.5px;}
+.steps-sidebar{background:linear-gradient(180deg,var(--moss) 0%,var(--sage) 100%);border-right:1.5px solid rgba(0,180,150,.3);}
+.mentor-sidebar{background:linear-gradient(180deg,#9040b8 0%,#7f31a6 100%);border-right:1.5px solid rgba(111,40,160,.3);}
+.fac-sidebar{background:linear-gradient(180deg,var(--fac) 0%,#20c0e0 100%);border-right:1.5px solid rgba(20,192,224,.3);}
+.ss-title,.ms-title{color:rgba(255,255,255,.65);font-size:.5rem;letter-spacing:2.5px;}
+.fs-title{color:rgba(9,38,59,.55);font-size:.5rem;letter-spacing:2.5px;}
 
 .step-item,.ms-team,.fs-nav{border-left-width:2.5px;}
-.step-item.active{background:rgba(245,197,24,.08);border-left-color:var(--sun);}
-.step-item.done{border-left-color:var(--moss);}
-.step-item.done .step-orb{background:rgba(0,212,160,.12);}
-.step-item.active .step-orb{background:rgba(245,197,24,.12);}
-.step-item.done .step-day{color:var(--moss);}
-.step-item.active .step-day{color:#c4951a;}
-.step-item.done .step-name,.step-item.active .step-name{color:var(--text);}
-.step-item.locked .step-orb{background:rgba(0,0,0,.04);}
-.step-item.locked .step-name,.step-item.locked .step-day{color:var(--light);}
+.step-item.active{background:rgba(255,255,255,.18);border-left-color:rgba(255,255,255,.9);}
+.step-item.done{border-left-color:rgba(255,255,255,.5);}
+.step-item.done .step-orb{background:rgba(255,255,255,.2);}
+.step-item.active .step-orb{background:rgba(255,255,255,.28);}
+.step-item.done .step-day{color:rgba(255,255,255,.75);}
+.step-item.active .step-day{color:#ffffff;}
+.step-item.done .step-name,.step-item.active .step-name{color:#ffffff;}
+.step-item.locked .step-orb{background:rgba(255,255,255,.08);}
+.step-item.locked .step-name,.step-item.locked .step-day{color:rgba(255,255,255,.35);}
 
-.spark-id{background:#fff;border:1.5px solid rgba(0,212,160,.2);}
+.spark-id{background:#fff;border:1.5px solid rgba(0,212,160,.28);}
 .spark-id-av{background:var(--moss);}
 .spark-id-name,.spark-id-status{color:#009978;}
 .status-dot{background:var(--moss);}
+/* ─── Capsules identité — fond blanc, texte couleur rôle ─── */
+.ms-identity{background:#fff!important;border:1.5px solid rgba(144,64,184,.28)!important;}
+.ms-id-av{background:var(--mentor)!important;}
+.ms-id-name{color:#9040b8!important;}
+.ms-id-code{color:rgba(144,64,184,.55)!important;}
+.fs-identity{background:#fff!important;border:1.5px solid rgba(10,150,185,.3)!important;}
+.fs-id-av{background:var(--fac)!important;color:#09263b!important;}
+.fs-id-name{color:#0a7a97!important;}
+.fs-id-role{color:rgba(10,122,151,.65)!important;}
+/* ─── Sidebar mentor : items sur fond violet vif ─── */
+.ms-team:hover{background:rgba(255,255,255,.1)!important;}
+.ms-team.sel{background:rgba(255,255,255,.2)!important;border-left-color:rgba(255,255,255,.9)!important;}
+.ms-team-name{color:rgba(255,255,255,.88)!important;}
+.ms-team-day{color:rgba(255,255,255,.45)!important;}
+/* ─── Sidebar fac : items sur fond cyan clair (texte sombre) ─── */
+.fac-sidebar .fs-nav{color:rgba(9,38,59,.65)!important;}
+.fac-sidebar .fs-nav:hover{background:rgba(9,38,59,.08)!important;color:rgba(9,38,59,.9)!important;}
+.fac-sidebar .fs-nav.sel{background:rgba(9,38,59,.15)!important;border-left-color:rgba(9,38,59,.8)!important;color:rgba(9,38,59,1)!important;font-weight:600!important;}
+.fac-sidebar .fs-badge{background:var(--terra);color:#fff;}
+/* ─── Image déco centrée sur la zone conversation (hors sidebar) ─── */
+#s-eleve .page-bg-shape{left:calc(50% + 100px);}
+#s-fac .page-bg-shape{left:calc(50% + 105px);}
 
 .chat-zone{background:linear-gradient(180deg,#ffffff,#fcfdff);}
 .msg.spark-msg .msg-av{background:var(--moss);}
