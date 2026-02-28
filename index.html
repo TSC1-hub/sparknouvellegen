@@ -849,9 +849,11 @@ body::before{background:radial-gradient(ellipse 60% 50% at 85% 5%,rgba(62,212,24
 }
 .fac-sidebar .fs-badge{background:var(--terra);color:#fff;}
 
-.spark-id{background:#f8f8f8;border:1px solid #ececec;margin:auto 6px 8px;padding:8px 8px;}
-.spark-id-av{background:var(--moss);}
-.spark-id-name,.spark-id-status{color:#009978;}
+.spark-id{background:#f8f8f8;border:1px solid #ececec;margin:auto 6px 8px;padding:8px 6px;
+  flex-direction:column;align-items:center;gap:4px;text-align:center;}
+.spark-id-av{background:var(--moss);width:30px;height:30px;font-size:1rem;}
+.spark-id-name{font-size:.6rem;color:#009978;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:76px;}
+.spark-id-status{font-size:.52rem;color:#009978;justify-content:center;}
 .status-dot{background:var(--moss);}
 /* ─── Capsules identité — fond blanc, texte couleur rôle ─── */
 .ms-identity{background:#fff!important;border:1.5px solid rgba(144,64,184,.28)!important;}
