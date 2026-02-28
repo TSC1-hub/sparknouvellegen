@@ -149,7 +149,8 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
 /* ── STEPS SIDEBAR — style Instagram stories ── */
 .steps-sidebar{width:96px;background:#fff;
   display:flex;flex-direction:column;flex-shrink:0;
-  border-right:1px solid #f0f0f0;overflow-y:auto;}
+  border-right:1px solid #f0f0f0;overflow-y:auto;
+  justify-content:space-evenly;padding-bottom:8px;}
 .steps-sidebar::-webkit-scrollbar{display:none;}
 .ss-title{font-size:.48rem;font-weight:700;letter-spacing:2px;text-transform:uppercase;
   color:#bbb;padding:12px 4px 6px;text-align:center;}
@@ -858,14 +859,7 @@ body::before{background:radial-gradient(ellipse 60% 50% at 85% 5%,rgba(62,212,24
 }
 .fac-sidebar .fs-badge{background:var(--terra);color:#fff;}
 
-.spark-id{background:#f8f8f8;border:1px solid #ececec;margin:auto 6px 8px;padding:8px 6px;
-  flex-direction:column;align-items:center;justify-content:center;gap:4px;text-align:center;}
-.spark-id > div{display:flex;flex-direction:column;align-items:center;width:100%;}
-.spark-id-av{background:linear-gradient(135deg,#f09433,#e6683c,#dc2743,#cc2366);width:40px;height:40px;border-radius:50%;padding:3px;margin:0 auto;flex-shrink:0;display:flex;align-items:center;justify-content:center;}
-.spark-id-av-inner{background:#fff;width:100%;height:100%;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:1.2rem;}
-.spark-id-name{font-size:.6rem;color:#009978;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:76px;text-align:center;}
-.spark-id-status{font-size:.52rem;color:#009978;justify-content:center;display:flex;align-items:center;}
-.status-dot{background:var(--moss);}
+
 /* ─── Capsules identité — fond blanc, texte couleur rôle ─── */
 .ms-identity{background:#fff!important;border:1.5px solid rgba(144,64,184,.28)!important;}
 .ms-id-av{background:var(--mentor)!important;}
@@ -1032,7 +1026,6 @@ body::before{background:radial-gradient(ellipse 60% 50% at 85% 5%,rgba(62,212,24
   .step-item.active{ border-bottom-color: var(--sun)  !important; background: rgba(240,192,64,.1); }
   .step-orb { width: 24px; height: 24px; font-size: .75rem; }
   .step-info { display: none; }
-  .spark-id { display: none; }
   .chat-zone { padding: 8px 10px; gap: 8px; }
   .msg-bubble { font-size: .79rem; }
   .btn-send { padding: 9px 12px; font-size: .7rem; }
@@ -1265,10 +1258,7 @@ body::before{background:radial-gradient(ellipse 60% 50% at 85% 5%,rgba(62,212,24
       <div class="step-item locked" id="step-3"><div class="step-num">3</div><div class="step-orb"><div class="step-ring-inner"><span class="step-emoji">🔨</span></div></div><div class="step-label">Créer</div></div>
       <div class="step-item locked" id="step-4"><div class="step-num">4</div><div class="step-orb"><div class="step-ring-inner"><span class="step-emoji">📢</span></div></div><div class="step-label">Chiffrer &amp; Pitcher</div></div>
       <div class="step-item locked" id="step-5"><div class="step-num">5</div><div class="step-orb"><div class="step-ring-inner"><span class="step-emoji">🏆</span></div></div><div class="step-label">S'entraîner<br>finale</div></div>
-      <div class="spark-id">
-        <div class="spark-id-av"><div class="spark-id-av-inner">⚡</div></div>
-        <div><div class="spark-id-status"><span class="status-dot"></span>En ligne</div></div>
-      </div>
+
     </div>
     <div class="chat-zone">
       <div class="eleve-chat-tabs">
