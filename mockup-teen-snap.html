@@ -116,7 +116,13 @@
     display:flex;flex-direction:column;align-items:center;gap:4px;
   }
   .sn-id-av{
-    width:32px;height:32px;border-radius:50%;
+    width:34px;height:34px;border-radius:50%;
+    background:linear-gradient(135deg,var(--pink),var(--purple));
+    padding:2.5px;flex-shrink:0;
+    display:flex;align-items:center;justify-content:center;
+  }
+  .sn-id-av-inner{
+    width:100%;height:100%;border-radius:50%;
     background:var(--yellow);
     display:flex;align-items:center;justify-content:center;font-size:1rem;
   }
@@ -375,7 +381,7 @@
     </div>
 
     <div class="sn-id">
-      <div class="sn-id-av">🦁</div>
+      <div class="sn-id-av"><div class="sn-id-av-inner">🦁</div></div>
       <div class="sn-id-name">Léa</div>
       <div class="sn-id-team">TEAM-42</div>
       <div class="sn-id-status">
