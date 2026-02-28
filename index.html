@@ -498,10 +498,20 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
 
 /* THEME MOCKUP LEARNING PLANET V2 */
 .shape{position:absolute;pointer-events:none;mix-blend-mode:multiply;z-index:0;}
-.lpi-shape{opacity:.18;display:none;}
+.lpi-shape{opacity:.22;display:none;animation:lpiSideFloat 17s ease-in-out infinite;}
 
 #login-galaxy{position:absolute;inset:0;pointer-events:none;overflow:hidden;z-index:0;}
-.lpi-orbit{display:block;opacity:.16;}
+.lpi-orbit{display:block;opacity:.16;transform-origin:center;animation:lpiOrbitDrift var(--dur,18s) ease-in-out var(--delay,0s) infinite;}
+
+@keyframes lpiOrbitDrift{
+  0%,100%{transform:translate3d(0,0,0) rotate(var(--rot,0deg));}
+  50%{transform:translate3d(var(--dx,8px),var(--dy,-10px),0) rotate(calc(var(--rot,0deg) + 4deg));}
+}
+
+@keyframes lpiSideFloat{
+  0%,100%{transform:translate3d(0,0,0) rotate(-6deg);}
+  50%{transform:translate3d(0,-10px,0) rotate(6deg);}
+}
 
 #s-login .lpi-login-1{width:180px;top:-24px;left:-30px;transform:rotate(12deg);}
 #s-login .lpi-login-2{width:210px;top:-42px;right:-38px;transform:rotate(-18deg);}
@@ -1165,14 +1175,14 @@ async function injectMockupShapes(){
   if(!placeholders.length) return;
 
   const localShapeSources = [
-    'patateviolette.png',
-    'patatebleuelongue.png',
     'LPI_Shapes_Shape 1 copie.png',
     'LPI_Shapes_Shape 2 copie.png',
     'LPI_Shapes_Shape 2.png',
     'LPI_Shapes_Shape 3 copie.png',
     'LPI_Shapes_Shape 3.png',
+    'LPI_Shapes_Shape 4 copie.png',
     'LPI_Shapes_Shape 4.png',
+    'LPI_Shapes_Shape 5 copie 2.png',
     'LPI_Shapes_Shape 5 copie.png',
     'LPI_Shapes_Shape 5.png'
   ];
@@ -1197,9 +1207,9 @@ async function injectMockupShapes(){
     const parsedSources = pngList.length ? pngList : fallbackSrcs;
     if(parsedSources.length) shapeSources = parsedSources;
 
-    const teamGreenSrc = 'photoverte.png';
-    const mentorPurpleSrc = 'patateviolette.png';
-    const facBlueSrc = 'patatebleuelongue.png';
+    const teamGreenSrc = 'LPI_Shapes_Shape 1 copie.png';
+    const mentorPurpleSrc = 'LPI_Shapes_Shape 3 copie.png';
+    const facBlueSrc = 'LPI_Shapes_Shape 4.png';
 
     renderLoginGalaxy(shapeSources);
 
@@ -1228,9 +1238,9 @@ async function injectMockupShapes(){
     placeholders.forEach((img, index)=>{
       let src = shapeSources[index % shapeSources.length];
       if(!src) return;
-      if(img.classList.contains('lpi-side-eleve')) src = 'photoverte.png';
-      if(img.classList.contains('lpi-side-mentor')) src = 'patateviolette.png';
-      if(img.classList.contains('lpi-side-fac')) src = 'patatebleuelongue.png';
+      if(img.classList.contains('lpi-side-eleve')) src = 'LPI_Shapes_Shape 1 copie.png';
+      if(img.classList.contains('lpi-side-mentor')) src = 'LPI_Shapes_Shape 3 copie.png';
+      if(img.classList.contains('lpi-side-fac')) src = 'LPI_Shapes_Shape 4.png';
       img.src = encodeURI(src);
       img.decoding = 'async';
       img.loading = 'lazy';
@@ -1301,7 +1311,12 @@ function renderLoginGalaxy(shapeSources = galaxyShapeSources){
     img.style.top = `${y - (size / 2)}px`;
     img.style.width = `${size}px`;
     img.style.opacity = opacity.toFixed(3);
-    img.style.transform = `rotate(${(theta * 57.2958).toFixed(2)}deg)`;
+    const rotDeg = (theta * 57.2958).toFixed(2);
+    img.style.setProperty('--rot', `${rotDeg}deg`);
+    img.style.setProperty('--dx', `${(Math.sin(theta) * 10).toFixed(2)}px`);
+    img.style.setProperty('--dy', `${(-8 - Math.abs(Math.cos(theta) * 8)).toFixed(2)}px`);
+    img.style.setProperty('--dur', `${(14 + ((Math.abs(Math.sin(theta)) * 10))).toFixed(2)}s`);
+    img.style.setProperty('--delay', `${(-Math.abs(theta % 6)).toFixed(2)}s`);
     host.appendChild(img);
   }
 
