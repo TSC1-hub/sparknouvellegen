@@ -881,7 +881,8 @@ body::before{background:radial-gradient(ellipse 60% 50% at 85% 5%,rgba(62,212,24
 #s-fac .page-bg-shape{left:calc(50% + 105px);}
 
 .chat-zone{background:linear-gradient(180deg,#ffffff,#fcfdff);}
-.msg.spark-msg .msg-av{background:var(--moss);}
+.msg.spark-msg .msg-av{background:linear-gradient(135deg,#f09433,#e6683c,#dc2743,#cc2366);padding:2.5px;flex-shrink:0;}
+.msg.spark-msg .msg-av-inner{background:#fff;width:100%;height:100%;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.85rem;}
 .msg.eleve-msg .msg-av{background:var(--sun);}
 .msg.mentor-msg .msg-av{background:var(--mentor);}
 .msg.spark-msg .msg-who{color:var(--moss);}
@@ -971,9 +972,10 @@ body::before{background:radial-gradient(ellipse 60% 50% at 85% 5%,rgba(62,212,24
 .carnet-pill.done{background:rgba(0,212,160,.08);border-color:rgba(0,212,160,.25);color:#009978;}
 .carnet-pill.active{background:var(--sun);border-color:var(--sun);color:#fff;}
 
-.drawer-hdr,.drawer-tabs,.drawer-tab,.vitrine-etapes,.vitrine-split{background:#fff;}
+.drawer-hdr,.drawer-tabs,.drawer-tab,.vitrine-split{background:#fff;}
+.vitrine-etapes{background:#edf7ff;}
 .drawer-tab.active{background:var(--fac-l);border-bottom-color:var(--fac);color:#1890b0;}
-.vitrine-pill{border:1.5px solid rgba(29,111,164,.4);color:#155a8a;background:rgba(29,111,164,.09);font-weight:700;}
+.vitrine-pill{border:1.5px solid rgba(29,111,164,.55);color:#0d4a7a;background:rgba(29,111,164,.13);font-weight:700;}
 .vitrine-pill.active{background:#d0eafa;border-color:#1d6fa4;color:#0a1f30;box-shadow:0 4px 12px rgba(29,111,164,.22);font-weight:800;}
 
 /* ═══════════════════════════════════════════
@@ -2466,7 +2468,7 @@ function renderMsg(role,text,pseudo){
   const t=formatTxt(text);
   if(role==='assistant'){
     d.className='msg spark-msg';
-    d.innerHTML=`<div class="msg-av">⚡</div><div class="msg-col"><div class="msg-who">SPARK ⚡</div><div class="msg-bubble">${t}</div></div>`;
+    d.innerHTML=`<div class="msg-av"><div class="msg-av-inner">⚡</div></div><div class="msg-col"><div class="msg-who">SPARK ⚡</div><div class="msg-bubble">${t}</div></div>`;
   } else if(role==='user'){
     d.className='msg eleve-msg';
     d.innerHTML=`<div class="msg-av">👥</div><div class="msg-col"><div class="msg-who">La Team</div><div class="msg-bubble">${t}</div></div>`;
@@ -2497,7 +2499,7 @@ function showTyping(){
   const c=document.getElementById('chat-messages');
   const w=document.createElement('div');
   w.className='msg spark-msg'; w.id='typing-wrap';
-  w.innerHTML=`<div class="msg-av">⚡</div><div class="msg-col"><div class="msg-who">SPARK ⚡</div><div class="typing-bubble"><div class="typing-dot"></div><div class="typing-dot"></div><div class="typing-dot"></div></div></div>`;
+  w.innerHTML=`<div class="msg-av"><div class="msg-av-inner">⚡</div></div><div class="msg-col"><div class="msg-who">SPARK ⚡</div><div class="typing-bubble"><div class="typing-dot"></div><div class="typing-dot"></div><div class="typing-dot"></div></div></div>`;
   c.appendChild(w); scrollBot();
 }
 function hideTyping(){const e=document.getElementById('typing-wrap');if(e)e.remove();}
@@ -2621,7 +2623,7 @@ async function loadMentorTeam(eq,el){
   if(canalSub) canalSub.textContent=`Direct avec ${eq.nom||eq.code_equipe}`;
   const pg=document.getElementById('mentor-prog');
   pg.innerHTML='';
-  for(let i=0;i<5;i++){const d=document.createElement('div');d.className='pdot '+(i<eq.etape_courante?'d':i===eq.etape_courante?'a':'p');pg.appendChild(d);}
+  for(let i=0;i<6;i++){const d=document.createElement('div');d.className='pdot '+(i<eq.etape_courante?'d':i===eq.etape_courante?'a':'p');pg.appendChild(d);}
   await chargerVitrinesMentor(eq.id, Number(eq.etape_courante || 0));
   listenVitrinesMentor(eq.id);
   listenMentorTeamMessages(eq.id);
@@ -2757,7 +2759,7 @@ async function chargerConversationMentor(eqId){
 
   visibles.forEach(m=>{
     const d=document.createElement('div');
-    if(m.role==='assistant'){d.className='msg spark-msg';d.innerHTML=`<div class="msg-av">⚡</div><div class="msg-col"><div class="msg-who">SPARK ⚡</div><div class="msg-bubble">${formatTxt(m.message)}</div></div>`;}
+    if(m.role==='assistant'){d.className='msg spark-msg';d.innerHTML=`<div class="msg-av"><div class="msg-av-inner">⚡</div></div><div class="msg-col"><div class="msg-who">SPARK ⚡</div><div class="msg-bubble">${formatTxt(m.message)}</div></div>`;}
     else if(m.role==='user'){d.className='msg eleve-msg';d.innerHTML=`<div class="msg-av">👥</div><div class="msg-col"><div class="msg-who">${m.pseudo||'La Team'}</div><div class="msg-bubble">${formatTxt(m.message)}</div></div>`;}
     else if(m.role==='mentor'){d.className='msg mentor-msg';d.innerHTML=`<div class="msg-av">🎓</div><div class="msg-col"><div class="msg-who">${m.pseudo||'Mentor'}</div><div class="msg-bubble">${formatTxt(m.message)}</div></div>`;}
     c.appendChild(d);
@@ -3043,7 +3045,7 @@ function renderFacConversationCanal(){
   }
   msgs.forEach(m=>{
     const d=document.createElement('div');
-    if(m.role==='assistant'){d.className='msg spark-msg';d.innerHTML=`<div class="msg-av">⚡</div><div class="msg-col"><div class="msg-who">SPARK ⚡</div><div class="msg-bubble">${formatTxt(m.message)}</div></div>`;}
+    if(m.role==='assistant'){d.className='msg spark-msg';d.innerHTML=`<div class="msg-av"><div class="msg-av-inner">⚡</div></div><div class="msg-col"><div class="msg-who">SPARK ⚡</div><div class="msg-bubble">${formatTxt(m.message)}</div></div>`;}
     else if(m.role==='user'){d.className='msg eleve-msg';d.innerHTML=`<div class="msg-av">👥</div><div class="msg-col"><div class="msg-who">${m.pseudo||'La Team'}</div><div class="msg-bubble">${formatTxt(m.message)}</div></div>`;}
     else if(m.role==='mentor'){d.className='msg mentor-msg';d.innerHTML=`<div class="msg-av">🎓</div><div class="msg-col"><div class="msg-who">${m.pseudo||'Mentor'}</div><div class="msg-bubble">${formatTxt(m.message)}</div></div>`;}
     msgs_el.appendChild(d);
