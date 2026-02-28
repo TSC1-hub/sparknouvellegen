@@ -500,57 +500,33 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
 .shape{position:absolute;pointer-events:none;mix-blend-mode:multiply;z-index:0;}
 .lpi-shape{opacity:.22;display:none;animation:lpiSideFloat 17s ease-in-out infinite;}
 
-/* LPI shapes — système mockup V2 — animations per-shape vers le centre */
+/* LPI shapes — 4 coins uniquement, dérive vers le centre ×6 */
 #s-login .lpi{position:absolute;mix-blend-mode:multiply;pointer-events:none;z-index:1;will-change:transform;}
 #s-login .lpi-nw{width:310px;top:-80px;left:-80px;opacity:.78;animation:toCtr-nw 13s ease-in-out infinite;}
 #s-login .lpi-ne{width:260px;top:-55px;right:-70px;opacity:.70;animation:toCtr-ne 11s ease-in-out infinite;}
 #s-login .lpi-sw{width:240px;bottom:-65px;left:-55px;opacity:.65;animation:toCtr-sw 14s ease-in-out infinite;}
 #s-login .lpi-se{width:280px;bottom:-75px;right:-65px;opacity:.73;animation:toCtr-se 12s ease-in-out infinite;}
-#s-login .lpi-ml{width:160px;top:42%;left:-38px;opacity:.55;animation:toCtr-ml 15s ease-in-out infinite;}
-#s-login .lpi-mr{width:150px;top:35%;right:-35px;opacity:.50;animation:toCtr-mr 13s ease-in-out infinite;}
-#s-login .lpi-tc{width:120px;top:8%;left:38%;opacity:.36;animation:toCtr-tc 16s ease-in-out infinite;}
-#s-login .lpi-bc{width:110px;bottom:12%;right:32%;opacity:.32;animation:toCtr-bc 14s ease-in-out infinite;}
 
-/* Chaque shape dérive vers le centre — amplitude x4 */
+/* Chaque coin dérive fortement vers le centre — amplitude ×1.5 vs précédent */
 @keyframes toCtr-nw{
   0%,100%{transform:rotate(-14deg) translate(0,0);}
-  40%    {transform:rotate(-10deg) translate(64px,54px);}
-  75%    {transform:rotate(-16deg) translate(22px,20px);}
+  40%    {transform:rotate(-9deg)  translate(96px,81px);}
+  75%    {transform:rotate(-17deg) translate(33px,30px);}
 }
 @keyframes toCtr-ne{
   0%,100%{transform:rotate(20deg) translate(0,0);}
-  40%    {transform:rotate(16deg) translate(-60px,52px);}
-  75%    {transform:rotate(23deg) translate(-20px,18px);}
+  40%    {transform:rotate(15deg)  translate(-90px,78px);}
+  75%    {transform:rotate(24deg)  translate(-30px,27px);}
 }
 @keyframes toCtr-sw{
   0%,100%{transform:rotate(10deg) translate(0,0);}
-  40%    {transform:rotate(14deg) translate(58px,-50px);}
-  75%    {transform:rotate(7deg)  translate(20px,-17px);}
+  40%    {transform:rotate(15deg)  translate(87px,-75px);}
+  75%    {transform:rotate(6deg)   translate(30px,-26px);}
 }
 @keyframes toCtr-se{
   0%,100%{transform:rotate(-22deg) translate(0,0);}
-  40%    {transform:rotate(-18deg) translate(-62px,-46px);}
-  75%    {transform:rotate(-25deg) translate(-22px,-15px);}
-}
-@keyframes toCtr-ml{
-  0%,100%{transform:rotate(6deg) translate(0,0);}
-  45%    {transform:rotate(10deg) translate(52px,-10px);}
-  80%    {transform:rotate(3deg)  translate(16px,6px);}
-}
-@keyframes toCtr-mr{
-  0%,100%{transform:rotate(-10deg) translate(0,0);}
-  45%    {transform:rotate(-6deg)  translate(-50px,-8px);}
-  80%    {transform:rotate(-13deg) translate(-16px,5px);}
-}
-@keyframes toCtr-tc{
-  0%,100%{transform:rotate(25deg) translate(0,0);}
-  50%    {transform:rotate(21deg) translate(0,42px);}
-  80%    {transform:rotate(28deg) translate(6px,14px);}
-}
-@keyframes toCtr-bc{
-  0%,100%{transform:rotate(-18deg) translate(0,0);}
-  50%    {transform:rotate(-13deg) translate(0,-38px);}
-  80%    {transform:rotate(-22deg) translate(-6px,-13px);}
+  40%    {transform:rotate(-17deg) translate(-93px,-69px);}
+  75%    {transform:rotate(-26deg) translate(-33px,-23px);}
 }
 
 .steps-sidebar,.mentor-sidebar,.fac-sidebar{position:relative;}
@@ -623,19 +599,20 @@ body::before{background:radial-gradient(ellipse 60% 50% at 85% 5%,rgba(62,212,24
   background:radial-gradient(circle,rgba(0,212,160,.08) 0%,transparent 70%);
   pointer-events:none;
 }
-#s-login .ch-top{display:flex;align-items:center;gap:14px;position:relative;z-index:1;}
+/* En-tête centré */
+#s-login .ch-top{display:flex;flex-direction:column;align-items:center;gap:10px;position:relative;z-index:1;text-align:center;}
 #s-login .ch-mark{
-  width:48px;height:48px;border-radius:16px;
+  width:52px;height:52px;border-radius:18px;
   background:linear-gradient(135deg,#111118,#2a2a3a);
   display:flex;align-items:center;justify-content:center;
-  font-size:1.4rem;flex-shrink:0;
+  font-size:1.5rem;
   box-shadow:0 6px 18px rgba(0,0,0,.22);
 }
-#s-login .ch-name{display:flex;flex-direction:column;}
-#s-login .ch-title{font-family:'Syne',sans-serif;font-weight:800;font-size:1.7rem;letter-spacing:1.5px;line-height:1;color:var(--text);}
+#s-login .ch-name{display:flex;flex-direction:column;align-items:center;}
+#s-login .ch-title{font-family:'Syne',sans-serif;font-weight:800;font-size:1.9rem;letter-spacing:2px;line-height:1;color:var(--text);}
 #s-login .ch-title em{font-style:normal;color:var(--sun);}
-#s-login .ch-sub{font-size:.6rem;font-weight:500;letter-spacing:2px;text-transform:uppercase;color:var(--light);margin-top:3px;}
-#s-login .ch-pills{display:flex;align-items:center;gap:8px;margin-top:14px;position:relative;z-index:1;}
+#s-login .ch-sub{font-size:.6rem;font-weight:500;letter-spacing:2px;text-transform:uppercase;color:var(--light);margin-top:4px;}
+#s-login .ch-pills{display:flex;align-items:center;justify-content:center;gap:8px;margin-top:14px;position:relative;z-index:1;}
 #s-login .ch-pill-gen{
   display:flex;align-items:center;gap:6px;padding:5px 13px;
   background:rgba(0,212,160,.09);border:1px solid rgba(0,212,160,.22);
@@ -646,7 +623,7 @@ body::before{background:radial-gradient(ellipse 60% 50% at 85% 5%,rgba(62,212,24
   0%,100%{opacity:1;box-shadow:0 0 0 0 rgba(0,212,160,.4);}
   50%    {opacity:.5;box-shadow:0 0 0 4px rgba(0,212,160,0);}
 }
-#s-login .ch-dots{display:flex;gap:4px;margin-left:auto;}
+#s-login .ch-dots{display:flex;gap:4px;}
 #s-login .ch-dot{width:8px;height:8px;border-radius:50%;}
 /* ─── CORPS CARTE ─── */
 #s-login .cb{padding:20px 26px 18px;overflow-y:auto;flex:1;display:flex;flex-direction:column;gap:14px;}
@@ -909,10 +886,6 @@ body::before{background:radial-gradient(ellipse 60% 50% at 85% 5%,rgba(62,212,24
   <img class="lpi lpi-ne" src="LPI_Shapes_Shape 2.png" alt="">
   <img class="lpi lpi-sw" src="LPI_Shapes_Shape 3.png" alt="">
   <img class="lpi lpi-se" src="LPI_Shapes_Shape 4.png" alt="">
-  <img class="lpi lpi-ml" src="LPI_Shapes_Shape 5.png" alt="">
-  <img class="lpi lpi-mr" src="LPI_Shapes_Shape 2 copie.png" alt="">
-  <img class="lpi lpi-tc" src="LPI_Shapes_Shape 3 copie.png" alt="">
-  <img class="lpi lpi-bc" src="LPI_Shapes_Shape 5 copie.png" alt="">
   <div class="card">
     <!-- En-tête carte -->
     <div class="ch">
