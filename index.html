@@ -491,6 +491,9 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
 .shape{position:absolute;pointer-events:none;mix-blend-mode:multiply;z-index:0;}
 .lpi-shape{opacity:.18;display:none;}
 
+#login-galaxy{position:absolute;inset:0;pointer-events:none;overflow:hidden;z-index:0;}
+.lpi-orbit{display:block;opacity:.16;}
+
 #s-login .lpi-login-1{width:180px;top:-24px;left:-30px;transform:rotate(12deg);}
 #s-login .lpi-login-2{width:210px;top:-42px;right:-38px;transform:rotate(-18deg);}
 #s-login .lpi-login-3{width:220px;bottom:-36px;left:-40px;transform:rotate(-10deg);}
@@ -512,6 +515,7 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
 body{background:var(--bg);}
 body::before{background:radial-gradient(ellipse 60% 50% at 85% 5%,rgba(62,212,245,.09) 0%,transparent 65%),radial-gradient(ellipse 40% 60% at 10% 95%,rgba(200,127,240,.08) 0%,transparent 65%);}
 
+.login-card{position:relative;z-index:5;}
 .login-card,.team-card,.fac-page-head,.vcard,.modal-card,.conv-drawer,.drawer-hdr,.carnet-drawer,.mentor-panel{border:1.5px solid var(--border);box-shadow:0 8px 30px rgba(0,0,0,.06);}
 .login-top{background:#f8f9fb;border-bottom:1.5px solid var(--border);}
 .login-top::before{display:none;}
@@ -677,10 +681,7 @@ body::before{background:radial-gradient(ellipse 60% 50% at 85% 5%,rgba(62,212,24
 
 <!-- LOGIN -->
 <div class="screen" id="s-login">
-  <img class="shape lpi-shape lpi-login-1" alt="Décor Learning Planet">
-  <img class="shape lpi-shape lpi-login-2" alt="Décor Learning Planet">
-  <img class="shape lpi-shape lpi-login-3" alt="Décor Learning Planet">
-  <img class="shape lpi-shape lpi-login-4" alt="Décor Learning Planet">
+  <div id="login-galaxy" aria-hidden="true"></div>
   <div class="login-card">
     <div class="login-top">
       <div class="login-logo">🌿 SPARK ⚡</div>
@@ -1050,7 +1051,7 @@ async function ensureEdgeSession(){
 }
 
 async function injectMockupShapes(){
-  const placeholders = Array.from(document.querySelectorAll('.lpi-shape'));
+  const placeholders = Array.from(document.querySelectorAll('.lpi-side-eleve,.lpi-side-mentor,.lpi-side-fac'));
   if(!placeholders.length) return;
 
   try {
@@ -1072,20 +1073,82 @@ async function injectMockupShapes(){
     const shapeSources = pngList.length ? pngList : fallbackSrcs;
     if(!shapeSources.length) return;
 
+    const mentorPurpleSrc =
+      shapeSources.find(s => /LPI_Shapes_Shape\s*5(?:\s*copie(?:\s*2)?)?\.png$/i.test(s)) ||
+      shapeSources[0];
+
+    const facBlueSrc =
+      shapeSources.find(s => /LPI_Shapes_Shape\s*2(?:\s*copie)?\.png$/i.test(s)) ||
+      shapeSources[0];
+
+    renderLoginGalaxy(shapeSources);
+
     placeholders.forEach((img, index)=>{
-      const src = shapeSources[index % shapeSources.length];
+      let src = shapeSources[index % shapeSources.length];
       if(!src) return;
 
-      const inlineStyle = styleList[index % Math.max(styleList.length, 1)] || '';
+      if(img.classList.contains('lpi-side-mentor') && mentorPurpleSrc){
+        src = mentorPurpleSrc;
+      }
+      if(img.classList.contains('lpi-side-fac') && facBlueSrc){
+        src = facBlueSrc;
+      }
 
       img.src = src;
       img.decoding = 'async';
       img.loading = 'lazy';
-      if(inlineStyle) img.style.cssText = `${inlineStyle}; z-index:0;`;
       img.style.display = 'block';
     });
   } catch (e) {
     console.warn('Photos mockup non chargées:', e?.message || e);
+  }
+}
+
+let galaxyShapeSources = [];
+let galaxyResizeBound = false;
+
+function renderLoginGalaxy(shapeSources = galaxyShapeSources){
+  const host = document.getElementById('login-galaxy');
+  const screen = document.getElementById('s-login');
+  const card = document.querySelector('#s-login .login-card');
+  if(!host || !screen || !card || !shapeSources?.length) return;
+
+  galaxyShapeSources = shapeSources.slice();
+  host.innerHTML = '';
+
+  const screenRect = screen.getBoundingClientRect();
+  const cardRect = card.getBoundingClientRect();
+  const cx = (cardRect.left - screenRect.left) + cardRect.width / 2;
+  const cy = (cardRect.top - screenRect.top) + cardRect.height / 2;
+  const maxRadius = Math.min(screenRect.width, screenRect.height) * 0.52;
+  const count = Math.max(16, Math.min(30, shapeSources.length * 3));
+
+  for(let i=0;i<count;i++){
+    const theta = (i * 0.62) + 1.9;
+    const radius = Math.min(maxRadius, 58 + (i * 17));
+    const x = cx + Math.cos(theta) * radius;
+    const y = cy + Math.sin(theta) * radius * 0.72;
+    const size = 62 + ((i % 6) * 13);
+
+    const img = document.createElement('img');
+    img.className = 'shape lpi-orbit';
+    img.alt = 'Décor Learning Planet';
+    img.src = shapeSources[i % shapeSources.length];
+    img.decoding = 'async';
+    img.loading = 'lazy';
+    img.style.left = `${x - (size / 2)}px`;
+    img.style.top = `${y - (size / 2)}px`;
+    img.style.width = `${size}px`;
+    img.style.opacity = (0.10 + ((i % 5) * 0.018)).toFixed(3);
+    img.style.transform = `rotate(${(theta * 57.2958).toFixed(2)}deg)`;
+    host.appendChild(img);
+  }
+
+  if(!galaxyResizeBound){
+    galaxyResizeBound = true;
+    window.addEventListener('resize', ()=>{
+      if(galaxyShapeSources.length) renderLoginGalaxy(galaxyShapeSources);
+    });
   }
 }
 
