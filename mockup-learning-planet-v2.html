@@ -18,6 +18,41 @@ body{font-family:'DM Sans',sans-serif;color:var(--text);display:flex;flex-direct
 /* ── SHAPE utility ── */
 .shape{position:absolute;pointer-events:none;mix-blend-mode:multiply;}
 
+/* ── Couleurs par utilisateur (stables) ── */
+.msg.user-colored .msg-av{
+  background:var(--u-bg)!important;
+  color:#fff!important;
+}
+.msg.user-colored .msg-who{
+  color:var(--u-fg)!important;
+}
+.msg.user-colored .msg-bubble{
+  background:var(--u-soft)!important;
+  border:1.5px solid var(--u-border)!important;
+  color:var(--text)!important;
+}
+.msg.user-colored.eleve-msg .msg-bubble{
+  background:var(--u-bg)!important;
+  border-color:var(--u-bg)!important;
+  color:#fff!important;
+}
+
+.h-chip.user-colored,
+.vc-chip.user-colored{
+  background:var(--u-soft)!important;
+  border-color:var(--u-border)!important;
+  color:var(--u-fg)!important;
+}
+
+.vc-chip.user-colored .vc-av{
+  background:var(--u-bg)!important;
+  color:#fff!important;
+}
+
+.vc-chip.user-colored .vc-mname{
+  color:var(--u-fg)!important;
+}
+
 /* ════ SCREENS ════ */
 .screen{display:none;flex:1;flex-direction:column;overflow:hidden;height:100%;}
 .screen.on{display:flex;}
@@ -342,9 +377,9 @@ body{font-family:'DM Sans',sans-serif;color:var(--text);display:flex;flex-direct
 .nav-demo{position:fixed;bottom:14px;left:50%;transform:translateX(-50%);display:flex;gap:7px;z-index:500;background:white;border:1.5px solid var(--border);border-radius:30px;padding:6px 10px;box-shadow:0 4px 20px rgba(0,0,0,.1);}
 .nav-btn{padding:6px 13px;background:transparent;border:none;border-radius:20px;font-family:'Syne',sans-serif;font-size:.62rem;font-weight:700;cursor:pointer;transition:all .2s;color:var(--mid);}
 .nav-btn:hover{background:var(--bg2);color:var(--text);}
-.nav-btn.eleve{} .nav-btn.eleve.act{background:rgba(0,212,160,.1);color:#009978;}
-.nav-btn.mentor{} .nav-btn.mentor.act{background:rgba(200,127,240,.1);color:#9040b8;}
-.nav-btn.fac{} .nav-btn.fac.act{background:rgba(62,212,245,.1);color:#1890b0;}
+.nav-btn.eleve.act{background:rgba(0,212,160,.1);color:#009978;}
+.nav-btn.mentor.act{background:rgba(200,127,240,.1);color:#9040b8;}
+.nav-btn.fac.act{background:rgba(62,212,245,.1);color:#1890b0;}
 .nav-btn.login.act{background:rgba(245,197,24,.1);color:#c4951a;}
 </style>
 </head>
@@ -694,14 +729,6 @@ body{font-family:'DM Sans',sans-serif;color:var(--text);display:flex;flex-direct
   </div>
 </div>
 
-<!-- NAV DEMO -->
-<div class="nav-demo">
-  <button class="nav-btn login act" id="nb-login" onclick="go('login')">🔐 Login</button>
-  <button class="nav-btn eleve" id="nb-eleve" onclick="go('eleve')">👥 Élève</button>
-  <button class="nav-btn mentor" id="nb-mentor" onclick="go('mentor')">🎓 Mentor</button>
-  <button class="nav-btn fac" id="nb-fac" onclick="go('fac')">🛡️ FAC</button>
-</div>
-
 <script>
 let activeRole='eleve';
 const screens=['login','eleve','mentor','fac'];
@@ -710,7 +737,8 @@ function go(id){
   document.querySelectorAll('.screen').forEach(s=>s.classList.remove('on'));
   document.getElementById('s-'+id).classList.add('on');
   document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('act'));
-  document.getElementById('nb-'+id).classList.add('act');
+  const navBtn = document.getElementById('nb-'+id);
+  if(navBtn) navBtn.classList.add('act');
 }
 
 function pickRole(role,el){
@@ -765,7 +793,102 @@ function facTab(tab,el){
     <div class="team-card"><div class="tc-hdr"><div class="tc-av" style="background:rgba(200,127,240,.12);">⚡</div><div><div class="tc-name">Les Makers</div><div class="tc-school">Jaurès · Montreuil</div></div><div class="tc-badge tb-active">Jour 3</div></div><div class="tc-prog-bg"><div class="tc-prog-fill" style="width:50%;background:var(--purple);"></div></div><div class="tc-footer"><div class="tc-eleves">👥 7</div><div class="tc-btns"><button class="btn-voir">💬 Voir</button><button class="btn-rst">🗑️</button></div></div></div>
     </div>`;
   }
+  applyUserColors();
 }
+
+const LPI_SHAPE_PNGS = [
+  'LPI_Shapes_Shape 1 copie.png',
+  'LPI_Shapes_Shape 2 copie.png',
+  'LPI_Shapes_Shape 2.png',
+  'LPI_Shapes_Shape 3 copie.png',
+  'LPI_Shapes_Shape 3.png',
+  'LPI_Shapes_Shape 4 copie.png',
+  'LPI_Shapes_Shape 4.png',
+  'LPI_Shapes_Shape 5 copie 2.png',
+  'LPI_Shapes_Shape 5 copie.png',
+  'LPI_Shapes_Shape 5.png'
+];
+
+const USER_PALETTE = [
+  { bg:'#00d4a0', fg:'#009978', soft:'rgba(0,212,160,.10)', border:'rgba(0,212,160,.28)' },
+  { bg:'#3ed4f5', fg:'#1890b0', soft:'rgba(62,212,245,.10)', border:'rgba(62,212,245,.30)' },
+  { bg:'#c87ff0', fg:'#9040b8', soft:'rgba(200,127,240,.12)', border:'rgba(200,127,240,.30)' },
+  { bg:'#f09078', fg:'#c4603a', soft:'rgba(240,144,120,.12)', border:'rgba(240,144,120,.32)' },
+  { bg:'#f5c518', fg:'#c4951a', soft:'rgba(245,197,24,.14)', border:'rgba(245,197,24,.34)' }
+];
+
+const userColorMap = new Map();
+
+function normalizeUserName(name){
+  return String(name || '')
+    .replace(/\(vous\)/gi, '')
+    .replace(/\s+/g, ' ')
+    .trim()
+    .toLowerCase();
+}
+
+function hashString(value){
+  let hash = 0;
+  for(let i=0;i<value.length;i++){
+    hash = ((hash << 5) - hash) + value.charCodeAt(i);
+    hash |= 0;
+  }
+  return Math.abs(hash);
+}
+
+function getUserColor(userName){
+  const key = normalizeUserName(userName) || 'inconnu';
+  if(userColorMap.has(key)) return userColorMap.get(key);
+  const color = USER_PALETTE[hashString(key) % USER_PALETTE.length];
+  userColorMap.set(key, color);
+  return color;
+}
+
+function applyColorVars(el, color){
+  if(!el || !color) return;
+  el.style.setProperty('--u-bg', color.bg);
+  el.style.setProperty('--u-fg', color.fg);
+  el.style.setProperty('--u-soft', color.soft);
+  el.style.setProperty('--u-border', color.border);
+}
+
+function applyUserColors(){
+  document.querySelectorAll('.msg').forEach(msg=>{
+    const who = msg.querySelector('.msg-who')?.textContent?.trim();
+    if(!who) return;
+    const color = getUserColor(who);
+    msg.classList.add('user-colored');
+    applyColorVars(msg, color);
+  });
+
+  document.querySelectorAll('.h-chip').forEach(chip=>{
+    const who = chip.textContent?.trim();
+    if(!who) return;
+    chip.classList.add('user-colored');
+    applyColorVars(chip, getUserColor(who));
+  });
+
+  document.querySelectorAll('.vc-hdr').forEach(hdr=>{
+    const who = hdr.querySelector('.vc-mname')?.textContent?.trim();
+    if(!who) return;
+    hdr.classList.add('vc-chip','user-colored');
+    applyColorVars(hdr, getUserColor(who));
+  });
+}
+
+function applyLpiPngShapes(){
+  const shapes = document.querySelectorAll('.shape');
+  if(!shapes.length) return;
+  shapes.forEach((shape, index)=>{
+    const png = LPI_SHAPE_PNGS[index % LPI_SHAPE_PNGS.length];
+    shape.src = encodeURI(png);
+    shape.alt = 'LPI shape';
+    shape.decoding = 'async';
+  });
+}
+
+applyLpiPngShapes();
+applyUserColors();
 </script>
 </body>
 </html>
