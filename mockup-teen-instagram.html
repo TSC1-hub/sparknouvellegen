@@ -1,0 +1,459 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SPARK — Teen UI · Instagram style</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{font-family:'Inter',sans-serif;background:#fafafa;color:#1a1a2e;height:100vh;display:flex;flex-direction:column;overflow:hidden;}
+
+  /* ── HEADER ── */
+  .ig-header{
+    height:52px;background:#fff;
+    border-bottom:1px solid #e8e8e8;
+    display:flex;align-items:center;justify-content:space-between;
+    padding:0 16px;
+    position:sticky;top:0;z-index:100;
+  }
+  .ig-logo{
+    font-weight:800;font-size:1.1rem;letter-spacing:.5px;
+    background:linear-gradient(135deg,#00d4a0,#00bfa0);
+    -webkit-background-clip:text;-webkit-text-fill-color:transparent;
+  }
+  .ig-header-right{display:flex;align-items:center;gap:10px;}
+  .ig-av{
+    width:32px;height:32px;border-radius:50%;
+    background:linear-gradient(135deg,#f09433,#e6683c,#dc2743,#cc2366,#bc1888);
+    display:flex;align-items:center;justify-content:center;font-size:1rem;
+    padding:2px;cursor:pointer;
+  }
+  .ig-av-inner{
+    width:100%;height:100%;border-radius:50%;background:#fff;
+    display:flex;align-items:center;justify-content:center;font-size:.9rem;
+  }
+  .ig-notif{position:relative;cursor:pointer;}
+  .ig-notif svg{width:22px;height:22px;stroke:#1a1a2e;fill:none;stroke-width:2;}
+  .ig-badge{
+    position:absolute;top:-3px;right:-3px;
+    width:8px;height:8px;border-radius:50%;
+    background:#ff3040;border:1.5px solid #fff;
+  }
+
+  /* ── MAIN LAYOUT ── */
+  .ig-body{flex:1;display:flex;overflow:hidden;}
+
+  /* ── STORIES / ÉTAPES ── */
+  .ig-steps-zone{
+    width:88px;background:#fff;
+    border-right:1px solid #f0f0f0;
+    display:flex;flex-direction:column;align-items:center;
+    padding:12px 0;gap:4px;overflow-y:auto;
+  }
+  .ig-steps-zone::-webkit-scrollbar{display:none;}
+  .ig-step{
+    display:flex;flex-direction:column;align-items:center;
+    gap:5px;padding:6px 4px;cursor:pointer;width:80px;
+    border-radius:12px;transition:background .18s;
+  }
+  .ig-step:hover{background:#f5f5f5;}
+  .ig-step-ring{
+    width:52px;height:52px;border-radius:50%;
+    display:flex;align-items:center;justify-content:center;
+    background:#e0e0e0;
+    position:relative;
+  }
+  .ig-step-ring.done{
+    background:linear-gradient(135deg,#00d4a0,#05b78f);
+  }
+  .ig-step-ring.active{
+    background:linear-gradient(135deg,#f09433,#e6683c,#dc2743,#cc2366);
+    padding:2.5px;
+  }
+  .ig-step-ring.active .ig-step-inner{
+    background:#fff;width:100%;height:100%;border-radius:50%;
+    display:flex;align-items:center;justify-content:center;
+  }
+  .ig-step-ring.locked{background:#ebebeb;}
+  .ig-step-emoji{font-size:1.3rem;line-height:1;}
+  .ig-step-ring.done .ig-step-emoji{filter:brightness(0) invert(1);}
+  .ig-step-label{font-size:.55rem;font-weight:600;color:#888;text-align:center;letter-spacing:.3px;line-height:1.2;}
+  .ig-step-ring.active ~ .ig-step-label{color:#1a1a2e;font-weight:700;}
+  .ig-step.active-step .ig-step-label{color:#1a1a2e;font-weight:700;}
+  .ig-step-check{
+    position:absolute;bottom:1px;right:1px;
+    width:16px;height:16px;border-radius:50%;
+    background:#00d4a0;border:2px solid #fff;
+    display:flex;align-items:center;justify-content:center;
+    font-size:.5rem;color:#fff;font-weight:800;
+  }
+  .ig-step-now{
+    position:absolute;bottom:0;right:0;
+    width:18px;height:18px;border-radius:50%;
+    background:linear-gradient(135deg,#f09433,#dc2743);
+    border:2px solid #fff;
+    display:flex;align-items:center;justify-content:center;
+    font-size:.55rem;color:#fff;font-weight:800;
+  }
+  .ig-section-lbl{
+    font-size:.48rem;font-weight:700;letter-spacing:2px;
+    color:#bbb;text-transform:uppercase;margin:8px 0 2px;
+    text-align:center;padding:0 4px;
+  }
+
+  /* ── CHAT ZONE ── */
+  .ig-chat{
+    flex:1;display:flex;flex-direction:column;
+    background:#fff;
+    position:relative;
+  }
+
+  /* Canal switcher */
+  .ig-canal-bar{
+    display:flex;gap:0;
+    border-bottom:1px solid #f0f0f0;
+    background:#fff;padding:0 16px;
+  }
+  .ig-canal-btn{
+    padding:10px 14px;font-size:.72rem;font-weight:600;
+    color:#999;border:none;background:none;cursor:pointer;
+    border-bottom:2.5px solid transparent;
+    transition:all .18s;letter-spacing:.3px;
+  }
+  .ig-canal-btn.active{color:#1a1a2e;border-bottom-color:#1a1a2e;}
+  .ig-canal-btn.mentor-btn.active{color:#9040b8;border-bottom-color:#9040b8;}
+  .ig-canal-unread{
+    display:inline-flex;align-items:center;justify-content:center;
+    width:16px;height:16px;border-radius:50%;
+    background:#ff3040;color:#fff;font-size:.5rem;font-weight:800;
+    margin-left:5px;
+  }
+
+  /* Messages */
+  .ig-messages{
+    flex:1;overflow-y:auto;padding:12px 16px;
+    display:flex;flex-direction:column;gap:10px;
+    background:#fafafa;
+  }
+  .ig-messages::-webkit-scrollbar{width:0;}
+  .ig-msg{display:flex;gap:8px;align-items:flex-end;}
+  .ig-msg.right{flex-direction:row-reverse;}
+  .ig-msg-av{
+    width:28px;height:28px;border-radius:50%;
+    flex-shrink:0;display:flex;align-items:center;justify-content:center;
+    font-size:.9rem;font-weight:700;color:#fff;
+  }
+  .ig-msg.left .ig-msg-av{background:linear-gradient(135deg,#00d4a0,#05b78f);}
+  .ig-msg.mentor .ig-msg-av{background:linear-gradient(135deg,#9040b8,#c87ff0);}
+  .ig-msg-body{display:flex;flex-direction:column;gap:3px;max-width:70%;}
+  .ig-msg-name{font-size:.58rem;font-weight:600;color:#999;padding:0 6px;}
+  .ig-msg.right .ig-msg-name{text-align:right;}
+  .ig-bubble{
+    padding:9px 13px;border-radius:18px;
+    font-size:.82rem;line-height:1.45;
+  }
+  .ig-msg.left .ig-bubble{background:#f0f0f0;color:#1a1a2e;border-radius:4px 18px 18px 18px;}
+  .ig-msg.right .ig-bubble{background:linear-gradient(135deg,#00d4a0,#05b78f);color:#fff;border-radius:18px 4px 18px 18px;}
+  .ig-msg.mentor .ig-bubble{background:linear-gradient(135deg,#f3e8ff,#e9d5ff);color:#6b21a8;border:1px solid #e9d5ff;border-radius:4px 18px 18px 18px;}
+  .ig-msg-time{font-size:.52rem;color:#bbb;padding:0 6px;}
+  .ig-msg.right .ig-msg-time{text-align:right;}
+
+  /* Typing */
+  .ig-typing{
+    display:flex;gap:8px;align-items:flex-end;
+  }
+  .ig-typing-av{width:28px;height:28px;border-radius:50%;background:linear-gradient(135deg,#00d4a0,#05b78f);display:flex;align-items:center;justify-content:center;font-size:.9rem;}
+  .ig-typing-bubble{
+    background:#f0f0f0;border-radius:4px 18px 18px 18px;
+    padding:10px 14px;display:flex;gap:4px;align-items:center;
+  }
+  .ig-dot{width:6px;height:6px;border-radius:50%;background:#bbb;animation:igdot 1.2s infinite;}
+  .ig-dot:nth-child(2){animation-delay:.2s;}
+  .ig-dot:nth-child(3){animation-delay:.4s;}
+  @keyframes igdot{0%,60%,100%{transform:translateY(0)}30%{transform:translateY(-4px)}}
+
+  /* Input */
+  .ig-input-zone{
+    border-top:1px solid #f0f0f0;
+    padding:8px 12px;background:#fff;
+    display:flex;align-items:center;gap:8px;
+  }
+  .ig-input-wrap{
+    flex:1;display:flex;align-items:center;
+    background:#f5f5f5;border-radius:22px;
+    padding:8px 14px;gap:8px;
+    border:1.5px solid transparent;
+    transition:border-color .2s;
+  }
+  .ig-input-wrap:focus-within{border-color:#00d4a0;background:#fff;}
+  .ig-input{
+    flex:1;border:none;background:none;outline:none;
+    font-family:'Inter',sans-serif;font-size:.84rem;color:#1a1a2e;
+  }
+  .ig-input::placeholder{color:#bbb;}
+  .ig-emoji-btn{font-size:1.1rem;cursor:pointer;opacity:.7;}
+  .ig-send-btn{
+    width:36px;height:36px;border-radius:50%;
+    background:linear-gradient(135deg,#00d4a0,#05b78f);
+    border:none;cursor:pointer;
+    display:flex;align-items:center;justify-content:center;
+    flex-shrink:0;
+    transition:transform .15s;
+  }
+  .ig-send-btn:hover{transform:scale(1.08);}
+  .ig-send-btn svg{width:16px;height:16px;fill:#fff;margin-left:1px;}
+
+  /* ── IDENTITY CAPSULE ── */
+  .ig-id-capsule{
+    margin:auto 8px 10px;
+    background:#fff;border:1px solid #f0f0f0;
+    border-radius:14px;padding:10px;
+    display:flex;align-items:center;gap:8px;
+  }
+  .ig-id-av{
+    width:38px;height:38px;border-radius:50%;flex-shrink:0;
+    background:linear-gradient(135deg,#f09433,#e6683c,#dc2743,#cc2366);
+    padding:2px;display:flex;
+  }
+  .ig-id-av-inner{
+    background:#fff;border-radius:50%;width:100%;height:100%;
+    display:flex;align-items:center;justify-content:center;font-size:1.1rem;
+  }
+  .ig-id-name{font-size:.78rem;font-weight:700;color:#1a1a2e;}
+  .ig-id-team{font-size:.6rem;color:#00d4a0;font-weight:600;}
+  .ig-id-dot{
+    width:9px;height:9px;border-radius:50%;
+    background:#00d4a0;margin-left:auto;flex-shrink:0;
+    box-shadow:0 0 0 2px rgba(0,212,160,.25);
+  }
+
+  /* ── BOTTOM NAV ── */
+  .ig-bottom-nav{
+    height:54px;background:#fff;
+    border-top:1px solid #e8e8e8;
+    display:flex;align-items:center;justify-content:space-around;
+    padding:0 8px;
+    flex-shrink:0;
+  }
+  .ig-nav-btn{
+    display:flex;flex-direction:column;align-items:center;
+    gap:2px;padding:4px 12px;cursor:pointer;
+    font-size:.52rem;font-weight:600;color:#999;
+    border:none;background:none;
+  }
+  .ig-nav-btn.active{color:#1a1a2e;}
+  .ig-nav-btn svg{width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:2;}
+  .ig-nav-btn.active svg{stroke:#1a1a2e;stroke-width:2.5;}
+  .ig-nav-btn span{font-size:.5rem;}
+
+  /* ── BG DECO ── */
+  .bg-blob{
+    position:absolute;width:320px;height:320px;opacity:.04;
+    border-radius:50%;background:radial-gradient(circle,#00d4a0,transparent 70%);
+    top:30%;right:-60px;pointer-events:none;
+  }
+
+  /* ── LABEL MOCKUP ── */
+  .mockup-badge{
+    position:fixed;top:10px;right:10px;z-index:999;
+    background:linear-gradient(135deg,#f09433,#dc2743);
+    color:#fff;font-size:.6rem;font-weight:800;
+    padding:4px 10px;border-radius:20px;letter-spacing:.5px;
+    text-transform:uppercase;
+    box-shadow:0 2px 8px rgba(220,39,67,.35);
+  }
+</style>
+</head>
+<body>
+
+<div class="mockup-badge">📱 Mockup — Style Instagram</div>
+
+<!-- HEADER -->
+<div class="ig-header">
+  <div class="ig-logo">✦ SPARK</div>
+  <div class="ig-header-right">
+    <div class="ig-notif">
+      <svg viewBox="0 0 24 24"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+      <div class="ig-badge"></div>
+    </div>
+    <div class="ig-av">
+      <div class="ig-av-inner">🦁</div>
+    </div>
+  </div>
+</div>
+
+<!-- BODY -->
+<div class="ig-body">
+
+  <!-- STEPS SIDEBAR (style Stories verticales) -->
+  <div class="ig-steps-zone">
+    <div class="ig-section-lbl">Parcours</div>
+
+    <!-- Étape 1 — done -->
+    <div class="ig-step">
+      <div class="ig-step-ring done">
+        <span class="ig-step-emoji">🌱</span>
+        <div class="ig-step-check">✓</div>
+      </div>
+      <div class="ig-step-label">Découvre</div>
+    </div>
+
+    <!-- Étape 2 — done -->
+    <div class="ig-step">
+      <div class="ig-step-ring done">
+        <span class="ig-step-emoji">💡</span>
+        <div class="ig-step-check">✓</div>
+      </div>
+      <div class="ig-step-label">Explore</div>
+    </div>
+
+    <!-- Étape 3 — ACTIVE -->
+    <div class="ig-step active-step">
+      <div class="ig-step-ring active">
+        <div class="ig-step-inner"><span class="ig-step-emoji">🔬</span></div>
+        <div class="ig-step-now">▶</div>
+      </div>
+      <div class="ig-step-label" style="color:#1a1a2e;font-weight:700;">En cours</div>
+    </div>
+
+    <!-- Étape 4 — locked -->
+    <div class="ig-step">
+      <div class="ig-step-ring locked">
+        <span class="ig-step-emoji" style="opacity:.4;">🚀</span>
+      </div>
+      <div class="ig-step-label" style="opacity:.45;">Crée</div>
+    </div>
+
+    <!-- Étape 5 — locked -->
+    <div class="ig-step">
+      <div class="ig-step-ring locked">
+        <span class="ig-step-emoji" style="opacity:.4;">🎤</span>
+      </div>
+      <div class="ig-step-label" style="opacity:.45;">Présente</div>
+    </div>
+
+    <!-- Étape 6 — locked -->
+    <div class="ig-step">
+      <div class="ig-step-ring locked">
+        <span class="ig-step-emoji" style="opacity:.4;">🏆</span>
+      </div>
+      <div class="ig-step-label" style="opacity:.45;">Fête ça</div>
+    </div>
+
+    <!-- Capsule identité -->
+    <div class="ig-id-capsule">
+      <div class="ig-id-av"><div class="ig-id-av-inner">🦁</div></div>
+      <div>
+        <div class="ig-id-name">Léa</div>
+        <div class="ig-id-team">TEAM-0042</div>
+      </div>
+      <div class="ig-id-dot"></div>
+    </div>
+  </div>
+
+  <!-- CHAT -->
+  <div class="ig-chat">
+    <div class="bg-blob"></div>
+
+    <!-- Canal switcher -->
+    <div class="ig-canal-bar">
+      <button class="ig-canal-btn active">⚡ Spark IA</button>
+      <button class="ig-canal-btn mentor-btn">💜 Mentor <span class="ig-canal-unread">2</span></button>
+    </div>
+
+    <!-- Messages -->
+    <div class="ig-messages">
+
+      <div class="ig-msg left">
+        <div class="ig-msg-av">✦</div>
+        <div class="ig-msg-body">
+          <div class="ig-msg-name">Spark</div>
+          <div class="ig-bubble">Salut Léa ! 🌱 Tu es à l'étape 3 — c'est le moment de tester ta première hypothèse. Prête ?</div>
+          <div class="ig-msg-time">10:32</div>
+        </div>
+      </div>
+
+      <div class="ig-msg right">
+        <div class="ig-msg-av" style="background:linear-gradient(135deg,#f5c518,#e6a800);">🦁</div>
+        <div class="ig-msg-body">
+          <div class="ig-msg-name">Toi</div>
+          <div class="ig-bubble">Oui ! On a décidé d'observer les plantes sous différentes lumières. Mais on ne sait pas combien de temps attendre 🤔</div>
+          <div class="ig-msg-time">10:34</div>
+        </div>
+      </div>
+
+      <div class="ig-msg left">
+        <div class="ig-msg-av">✦</div>
+        <div class="ig-msg-body">
+          <div class="ig-msg-name">Spark</div>
+          <div class="ig-bubble">Excellente idée ! 💡 En général, 5 à 7 jours suffisent pour observer une différence visible sur la photosynthèse. Mais vous pouvez noter des observations dès le 2e jour !</div>
+          <div class="ig-msg-time">10:34</div>
+        </div>
+      </div>
+
+      <div class="ig-msg right">
+        <div class="ig-msg-av" style="background:linear-gradient(135deg,#f5c518,#e6a800);">🦁</div>
+        <div class="ig-msg-body">
+          <div class="ig-msg-name">Toi</div>
+          <div class="ig-bubble">Super merci ✨ On note dans la vitrine ou dans le carnet ?</div>
+          <div class="ig-msg-time">10:36</div>
+        </div>
+      </div>
+
+      <div class="ig-msg left">
+        <div class="ig-msg-av">✦</div>
+        <div class="ig-msg-body">
+          <div class="ig-msg-name">Spark</div>
+          <div class="ig-bubble">Les deux ! Le carnet pour vos brouillons, et la vitrine pour ce que vous voulez partager avec votre mentor 🏡</div>
+          <div class="ig-msg-time">10:37</div>
+        </div>
+      </div>
+
+      <div class="ig-typing">
+        <div class="ig-typing-av">✦</div>
+        <div class="ig-typing-bubble">
+          <div class="ig-dot"></div>
+          <div class="ig-dot"></div>
+          <div class="ig-dot"></div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Input -->
+    <div class="ig-input-zone">
+      <div class="ig-input-wrap">
+        <span class="ig-emoji-btn">😊</span>
+        <input class="ig-input" type="text" placeholder="Message Spark…">
+      </div>
+      <button class="ig-send-btn">
+        <svg viewBox="0 0 24 24"><path d="M22 2L11 13"/><path d="M22 2L15 22 11 13 2 9l20-7z"/></svg>
+      </button>
+    </div>
+  </div>
+
+</div>
+
+<!-- BOTTOM NAV -->
+<div class="ig-bottom-nav">
+  <button class="ig-nav-btn active">
+    <svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+    <span>Atelier</span>
+  </button>
+  <button class="ig-nav-btn">
+    <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+    <span>Explorer</span>
+  </button>
+  <button class="ig-nav-btn">
+    <svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+    <span>Vitrine</span>
+  </button>
+  <button class="ig-nav-btn">
+    <svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+    <span>Profil</span>
+  </button>
+</div>
+
+</body>
+</html>

@@ -1,0 +1,496 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SPARK — Teen UI · TikTok style</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+  *{box-sizing:border-box;margin:0;padding:0;}
+  :root{
+    --bg:#0a0a0a;
+    --bg2:#111;
+    --bg3:#1a1a1a;
+    --card:#1c1c1c;
+    --neon1:#00f2ea;
+    --neon2:#ff0050;
+    --neon3:#a259ff;
+    --txt:#f5f5f5;
+    --txt2:rgba(245,245,245,.6);
+    --border:rgba(255,255,255,.08);
+  }
+  body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--txt);height:100vh;display:flex;flex-direction:column;overflow:hidden;}
+
+  /* ── HEADER ── */
+  .tt-header{
+    height:52px;background:var(--bg);
+    border-bottom:1px solid var(--border);
+    display:flex;align-items:center;justify-content:space-between;
+    padding:0 16px;z-index:100;
+    position:relative;
+  }
+  .tt-logo{
+    font-weight:900;font-size:1.15rem;letter-spacing:1px;
+  }
+  .tt-logo span:first-child{color:var(--neon1);}
+  .tt-logo span:last-child{color:var(--neon2);}
+  .tt-logo-mid{color:#fff;}
+  .tt-header-right{display:flex;align-items:center;gap:12px;}
+  .tt-av{
+    width:34px;height:34px;border-radius:50%;
+    position:relative;cursor:pointer;
+  }
+  .tt-av-inner{
+    width:100%;height:100%;border-radius:50%;
+    background:linear-gradient(135deg,var(--neon2),var(--neon3));
+    display:flex;align-items:center;justify-content:center;font-size:1.1rem;
+  }
+  .tt-av-live{
+    position:absolute;bottom:-3px;left:50%;transform:translateX(-50%);
+    background:var(--neon2);color:#fff;font-size:.42rem;font-weight:800;
+    padding:1px 4px;border-radius:4px;letter-spacing:.5px;
+    border:1.5px solid var(--bg);
+  }
+  .tt-icon-btn{background:none;border:none;cursor:pointer;color:var(--txt2);padding:4px;position:relative;}
+  .tt-icon-btn svg{width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:2;}
+  .tt-notif-dot{position:absolute;top:2px;right:2px;width:7px;height:7px;border-radius:50%;background:var(--neon2);border:1.5px solid var(--bg);}
+
+  /* ── BODY ── */
+  .tt-body{flex:1;display:flex;overflow:hidden;}
+
+  /* ── STEPS SIDEBAR ── */
+  .tt-steps{
+    width:82px;background:var(--bg2);
+    border-right:1px solid var(--border);
+    display:flex;flex-direction:column;align-items:center;
+    padding:10px 0;overflow-y:auto;gap:2px;
+  }
+  .tt-steps::-webkit-scrollbar{display:none;}
+  .tt-section-lbl{
+    font-size:.48rem;font-weight:800;letter-spacing:2.5px;
+    text-transform:uppercase;
+    background:linear-gradient(90deg,var(--neon1),var(--neon2));
+    -webkit-background-clip:text;-webkit-text-fill-color:transparent;
+    margin:4px 0 6px;
+  }
+  .tt-step{
+    display:flex;flex-direction:column;align-items:center;
+    gap:4px;padding:6px 4px;cursor:pointer;width:76px;
+    border-radius:10px;transition:background .15s;position:relative;
+  }
+  .tt-step:hover{background:rgba(255,255,255,.05);}
+  .tt-step-orb{
+    width:44px;height:44px;border-radius:14px;
+    display:flex;align-items:center;justify-content:center;
+    font-size:1.25rem;position:relative;
+    background:var(--card);
+    border:1.5px solid var(--border);
+  }
+  .tt-step.done .tt-step-orb{
+    background:rgba(0,242,234,.1);
+    border-color:rgba(0,242,234,.3);
+  }
+  .tt-step.active .tt-step-orb{
+    background:linear-gradient(135deg,rgba(0,242,234,.15),rgba(162,89,255,.15));
+    border-color:transparent;
+    box-shadow:0 0 0 1.5px var(--neon1),0 0 18px rgba(0,242,234,.25),0 0 30px rgba(162,89,255,.1);
+  }
+  .tt-step.locked .tt-step-orb{opacity:.35;}
+  .tt-step-check{
+    position:absolute;top:-4px;right:-4px;
+    width:16px;height:16px;border-radius:50%;
+    background:var(--neon1);
+    display:flex;align-items:center;justify-content:center;
+    font-size:.5rem;color:var(--bg);font-weight:900;
+    border:2px solid var(--bg2);
+  }
+  .tt-step-now{
+    position:absolute;top:-4px;right:-4px;
+    width:16px;height:16px;border-radius:50%;
+    background:linear-gradient(135deg,var(--neon2),var(--neon3));
+    border:2px solid var(--bg2);
+    animation:ttglow .8s ease-in-out infinite alternate;
+  }
+  @keyframes ttglow{0%{box-shadow:0 0 4px var(--neon2);}100%{box-shadow:0 0 10px var(--neon2),0 0 18px rgba(255,0,80,.4);}}
+  .tt-step-lbl{font-size:.52rem;font-weight:700;color:var(--txt2);text-align:center;}
+  .tt-step.active .tt-step-lbl{color:var(--neon1);}
+  .tt-step.done .tt-step-lbl{color:rgba(0,242,234,.7);}
+  .tt-step.locked .tt-step-lbl{opacity:.35;}
+
+  /* Progress bar thin -->
+  .tt-progress-line{
+    width:2px;height:16px;
+    background:linear-gradient(180deg,rgba(0,242,234,.25),transparent);
+    margin:0 auto;
+  }
+  .tt-progress-line.done{background:linear-gradient(180deg,var(--neon1),rgba(0,242,234,.25));}
+
+  /* Identity -->
+  .tt-id{
+    margin:auto 6px 8px;
+    background:var(--card);border:1px solid var(--border);
+    border-radius:12px;padding:8px;
+    display:flex;flex-direction:column;align-items:center;gap:5px;
+  }
+  .tt-id-av{
+    width:32px;height:32px;border-radius:50%;
+    background:linear-gradient(135deg,var(--neon2),var(--neon3));
+    display:flex;align-items:center;justify-content:center;font-size:1rem;
+    box-shadow:0 0 8px rgba(255,0,80,.3);
+  }
+  .tt-id-name{font-size:.65rem;font-weight:800;color:#fff;}
+  .tt-id-team{font-size:.5rem;font-weight:600;color:var(--neon1);}
+  .tt-id-dot{
+    width:7px;height:7px;border-radius:50%;background:var(--neon1);
+    box-shadow:0 0 6px var(--neon1);
+    animation:ttglow .8s ease-in-out infinite alternate;
+  }
+
+  /* ── CHAT ── */
+  .tt-chat{flex:1;display:flex;flex-direction:column;position:relative;background:var(--bg);}
+
+  /* Canal tabs -->
+  .tt-canal-bar{
+    display:flex;gap:0;border-bottom:1px solid var(--border);
+    background:var(--bg2);padding:0 12px;
+  }
+  .tt-canal-btn{
+    padding:10px 14px;font-size:.7rem;font-weight:700;
+    color:var(--txt2);border:none;background:none;cursor:pointer;
+    border-bottom:2px solid transparent;
+    transition:all .15s;letter-spacing:.5px;text-transform:uppercase;
+  }
+  .tt-canal-btn.active{color:#fff;border-bottom-color:var(--neon1);}
+  .tt-canal-btn.mentor.active{color:var(--neon3);border-bottom-color:var(--neon3);}
+  .tt-canal-unread{
+    display:inline-flex;align-items:center;justify-content:center;
+    width:15px;height:15px;border-radius:50%;
+    background:var(--neon2);color:#fff;font-size:.48rem;font-weight:900;
+    margin-left:5px;
+  }
+
+  /* Messages -->
+  .tt-messages{
+    flex:1;overflow-y:auto;padding:12px 14px;
+    display:flex;flex-direction:column;gap:12px;
+  }
+  .tt-messages::-webkit-scrollbar{width:3px;}
+  .tt-messages::-webkit-scrollbar-thumb{background:rgba(255,255,255,.1);border-radius:4px;}
+
+  .tt-msg{display:flex;gap:8px;align-items:flex-end;}
+  .tt-msg.right{flex-direction:row-reverse;}
+  .tt-msg-av{
+    width:28px;height:28px;border-radius:50%;flex-shrink:0;
+    display:flex;align-items:center;justify-content:center;
+    font-size:.9rem;
+  }
+  .tt-msg.left .tt-msg-av{background:linear-gradient(135deg,var(--neon1),#00bf98);}
+  .tt-msg.mentor .tt-msg-av{background:linear-gradient(135deg,var(--neon3),var(--neon2));}
+  .tt-msg-body{display:flex;flex-direction:column;gap:3px;max-width:72%;}
+  .tt-msg-name{font-size:.55rem;font-weight:700;color:var(--txt2);padding:0 8px;}
+  .tt-msg.right .tt-msg-name{text-align:right;}
+  .tt-bubble{
+    padding:10px 14px;border-radius:16px;
+    font-size:.82rem;line-height:1.5;
+  }
+  .tt-msg.left .tt-bubble{
+    background:var(--card);color:var(--txt);
+    border:1px solid var(--border);
+    border-radius:4px 16px 16px 16px;
+  }
+  .tt-msg.right .tt-bubble{
+    background:linear-gradient(135deg,var(--neon1),#00bf98);
+    color:#0a2e1e;font-weight:500;
+    border-radius:16px 4px 16px 16px;
+  }
+  .tt-msg.mentor .tt-bubble{
+    background:linear-gradient(135deg,rgba(162,89,255,.15),rgba(255,0,80,.08));
+    color:#e0c8ff;
+    border:1px solid rgba(162,89,255,.35);
+    border-radius:4px 16px 16px 16px;
+  }
+  .tt-msg-time{font-size:.5rem;color:var(--txt2);padding:0 8px;opacity:.6;}
+  .tt-msg.right .tt-msg-time{text-align:right;}
+
+  /* Typing -->
+  .tt-typing{display:flex;gap:8px;align-items:flex-end;}
+  .tt-typing-av{width:28px;height:28px;border-radius:50%;background:linear-gradient(135deg,var(--neon1),#00bf98);display:flex;align-items:center;justify-content:center;font-size:.9rem;}
+  .tt-typing-bubble{
+    background:var(--card);border:1px solid var(--border);
+    border-radius:4px 16px 16px 16px;
+    padding:10px 14px;display:flex;gap:5px;align-items:center;
+  }
+  .tt-dot{width:6px;height:6px;border-radius:50%;background:var(--neon1);animation:ttdot 1.2s infinite;box-shadow:0 0 4px var(--neon1);}
+  .tt-dot:nth-child(2){animation-delay:.2s;background:var(--neon3);box-shadow:0 0 4px var(--neon3);}
+  .tt-dot:nth-child(3){animation-delay:.4s;background:var(--neon2);box-shadow:0 0 4px var(--neon2);}
+  @keyframes ttdot{0%,60%,100%{transform:translateY(0);opacity:.5}30%{transform:translateY(-5px);opacity:1}}
+
+  /* Input -->
+  .tt-input-zone{
+    border-top:1px solid var(--border);
+    padding:8px 12px;background:var(--bg2);
+    display:flex;align-items:center;gap:8px;
+  }
+  .tt-input-wrap{
+    flex:1;display:flex;align-items:center;
+    background:var(--card);border-radius:22px;
+    padding:8px 14px;gap:8px;
+    border:1.5px solid var(--border);
+    transition:border-color .2s,box-shadow .2s;
+  }
+  .tt-input-wrap:focus-within{border-color:var(--neon1);box-shadow:0 0 0 3px rgba(0,242,234,.1);}
+  .tt-input{
+    flex:1;border:none;background:none;outline:none;
+    font-family:'Inter',sans-serif;font-size:.84rem;color:var(--txt);
+  }
+  .tt-input::placeholder{color:rgba(245,245,245,.3);}
+  .tt-emoji{font-size:1.1rem;cursor:pointer;opacity:.6;}
+  .tt-send-btn{
+    width:38px;height:38px;border-radius:50%;
+    background:linear-gradient(135deg,var(--neon1),#00bf98);
+    border:none;cursor:pointer;flex-shrink:0;
+    display:flex;align-items:center;justify-content:center;
+    transition:transform .15s,box-shadow .15s;
+    box-shadow:0 0 12px rgba(0,242,234,.3);
+  }
+  .tt-send-btn:hover{transform:scale(1.08);box-shadow:0 0 20px rgba(0,242,234,.5);}
+  .tt-send-btn svg{width:16px;height:16px;fill:var(--bg);margin-left:1px;}
+
+  /* Floating side actions -->
+  .tt-side-actions{
+    position:absolute;right:10px;bottom:80px;
+    display:flex;flex-direction:column;gap:12px;
+    z-index:10;
+  }
+  .tt-fab{
+    width:44px;height:44px;border-radius:50%;
+    display:flex;align-items:center;justify-content:center;
+    cursor:pointer;border:none;
+    font-size:1.2rem;position:relative;
+  }
+  .tt-fab.carnet{background:rgba(0,242,234,.12);border:1.5px solid rgba(0,242,234,.3);}
+  .tt-fab.vitrine{background:rgba(162,89,255,.12);border:1.5px solid rgba(162,89,255,.3);}
+  .tt-fab-lbl{
+    position:absolute;right:50px;top:50%;transform:translateY(-50%);
+    background:var(--card);border:1px solid var(--border);
+    font-size:.52rem;font-weight:700;color:var(--txt2);
+    padding:3px 7px;border-radius:6px;white-space:nowrap;
+  }
+
+  /* Bottom nav -->
+  .tt-bottom-nav{
+    height:52px;background:var(--bg2);
+    border-top:1px solid var(--border);
+    display:flex;align-items:center;justify-content:space-around;
+    flex-shrink:0;
+  }
+  .tt-nav-btn{
+    display:flex;flex-direction:column;align-items:center;gap:2px;
+    cursor:pointer;border:none;background:none;color:var(--txt2);
+    padding:4px 10px;transition:color .15s;
+  }
+  .tt-nav-btn.active{color:#fff;}
+  .tt-nav-btn svg{width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:2;}
+  .tt-nav-btn.active svg{stroke:var(--neon1);}
+  .tt-nav-btn span{font-size:.5rem;font-weight:700;letter-spacing:.3px;}
+
+  /* Scanlines déco -->
+  .tt-scan{
+    position:absolute;inset:0;pointer-events:none;
+    background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(255,255,255,.012) 2px,rgba(255,255,255,.012) 4px);
+    z-index:0;
+  }
+
+  /* Mockup badge -->
+  .mockup-badge{
+    position:fixed;top:10px;right:10px;z-index:999;
+    background:linear-gradient(135deg,var(--neon2),var(--neon3));
+    color:#fff;font-size:.6rem;font-weight:800;
+    padding:4px 10px;border-radius:20px;letter-spacing:.5px;
+    text-transform:uppercase;
+    box-shadow:0 2px 12px rgba(255,0,80,.4);
+  }
+</style>
+</head>
+<body>
+
+<div class="mockup-badge">🎵 Mockup — Style TikTok</div>
+
+<!-- HEADER -->
+<div class="tt-header">
+  <div class="tt-logo">
+    <span>SP</span><span class="tt-logo-mid">A</span><span>RK</span>
+  </div>
+  <div class="tt-header-right">
+    <button class="tt-icon-btn">
+      <svg viewBox="0 0 24 24"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+      <div class="tt-notif-dot"></div>
+    </button>
+    <div class="tt-av">
+      <div class="tt-av-inner">🦁</div>
+      <div class="tt-av-live">LIVE</div>
+    </div>
+  </div>
+</div>
+
+<!-- BODY -->
+<div class="tt-body">
+
+  <!-- STEPS SIDEBAR -->
+  <div class="tt-steps">
+    <div class="tt-section-lbl">Steps</div>
+
+    <div class="tt-step done">
+      <div class="tt-step-orb">🌱<div class="tt-step-check">✓</div></div>
+      <div class="tt-step-lbl">Découvre</div>
+    </div>
+    <div class="tt-progress-line done"></div>
+
+    <div class="tt-step done">
+      <div class="tt-step-orb">💡<div class="tt-step-check">✓</div></div>
+      <div class="tt-step-lbl">Explore</div>
+    </div>
+    <div class="tt-progress-line done"></div>
+
+    <div class="tt-step active">
+      <div class="tt-step-orb">🔬<div class="tt-step-now"></div></div>
+      <div class="tt-step-lbl">En cours</div>
+    </div>
+    <div class="tt-progress-line"></div>
+
+    <div class="tt-step locked">
+      <div class="tt-step-orb">🚀</div>
+      <div class="tt-step-lbl">Crée</div>
+    </div>
+    <div class="tt-progress-line"></div>
+
+    <div class="tt-step locked">
+      <div class="tt-step-orb">🎤</div>
+      <div class="tt-step-lbl">Présente</div>
+    </div>
+    <div class="tt-progress-line"></div>
+
+    <div class="tt-step locked">
+      <div class="tt-step-orb">🏆</div>
+      <div class="tt-step-lbl">Fête ça</div>
+    </div>
+
+    <div class="tt-id">
+      <div class="tt-id-av">🦁</div>
+      <div class="tt-id-name">Léa</div>
+      <div class="tt-id-team">TEAM-42</div>
+      <div class="tt-id-dot"></div>
+    </div>
+  </div>
+
+  <!-- CHAT -->
+  <div class="tt-chat">
+    <div class="tt-scan"></div>
+
+    <!-- Canal tabs -->
+    <div class="tt-canal-bar" style="position:relative;z-index:1;">
+      <button class="tt-canal-btn active">⚡ SPARK IA</button>
+      <button class="tt-canal-btn mentor">💜 MENTOR <span class="tt-canal-unread">2</span></button>
+    </div>
+
+    <!-- Messages -->
+    <div class="tt-messages" style="position:relative;z-index:1;">
+
+      <div class="tt-msg left">
+        <div class="tt-msg-av">✦</div>
+        <div class="tt-msg-body">
+          <div class="tt-msg-name">Spark</div>
+          <div class="tt-bubble">Salut Léa ! 🌱 Tu es à l'étape 3 — c'est le moment de tester ta première hypothèse. Prête ?</div>
+          <div class="tt-msg-time">10:32</div>
+        </div>
+      </div>
+
+      <div class="tt-msg right">
+        <div class="tt-msg-av" style="background:linear-gradient(135deg,#f5c518,#e6a800);">🦁</div>
+        <div class="tt-msg-body">
+          <div class="tt-msg-name">Toi</div>
+          <div class="tt-bubble">Oui ! On a décidé d'observer les plantes sous différentes lumières 🔬 Mais on sait pas combien de temps attendre</div>
+          <div class="tt-msg-time">10:34</div>
+        </div>
+      </div>
+
+      <div class="tt-msg left">
+        <div class="tt-msg-av">✦</div>
+        <div class="tt-msg-body">
+          <div class="tt-msg-name">Spark</div>
+          <div class="tt-bubble">5 à 7 jours pour une diff visible sur la photosynthèse. Mais dès le 2e jour vous pouvez noter des observations ! 📝</div>
+          <div class="tt-msg-time">10:34</div>
+        </div>
+      </div>
+
+      <div class="tt-msg right">
+        <div class="tt-msg-av" style="background:linear-gradient(135deg,#f5c518,#e6a800);">🦁</div>
+        <div class="tt-msg-body">
+          <div class="tt-msg-name">Toi</div>
+          <div class="tt-bubble">gg merci ✨ on note dans la vitrine ou le carnet ?</div>
+          <div class="tt-msg-time">10:36</div>
+        </div>
+      </div>
+
+      <div class="tt-msg left">
+        <div class="tt-msg-av">✦</div>
+        <div class="tt-msg-body">
+          <div class="tt-msg-name">Spark</div>
+          <div class="tt-bubble">Les deux ! Carnet = brouillons. Vitrine = ce que ton mentor verra 👀</div>
+          <div class="tt-msg-time">10:37</div>
+        </div>
+      </div>
+
+      <div class="tt-typing">
+        <div class="tt-typing-av">✦</div>
+        <div class="tt-typing-bubble">
+          <div class="tt-dot"></div>
+          <div class="tt-dot"></div>
+          <div class="tt-dot"></div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- FAB -->
+    <div class="tt-side-actions">
+      <button class="tt-fab carnet"><span>📔</span><span class="tt-fab-lbl">Carnet</span></button>
+      <button class="tt-fab vitrine"><span>🏡</span><span class="tt-fab-lbl">Vitrine</span></button>
+    </div>
+
+    <!-- Input -->
+    <div class="tt-input-zone" style="position:relative;z-index:1;">
+      <div class="tt-input-wrap">
+        <span class="tt-emoji">💬</span>
+        <input class="tt-input" type="text" placeholder="Envoie à Spark…">
+      </div>
+      <button class="tt-send-btn">
+        <svg viewBox="0 0 24 24"><path d="M22 2L11 13"/><path d="M22 2L15 22 11 13 2 9l20-7z"/></svg>
+      </button>
+    </div>
+  </div>
+
+</div>
+
+<!-- BOTTOM NAV -->
+<div class="tt-bottom-nav">
+  <button class="tt-nav-btn active">
+    <svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+    <span>Atelier</span>
+  </button>
+  <button class="tt-nav-btn">
+    <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+    <span>Explorer</span>
+  </button>
+  <button class="tt-nav-btn">
+    <svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+    <span>Vitrine</span>
+  </button>
+  <button class="tt-nav-btn">
+    <svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+    <span>Profil</span>
+  </button>
+</div>
+
+</body>
+</html>

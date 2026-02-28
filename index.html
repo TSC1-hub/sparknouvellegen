@@ -146,27 +146,50 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
 /* VUE ÉLÈVE */
 #s-eleve{flex-direction:column;}
 .eleve-workspace{flex:1;display:flex;overflow:hidden;}
-.steps-sidebar{width:200px;background:linear-gradient(180deg,#263d23 0%,#1a2e17 100%);
-  display:flex;flex-direction:column;flex-shrink:0;border-right:1px solid rgba(0,0,0,.15);}
-.ss-title{font-size:.55rem;font-weight:700;letter-spacing:2.5px;text-transform:uppercase;
-  color:rgba(245,240,232,.25);padding:14px 14px 8px;}
-.step-item{display:flex;align-items:center;gap:9px;padding:8px 12px;border-left:3px solid transparent;}
-.step-item.done{border-left-color:var(--leaf);}
-.step-item.active{background:rgba(240,192,64,.1);border-left-color:var(--sun);}
-.step-item.locked{opacity:.68;}
-.step-orb{width:28px;height:28px;border-radius:8px;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:.9rem;}
-.step-item.done .step-orb{background:rgba(122,182,72,.15);}
-.step-item.active .step-orb{background:rgba(240,192,64,.18);}
-.step-item.locked .step-orb{background:rgba(255,255,255,.04);}
-.step-info{flex:1;min-width:0;}
-.step-day{font-size:.54rem;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;}
-.step-item.done .step-day{color:var(--leaf);}
-.step-item.active .step-day{color:var(--sun);}
-.step-item.locked .step-day{color:rgba(245,240,232,.25);}
-.step-name{font-family:'Fraunces',serif;font-size:.8rem;}
-.step-item.done .step-name{color:rgba(245,240,232,.8);}
-.step-item.active .step-name{color:white;font-weight:700;}
-.step-item.locked .step-name{color:rgba(245,240,232,.35);}
+/* ── STEPS SIDEBAR — style Instagram stories ── */
+.steps-sidebar{width:96px;background:#fff;
+  display:flex;flex-direction:column;flex-shrink:0;
+  border-right:1px solid #f0f0f0;overflow-y:auto;}
+.steps-sidebar::-webkit-scrollbar{display:none;}
+.ss-title{font-size:.48rem;font-weight:700;letter-spacing:2px;text-transform:uppercase;
+  color:#bbb;padding:12px 4px 6px;text-align:center;}
+/* step-item : layout vertical centré */
+.step-item{display:flex;flex-direction:column;align-items:center;gap:5px;
+  padding:6px 4px;cursor:pointer;border-left:none;
+  border-radius:12px;transition:background .18s;width:88px;}
+.step-item:hover{background:#f5f5f5;}
+.step-item.locked{opacity:.52;}
+/* orbe circulaire */
+.step-orb{width:50px;height:50px;border-radius:50%;flex-shrink:0;
+  display:flex;align-items:center;justify-content:center;
+  background:#e0e0e0;position:relative;font-size:1.3rem;}
+.step-ring-inner{display:flex;align-items:center;justify-content:center;
+  width:100%;height:100%;border-radius:50%;}
+/* done : anneau vert */
+.step-item.done .step-orb{background:linear-gradient(135deg,#00d4a0,#05b78f);}
+.step-item.done .step-emoji{filter:brightness(0) invert(1);}
+.step-item.done .step-orb::after{content:'✓';position:absolute;bottom:1px;right:1px;
+  width:16px;height:16px;border-radius:50%;
+  background:#00d4a0;border:2px solid #fff;
+  font-size:.5rem;color:#fff;font-weight:800;
+  display:flex;align-items:center;justify-content:center;}
+/* active : anneau dégradé Instagram */
+.step-item.active .step-orb{background:linear-gradient(135deg,#f09433,#e6683c,#dc2743,#cc2366);padding:2.5px;}
+.step-item.active .step-ring-inner{background:#fff;}
+.step-item.active .step-orb::after{content:'▶';position:absolute;bottom:0;right:0;
+  width:18px;height:18px;border-radius:50%;
+  background:linear-gradient(135deg,#f09433,#dc2743);
+  border:2px solid #fff;
+  font-size:.45rem;color:#fff;font-weight:800;
+  display:flex;align-items:center;justify-content:center;}
+/* label sous l'orbe */
+.step-label{font-size:.52rem;font-weight:600;color:#888;text-align:center;
+  line-height:1.25;max-width:80px;}
+.step-item.active .step-label{color:#1a1a2e;font-weight:700;}
+.step-item.done .step-label{color:#009978;font-weight:600;}
+.step-item.locked .step-label{color:#bbb;}
+/* anciens sélecteurs : masqués (migration vers .step-label) */
+.step-info,.step-day,.step-name{display:none;}
 .spark-id{margin:auto 10px 10px;padding:10px 12px;background:rgba(122,182,72,.07);
   border:1px solid rgba(122,182,72,.18);border-radius:12px;display:flex;align-items:center;gap:10px;position:relative;z-index:3;}
 .spark-id-av{width:36px;height:36px;border-radius:50%;background:var(--moss);
@@ -792,34 +815,17 @@ body::before{background:radial-gradient(ellipse 60% 50% at 85% 5%,rgba(62,212,24
 .notif-dot{color:var(--terra);}
 
 /* ─── Sidebars — intensité réduite de 40% (couleur vive × 60% + 40% blanc) ─── */
-.steps-sidebar{background:linear-gradient(180deg,#66e5c6 0%,#4dcfb4 100%);border-right:1.5px solid rgba(0,120,90,.18);}
+/* ── Sidebars rôles — override couleurs ── */
+.steps-sidebar{background:#fff;border-right:1px solid #f0f0f0;}
 .mentor-sidebar{background:linear-gradient(180deg,#c099d9 0%,#ac79c8 100%);border-right:1.5px solid rgba(100,40,150,.18);}
 .fac-sidebar{background:linear-gradient(180deg,#8ae4f8 0%,#72d4ea 100%);border-right:1.5px solid rgba(10,160,200,.18);}
 /* Titres de section — police unique par sidebar, teinte sombre du rôle */
-.ss-title{color:rgba(0,70,48,.55);font-size:.5rem;letter-spacing:2.5px;}
+.ss-title{color:#bbb;font-size:.48rem;letter-spacing:2px;text-align:center;padding:12px 4px 6px;}
 .ms-title{color:rgba(50,0,90,.50);font-size:.5rem;letter-spacing:2.5px;}
 .fs-title{color:rgba(8,36,58,.50);font-size:.5rem;letter-spacing:2.5px;}
 
-/* ─── Step items élève — police unique #1a5c48 ─── */
-.step-item,.ms-team,.fs-nav{border-left-width:2.5px;}
-.step-item.active{
-  background:rgba(255,255,255,.62);
-  border-left-color:#0e4433;
-  border-left-width:3.5px;
-  box-shadow:inset 0 0 0 1px rgba(255,255,255,.75), 0 3px 12px rgba(0,80,55,.18);
-  border-radius:0 10px 10px 0;
-  transform:translateX(2px);
-}
-.step-item.done{border-left-color:rgba(0,80,55,.55);}
-.step-item.done .step-orb{background:rgba(255,255,255,.4);}
-.step-item.active .step-orb{background:#fff;box-shadow:0 2px 10px rgba(0,80,55,.22);}
-.step-item.done .step-day{color:rgba(0,70,48,.7);}
-.step-item.active .step-day{color:#0e4433;font-weight:800;letter-spacing:2px;}
-.step-item.done .step-name,.step-item.active .step-name{color:#1a3d2a;}
-.step-item.active .step-name{color:#0a2e1f!important;font-weight:800;}
-.step-name,.step-day{color:#1a5c48;}
-.step-item.locked .step-orb{background:rgba(255,255,255,.20);}
-.step-item.locked .step-name,.step-item.locked .step-day{color:rgba(0,70,48,.50);}
+/* ─── Step items élève — style IG (overrides neutralisés) ─── */
+.ms-team,.fs-nav{border-left-width:2.5px;}
 /* ─── Teams mentor — police unique #3d1060 ─── */
 .ms-team:hover{background:rgba(255,255,255,.25)!important;}
 .ms-team.sel{
@@ -843,7 +849,7 @@ body::before{background:radial-gradient(ellipse 60% 50% at 85% 5%,rgba(62,212,24
 }
 .fac-sidebar .fs-badge{background:var(--terra);color:#fff;}
 
-.spark-id{background:#fff;border:1.5px solid rgba(0,212,160,.28);}
+.spark-id{background:#f8f8f8;border:1px solid #ececec;margin:auto 6px 8px;padding:8px 8px;}
 .spark-id-av{background:var(--moss);}
 .spark-id-name,.spark-id-status{color:#009978;}
 .status-dot{background:var(--moss);}
@@ -1239,12 +1245,12 @@ body::before{background:radial-gradient(ellipse 60% 50% at 85% 5%,rgba(62,212,24
     <img class="page-bg-shape" id="bg-eleve" src="photoverte.png" alt="">
     <div class="steps-sidebar">
       <div class="ss-title">Votre parcours</div>
-      <div class="step-item active" id="step-0"><div class="step-orb">🌱</div><div class="step-info"><div class="step-day">Étape 0</div><div class="step-name">Se préparer</div></div></div>
-      <div class="step-item locked" id="step-1"><div class="step-orb">🔍</div><div class="step-info"><div class="step-day">Jour 1</div><div class="step-name">Se questionner</div></div></div>
-      <div class="step-item locked" id="step-2"><div class="step-orb">✏️</div><div class="step-info"><div class="step-day">Jour 2</div><div class="step-name">Concevoir</div></div></div>
-      <div class="step-item locked" id="step-3"><div class="step-orb">🔨</div><div class="step-info"><div class="step-day">Jour 3</div><div class="step-name">Fabriquer</div></div></div>
-      <div class="step-item locked" id="step-4"><div class="step-orb">📢</div><div class="step-info"><div class="step-day">Jour 4</div><div class="step-name">Diffuser</div></div></div>
-      <div class="step-item locked" id="step-5"><div class="step-orb">🏆</div><div class="step-info"><div class="step-day">Jour 5</div><div class="step-name">Convaincre</div></div></div>
+      <div class="step-item active" id="step-0"><div class="step-orb"><div class="step-ring-inner"><span class="step-emoji">🌱</span></div></div><div class="step-label">Découvrir</div></div>
+      <div class="step-item locked" id="step-1"><div class="step-orb"><div class="step-ring-inner"><span class="step-emoji">🔍</span></div></div><div class="step-label">Problé&shy;matiser</div></div>
+      <div class="step-item locked" id="step-2"><div class="step-orb"><div class="step-ring-inner"><span class="step-emoji">✏️</span></div></div><div class="step-label">Imaginer</div></div>
+      <div class="step-item locked" id="step-3"><div class="step-orb"><div class="step-ring-inner"><span class="step-emoji">🔨</span></div></div><div class="step-label">Créer</div></div>
+      <div class="step-item locked" id="step-4"><div class="step-orb"><div class="step-ring-inner"><span class="step-emoji">📢</span></div></div><div class="step-label">Chiffrer &amp; Pitcher</div></div>
+      <div class="step-item locked" id="step-5"><div class="step-orb"><div class="step-ring-inner"><span class="step-emoji">🏆</span></div></div><div class="step-label">S'entraîner<br>finale</div></div>
       <div class="spark-id">
         <div class="spark-id-av">⚡</div>
         <div><div class="spark-id-name">SPARK ⚡</div><div class="spark-id-status"><span class="status-dot"></span>En ligne</div></div>

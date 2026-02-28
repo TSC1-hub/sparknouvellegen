@@ -1,0 +1,516 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SPARK — Teen UI · Snap / Vibrant style</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  *{box-sizing:border-box;margin:0;padding:0;}
+  :root{
+    --yellow:#fffc00;
+    --green:#00d4a0;
+    --purple:#7c3aed;
+    --pink:#ff3fa4;
+    --blue:#38bdf8;
+    --dark:#0f172a;
+    --mid:#475569;
+    --light:#94a3b8;
+    --bg:#f8fafc;
+    --white:#fff;
+    --border:#e2e8f0;
+  }
+  body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--dark);height:100vh;display:flex;flex-direction:column;overflow:hidden;}
+
+  /* ── HEADER ── */
+  .sn-header{
+    height:52px;background:var(--dark);
+    display:flex;align-items:center;justify-content:space-between;
+    padding:0 16px;flex-shrink:0;
+  }
+  .sn-logo{
+    font-family:'Syne',sans-serif;font-weight:800;font-size:1.1rem;
+    display:flex;align-items:center;gap:6px;
+  }
+  .sn-logo-icon{
+    width:28px;height:28px;border-radius:8px;
+    background:var(--yellow);
+    display:flex;align-items:center;justify-content:center;font-size:.9rem;
+  }
+  .sn-logo-text{color:#fff;letter-spacing:.8px;}
+  .sn-header-right{display:flex;align-items:center;gap:8px;}
+  .sn-av-wrap{
+    width:34px;height:34px;border-radius:50%;
+    background:linear-gradient(135deg,var(--pink),var(--purple));
+    padding:2.5px;cursor:pointer;
+  }
+  .sn-av{
+    width:100%;height:100%;border-radius:50%;
+    background:var(--yellow);
+    display:flex;align-items:center;justify-content:center;font-size:1rem;
+  }
+  .sn-header-btn{
+    background:rgba(255,255,255,.1);border:none;cursor:pointer;
+    border-radius:8px;padding:5px 8px;
+    color:#fff;font-size:.7rem;font-weight:700;
+    display:flex;align-items:center;gap:4px;
+    transition:background .15s;
+  }
+  .sn-header-btn:hover{background:rgba(255,255,255,.18);}
+  .sn-header-btn svg{width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:2.5;}
+
+  /* ── BODY ── */
+  .sn-body{flex:1;display:flex;overflow:hidden;}
+
+  /* ── STEPS SIDEBAR ── */
+  .sn-steps{
+    width:90px;display:flex;flex-direction:column;
+    background:var(--dark);
+    padding:8px 6px;gap:3px;overflow-y:auto;
+  }
+  .sn-steps::-webkit-scrollbar{display:none;}
+  .sn-steps-lbl{
+    font-family:'Syne',sans-serif;font-size:.5rem;font-weight:800;
+    letter-spacing:2px;text-transform:uppercase;
+    color:rgba(255,255,255,.35);
+    text-align:center;margin-bottom:2px;
+  }
+  .sn-step{
+    border-radius:14px;padding:8px 6px;
+    cursor:pointer;display:flex;flex-direction:column;
+    align-items:center;gap:5px;
+    transition:transform .15s;position:relative;
+    background:rgba(255,255,255,.05);
+    border:1.5px solid rgba(255,255,255,.08);
+  }
+  .sn-step:hover{transform:scale(1.03);}
+  .sn-step.done{background:rgba(0,212,160,.12);border-color:rgba(0,212,160,.3);}
+  .sn-step.active{
+    background:var(--yellow);border-color:transparent;
+    box-shadow:0 4px 16px rgba(255,252,0,.3);
+  }
+  .sn-step.active:hover{transform:scale(1.04);}
+  .sn-step.locked{opacity:.45;}
+  .sn-step-emoji{font-size:1.4rem;line-height:1;}
+  .sn-step-lbl{
+    font-family:'Syne',sans-serif;font-size:.52rem;font-weight:800;
+    text-align:center;line-height:1.2;color:rgba(255,255,255,.7);
+  }
+  .sn-step.active .sn-step-lbl{color:var(--dark);}
+  .sn-step.done .sn-step-lbl{color:rgba(0,212,160,.9);}
+  .sn-step-badge{
+    position:absolute;top:-5px;right:-5px;
+    width:18px;height:18px;border-radius:50%;
+    display:flex;align-items:center;justify-content:center;
+    font-size:.55rem;font-weight:900;border:2px solid var(--dark);
+  }
+  .sn-step.done .sn-step-badge{background:var(--green);color:#fff;}
+  .sn-step.active .sn-step-badge{background:var(--pink);color:#fff;}
+
+  /* Identity capsule -->
+  .sn-id{
+    margin-top:auto;border-radius:12px;
+    background:rgba(255,255,255,.08);
+    border:1px solid rgba(255,255,255,.12);
+    padding:8px 6px;
+    display:flex;flex-direction:column;align-items:center;gap:4px;
+  }
+  .sn-id-av{
+    width:32px;height:32px;border-radius:50%;
+    background:var(--yellow);
+    display:flex;align-items:center;justify-content:center;font-size:1rem;
+  }
+  .sn-id-name{font-family:'Syne',sans-serif;font-size:.65rem;font-weight:800;color:#fff;}
+  .sn-id-team{font-size:.52rem;font-weight:600;color:rgba(0,212,160,.9);}
+  .sn-id-status{display:flex;align-items:center;gap:3px;}
+  .sn-status-dot{width:7px;height:7px;border-radius:50%;background:var(--green);box-shadow:0 0 6px var(--green);}
+  .sn-status-txt{font-size:.5rem;color:rgba(255,255,255,.4);font-weight:600;}
+
+  /* ── CHAT ZONE ── */
+  .sn-chat{flex:1;display:flex;flex-direction:column;background:var(--bg);}
+
+  /* Step banner -->
+  .sn-step-banner{
+    background:linear-gradient(135deg,var(--dark),#1e293b);
+    padding:10px 14px;
+    display:flex;align-items:center;gap:10px;
+    border-bottom:2px solid var(--yellow);
+  }
+  .sn-step-banner-icon{
+    width:36px;height:36px;border-radius:10px;
+    background:var(--yellow);
+    display:flex;align-items:center;justify-content:center;font-size:1.1rem;
+    flex-shrink:0;
+  }
+  .sn-step-banner-info{flex:1;}
+  .sn-step-banner-title{
+    font-family:'Syne',sans-serif;font-weight:800;
+    font-size:.72rem;color:#fff;letter-spacing:.4px;
+  }
+  .sn-step-banner-sub{font-size:.58rem;color:rgba(255,255,255,.5);}
+  .sn-step-banner-prog{
+    display:flex;align-items:center;gap:4px;
+  }
+  .sn-prog-pip{
+    width:12px;height:6px;border-radius:3px;
+    background:rgba(255,255,255,.15);
+  }
+  .sn-prog-pip.done{background:var(--green);}
+  .sn-prog-pip.active{background:var(--yellow);width:18px;}
+
+  /* Canal tabs -->
+  .sn-canal-bar{
+    display:flex;gap:0;
+    background:#fff;border-bottom:1px solid var(--border);
+    padding:0 14px;
+  }
+  .sn-canal-btn{
+    padding:9px 14px;font-size:.7rem;font-weight:700;
+    color:var(--light);border:none;background:none;cursor:pointer;
+    border-bottom:2.5px solid transparent;
+    transition:all .15s;
+    font-family:'Syne',sans-serif;letter-spacing:.4px;
+  }
+  .sn-canal-btn.active{color:var(--dark);border-bottom-color:var(--yellow);}
+  .sn-canal-btn.mentor.active{color:var(--purple);border-bottom-color:var(--purple);}
+  .sn-canal-unread{
+    display:inline-flex;align-items:center;justify-content:center;
+    width:15px;height:15px;border-radius:50%;
+    background:var(--pink);color:#fff;font-size:.48rem;font-weight:900;
+    margin-left:4px;
+  }
+
+  /* Messages -->
+  .sn-messages{
+    flex:1;overflow-y:auto;padding:12px 14px;
+    display:flex;flex-direction:column;gap:10px;
+  }
+  .sn-messages::-webkit-scrollbar{width:3px;}
+  .sn-messages::-webkit-scrollbar-thumb{background:var(--border);border-radius:4px;}
+  .sn-msg{display:flex;gap:8px;align-items:flex-end;}
+  .sn-msg.right{flex-direction:row-reverse;}
+  .sn-msg-av{
+    width:30px;height:30px;border-radius:50%;flex-shrink:0;
+    display:flex;align-items:center;justify-content:center;font-size:.95rem;
+    font-weight:700;
+  }
+  .sn-msg.left .sn-msg-av{background:var(--green);}
+  .sn-msg.mentor .sn-msg-av{background:linear-gradient(135deg,var(--purple),var(--pink));}
+  .sn-msg-body{display:flex;flex-direction:column;gap:3px;max-width:72%;}
+  .sn-msg-name{font-size:.56rem;font-weight:700;color:var(--light);padding:0 8px;}
+  .sn-msg.right .sn-msg-name{text-align:right;}
+  .sn-bubble{
+    padding:10px 14px;
+    font-size:.82rem;line-height:1.5;font-weight:500;
+  }
+  .sn-msg.left .sn-bubble{
+    background:#fff;color:var(--dark);
+    border-radius:6px 18px 18px 18px;
+    border:1.5px solid var(--border);
+    box-shadow:0 2px 8px rgba(15,23,42,.06);
+  }
+  .sn-msg.right .sn-bubble{
+    background:var(--dark);color:#fff;
+    border-radius:18px 6px 18px 18px;
+    box-shadow:0 2px 10px rgba(15,23,42,.15);
+  }
+  .sn-msg.mentor .sn-bubble{
+    background:linear-gradient(135deg,#f5f3ff,#ede9fe);
+    color:#5b21b6;
+    border:1.5px solid #ddd6fe;
+    border-radius:6px 18px 18px 18px;
+  }
+  .sn-msg-time{font-size:.52rem;color:var(--light);padding:0 8px;opacity:.7;}
+  .sn-msg.right .sn-msg-time{text-align:right;}
+
+  /* Typing -->
+  .sn-typing{display:flex;gap:8px;align-items:flex-end;}
+  .sn-typing-av{width:30px;height:30px;border-radius:50%;background:var(--green);display:flex;align-items:center;justify-content:center;font-size:.95rem;}
+  .sn-typing-bubble{
+    background:#fff;border:1.5px solid var(--border);
+    border-radius:6px 18px 18px 18px;
+    padding:10px 14px;display:flex;gap:5px;align-items:center;
+    box-shadow:0 2px 8px rgba(15,23,42,.06);
+  }
+  .sn-dot{width:7px;height:7px;border-radius:50%;animation:sndot 1.2s infinite;}
+  .sn-dot:nth-child(1){background:var(--green);animation-delay:0s;}
+  .sn-dot:nth-child(2){background:var(--yellow);animation-delay:.2s;}
+  .sn-dot:nth-child(3){background:var(--pink);animation-delay:.4s;}
+  @keyframes sndot{0%,60%,100%{transform:translateY(0);opacity:.5}30%{transform:translateY(-5px);opacity:1}}
+
+  /* Input zone -->
+  .sn-input-zone{
+    border-top:1px solid var(--border);
+    padding:8px 12px;background:#fff;
+    display:flex;align-items:center;gap:8px;
+  }
+  .sn-input-wrap{
+    flex:1;display:flex;align-items:center;
+    background:var(--bg);border-radius:24px;
+    padding:9px 16px;gap:8px;
+    border:2px solid var(--border);
+    transition:border-color .2s,box-shadow .2s;
+  }
+  .sn-input-wrap:focus-within{border-color:var(--green);box-shadow:0 0 0 3px rgba(0,212,160,.12);}
+  .sn-input{
+    flex:1;border:none;background:none;outline:none;
+    font-family:'Inter',sans-serif;font-size:.84rem;color:var(--dark);
+  }
+  .sn-input::placeholder{color:var(--light);}
+  .sn-emoji{font-size:1.1rem;cursor:pointer;opacity:.7;}
+  .sn-send-btn{
+    width:40px;height:40px;border-radius:50%;
+    background:var(--dark);
+    border:none;cursor:pointer;flex-shrink:0;
+    display:flex;align-items:center;justify-content:center;
+    transition:transform .15s,background .15s;
+    box-shadow:0 3px 10px rgba(15,23,42,.2);
+  }
+  .sn-send-btn:hover{transform:scale(1.08);background:#1e293b;}
+  .sn-send-btn svg{width:16px;height:16px;fill:var(--yellow);margin-left:1px;}
+
+  /* Actions rapides -->
+  .sn-actions{
+    display:flex;gap:6px;padding:0 14px 8px;
+    background:#fff;border-bottom:1px solid var(--border);
+    flex-wrap:wrap;
+  }
+  .sn-action-pill{
+    padding:5px 10px;border-radius:20px;
+    font-size:.62rem;font-weight:700;
+    border:1.5px solid;cursor:pointer;
+    transition:all .15s;
+  }
+  .sn-action-pill:hover{opacity:.8;}
+  .sn-action-pill.green{border-color:var(--green);color:var(--green);background:rgba(0,212,160,.08);}
+  .sn-action-pill.yellow{border-color:#e6a800;color:#b37f00;background:rgba(255,252,0,.15);}
+  .sn-action-pill.purple{border-color:var(--purple);color:var(--purple);background:rgba(124,58,237,.08);}
+
+  /* Bottom nav -->
+  .sn-bottom-nav{
+    height:56px;background:var(--dark);
+    display:flex;align-items:center;justify-content:space-around;
+    flex-shrink:0;
+    padding:0 8px;
+  }
+  .sn-nav-btn{
+    display:flex;flex-direction:column;align-items:center;gap:2px;
+    cursor:pointer;border:none;background:none;color:rgba(255,255,255,.4);
+    padding:4px 10px;transition:color .15s;
+  }
+  .sn-nav-btn.active{color:#fff;}
+  .sn-nav-btn svg{width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:2.5;}
+  .sn-nav-btn.active svg{stroke:var(--yellow);}
+  .sn-nav-btn span{font-size:.5rem;font-weight:700;font-family:'Syne',sans-serif;letter-spacing:.3px;}
+
+  /* Mockup badge -->
+  .mockup-badge{
+    position:fixed;top:10px;right:10px;z-index:999;
+    background:linear-gradient(135deg,var(--yellow),#ffd700);
+    color:var(--dark);font-size:.6rem;font-weight:900;
+    padding:4px 10px;border-radius:20px;letter-spacing:.5px;
+    text-transform:uppercase;font-family:'Syne',sans-serif;
+    box-shadow:0 2px 10px rgba(255,252,0,.4);
+  }
+</style>
+</head>
+<body>
+
+<div class="mockup-badge">👻 Mockup — Style Snap / Vibrant</div>
+
+<!-- HEADER -->
+<div class="sn-header">
+  <div class="sn-logo">
+    <div class="sn-logo-icon">✦</div>
+    <span class="sn-logo-text">SPARK</span>
+  </div>
+  <div class="sn-header-right">
+    <button class="sn-header-btn">
+      <svg viewBox="0 0 24 24"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+    </button>
+    <div class="sn-av-wrap">
+      <div class="sn-av">🦁</div>
+    </div>
+  </div>
+</div>
+
+<!-- BODY -->
+<div class="sn-body">
+
+  <!-- STEPS SIDEBAR -->
+  <div class="sn-steps">
+    <div class="sn-steps-lbl">Parcours</div>
+
+    <div class="sn-step done">
+      <div class="sn-step-badge">✓</div>
+      <div class="sn-step-emoji">🌱</div>
+      <div class="sn-step-lbl">Décou&shy;vre</div>
+    </div>
+
+    <div class="sn-step done">
+      <div class="sn-step-badge">✓</div>
+      <div class="sn-step-emoji">💡</div>
+      <div class="sn-step-lbl">Explore</div>
+    </div>
+
+    <div class="sn-step active">
+      <div class="sn-step-badge">▶</div>
+      <div class="sn-step-emoji">🔬</div>
+      <div class="sn-step-lbl">En cours</div>
+    </div>
+
+    <div class="sn-step locked">
+      <div class="sn-step-emoji">🚀</div>
+      <div class="sn-step-lbl">Crée</div>
+    </div>
+
+    <div class="sn-step locked">
+      <div class="sn-step-emoji">🎤</div>
+      <div class="sn-step-lbl">Présente</div>
+    </div>
+
+    <div class="sn-step locked">
+      <div class="sn-step-emoji">🏆</div>
+      <div class="sn-step-lbl">Fête ça</div>
+    </div>
+
+    <div class="sn-id">
+      <div class="sn-id-av">🦁</div>
+      <div class="sn-id-name">Léa</div>
+      <div class="sn-id-team">TEAM-42</div>
+      <div class="sn-id-status">
+        <div class="sn-status-dot"></div>
+        <span class="sn-status-txt">Online</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- CHAT -->
+  <div class="sn-chat">
+
+    <!-- Step banner -->
+    <div class="sn-step-banner">
+      <div class="sn-step-banner-icon">🔬</div>
+      <div class="sn-step-banner-info">
+        <div class="sn-step-banner-title">Étape 3 — Tester</div>
+        <div class="sn-step-banner-sub">Hypothèse + Observation · J3/J7</div>
+      </div>
+      <div class="sn-step-banner-prog">
+        <div class="sn-prog-pip done"></div>
+        <div class="sn-prog-pip done"></div>
+        <div class="sn-prog-pip active"></div>
+        <div class="sn-prog-pip"></div>
+        <div class="sn-prog-pip"></div>
+        <div class="sn-prog-pip"></div>
+      </div>
+    </div>
+
+    <!-- Canal tabs -->
+    <div class="sn-canal-bar">
+      <button class="sn-canal-btn active">⚡ Spark IA</button>
+      <button class="sn-canal-btn mentor">💜 Mentor <span class="sn-canal-unread">2</span></button>
+    </div>
+
+    <!-- Action pills -->
+    <div class="sn-actions">
+      <button class="sn-action-pill green">📝 Note une obs.</button>
+      <button class="sn-action-pill yellow">🏡 Voir ma vitrine</button>
+      <button class="sn-action-pill purple">📔 Mon carnet</button>
+    </div>
+
+    <!-- Messages -->
+    <div class="sn-messages">
+
+      <div class="sn-msg left">
+        <div class="sn-msg-av">✦</div>
+        <div class="sn-msg-body">
+          <div class="sn-msg-name">Spark</div>
+          <div class="sn-bubble">Salut Léa ! 🌱 Tu es à l'étape 3 — c'est le moment de tester ta première hypothèse. Prête ?</div>
+          <div class="sn-msg-time">10:32</div>
+        </div>
+      </div>
+
+      <div class="sn-msg right">
+        <div class="sn-msg-av" style="background:var(--yellow);">🦁</div>
+        <div class="sn-msg-body">
+          <div class="sn-msg-name">Toi</div>
+          <div class="sn-bubble">Oui ! On observe les plantes sous différentes lumières 🔬 Mais on sait pas combien de temps attendre</div>
+          <div class="sn-msg-time">10:34</div>
+        </div>
+      </div>
+
+      <div class="sn-msg left">
+        <div class="sn-msg-av">✦</div>
+        <div class="sn-msg-body">
+          <div class="sn-msg-name">Spark</div>
+          <div class="sn-bubble">Super choix 💡 Comptez 5 à 7 jours pour voir une vraie différence. Mais commencez à noter dès demain !</div>
+          <div class="sn-msg-time">10:34</div>
+        </div>
+      </div>
+
+      <div class="sn-msg right">
+        <div class="sn-msg-av" style="background:var(--yellow);">🦁</div>
+        <div class="sn-msg-body">
+          <div class="sn-msg-name">Toi</div>
+          <div class="sn-bubble">ok merci ✨ carnet ou vitrine ?</div>
+          <div class="sn-msg-time">10:36</div>
+        </div>
+      </div>
+
+      <div class="sn-msg left">
+        <div class="sn-msg-av">✦</div>
+        <div class="sn-msg-body">
+          <div class="sn-msg-name">Spark</div>
+          <div class="sn-bubble">Carnet = tes notes perso 📔  Vitrine = ce que ton mentor verra 🏡 Les deux !</div>
+          <div class="sn-msg-time">10:37</div>
+        </div>
+      </div>
+
+      <div class="sn-typing">
+        <div class="sn-typing-av">✦</div>
+        <div class="sn-typing-bubble">
+          <div class="sn-dot"></div>
+          <div class="sn-dot"></div>
+          <div class="sn-dot"></div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Input -->
+    <div class="sn-input-zone">
+      <div class="sn-input-wrap">
+        <span class="sn-emoji">💬</span>
+        <input class="sn-input" type="text" placeholder="Dis quelque chose à Spark…">
+      </div>
+      <button class="sn-send-btn">
+        <svg viewBox="0 0 24 24"><path d="M22 2L11 13"/><path d="M22 2L15 22 11 13 2 9l20-7z"/></svg>
+      </button>
+    </div>
+
+  </div>
+
+</div>
+
+<!-- BOTTOM NAV -->
+<div class="sn-bottom-nav">
+  <button class="sn-nav-btn active">
+    <svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+    <span>Atelier</span>
+  </button>
+  <button class="sn-nav-btn">
+    <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+    <span>Explorer</span>
+  </button>
+  <button class="sn-nav-btn">
+    <svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+    <span>Vitrine</span>
+  </button>
+  <button class="sn-nav-btn">
+    <svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+    <span>Profil</span>
+  </button>
+</div>
+
+</body>
+</html>
