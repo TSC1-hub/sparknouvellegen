@@ -506,6 +506,8 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
 #s-login .lpi-ne{width:260px;top:-55px;right:-70px;opacity:.70;animation:toCtr-ne 11s ease-in-out infinite;}
 #s-login .lpi-sw{width:240px;bottom:-65px;left:-55px;opacity:.65;animation:toCtr-sw 14s ease-in-out infinite;}
 #s-login .lpi-se{width:280px;bottom:-75px;right:-65px;opacity:.73;animation:toCtr-se 12s ease-in-out infinite;}
+#s-login .lpi-wm{width:200px;top:50%;left:-50px;transform:translateY(-50%);opacity:.60;animation:toCtr-wm 12s ease-in-out infinite;}
+#s-login .lpi-em{width:185px;top:50%;right:-45px;transform:translateY(-50%);opacity:.55;animation:toCtr-em 14s ease-in-out infinite;}
 
 /* Chaque coin dérive fortement vers le centre — amplitude ×1.5 vs précédent */
 @keyframes toCtr-nw{
@@ -528,11 +530,39 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
   40%    {transform:rotate(-17deg) translate(-93px,-69px);}
   75%    {transform:rotate(-26deg) translate(-33px,-23px);}
 }
+@keyframes toCtr-wm{
+  0%,100%{transform:translateY(-50%) rotate(8deg) translate(0,0);}
+  45%    {transform:translateY(-50%) rotate(12deg) translate(80px,0);}
+  80%    {transform:translateY(-50%) rotate(5deg) translate(28px,0);}
+}
+@keyframes toCtr-em{
+  0%,100%{transform:translateY(-50%) rotate(-12deg) translate(0,0);}
+  45%    {transform:translateY(-50%) rotate(-8deg) translate(-75px,0);}
+  80%    {transform:translateY(-50%) rotate(-15deg) translate(-26px,0);}
+}
 
 .steps-sidebar,.mentor-sidebar,.fac-sidebar{position:relative;}
 .steps-sidebar .lpi-side-eleve,
 .mentor-sidebar .lpi-side-mentor,
 .fac-sidebar .lpi-side-fac{width:155px;left:10px;right:auto;bottom:84px;opacity:.24;z-index:2;}
+
+/* bg shapes centrées — une par page, se déplacent avec les drawers */
+.eleve-workspace,.fac-layout{position:relative;overflow:hidden;}
+.page-bg-shape{
+  position:absolute;width:320px;top:50%;left:50%;
+  transform:translate(-50%,-50%);
+  opacity:.12;pointer-events:none;mix-blend-mode:multiply;z-index:0;
+  transition:left .4s cubic-bezier(.4,0,.2,1),transform .4s cubic-bezier(.4,0,.2,1);
+  animation:bgDrift 22s ease-in-out infinite;
+}
+@keyframes bgDrift{
+  0%,100%{transform:translate(-50%,-50%) rotate(0deg);}
+  33%{transform:translate(-50%,-50%) rotate(6deg) translateY(-12px);}
+  66%{transform:translate(-50%,-50%) rotate(-5deg) translateY(10px);}
+}
+.eleve-workspace.drawer-open .page-bg-shape{left:calc(50% - 220px);}
+.mentor-main.panel-open .page-bg-shape{left:calc(50% - 180px);}
+.fac-layout.drawer-open .page-bg-shape{left:calc(50% - 180px);}
 
 :root{
   --moss:#00d4a0;--sage:#00bfa0;--leaf:#00d4a0;
@@ -761,8 +791,10 @@ body::before{background:radial-gradient(ellipse 60% 50% at 85% 5%,rgba(62,212,24
 .btn-carnet:hover{background:rgba(0,212,160,.14);color:#007f66;}
 .notif-dot{color:var(--terra);}
 
-.steps-sidebar,.mentor-sidebar,.fac-sidebar{background:#f8f9fb;border-right:1.5px solid var(--border);}
-.ss-title,.ms-title,.fs-title{color:var(--light);font-size:.5rem;letter-spacing:2.5px;}
+.steps-sidebar{background:linear-gradient(180deg,#e8fdf7 0%,#d4f9ef 100%);border-right:1.5px solid rgba(0,212,160,.2);}
+.mentor-sidebar{background:linear-gradient(180deg,#f8f0ff 0%,#f0e6fd 100%);border-right:1.5px solid rgba(200,127,240,.2);}
+.fac-sidebar{background:linear-gradient(180deg,#e6f8ff 0%,#d4f2fc 100%);border-right:1.5px solid rgba(62,212,245,.2);}
+.ss-title,.ms-title,.fs-title{color:var(--mid);font-size:.5rem;letter-spacing:2.5px;}
 
 .step-item,.ms-team,.fs-nav{border-left-width:2.5px;}
 .step-item.active{background:rgba(245,197,24,.08);border-left-color:var(--sun);}
@@ -886,6 +918,8 @@ body::before{background:radial-gradient(ellipse 60% 50% at 85% 5%,rgba(62,212,24
   <img class="lpi lpi-ne" src="LPI_Shapes_Shape 2.png" alt="">
   <img class="lpi lpi-sw" src="LPI_Shapes_Shape 3.png" alt="">
   <img class="lpi lpi-se" src="LPI_Shapes_Shape 4.png" alt="">
+  <img class="lpi lpi-wm" src="jaune2.png" alt="">
+  <img class="lpi lpi-em" src="jaune1.png" alt="">
   <div class="card">
     <!-- En-tête carte -->
     <div class="ch">
@@ -1012,8 +1046,8 @@ body::before{background:radial-gradient(ellipse 60% 50% at 85% 5%,rgba(62,212,24
     </div>
   </div>
   <div class="eleve-workspace">
+    <img class="page-bg-shape" id="bg-eleve" src="photoverte.png" alt="">
     <div class="steps-sidebar">
-      <img class="shape lpi-shape lpi-side-eleve" alt="Décor Learning Planet">
       <div class="ss-title">Votre parcours</div>
       <div class="step-item active" id="step-0"><div class="step-orb">🌱</div><div class="step-info"><div class="step-day">Étape 0</div><div class="step-name">Se préparer</div></div></div>
       <div class="step-item locked" id="step-1"><div class="step-orb">🔍</div><div class="step-info"><div class="step-day">Jour 1</div><div class="step-name">Se questionner</div></div></div>
@@ -1053,7 +1087,6 @@ body::before{background:radial-gradient(ellipse 60% 50% at 85% 5%,rgba(62,212,24
   </div>
   <div class="mentor-workspace">
     <div class="mentor-sidebar">
-      <img class="shape lpi-shape lpi-side-mentor" alt="Décor Learning Planet">
       <div class="ms-title">Mes équipes</div>
       <div id="mentor-teams-list"></div>
       <div class="ms-identity">
@@ -1062,6 +1095,7 @@ body::before{background:radial-gradient(ellipse 60% 50% at 85% 5%,rgba(62,212,24
       </div>
     </div>
     <div class="mentor-main">
+      <img class="page-bg-shape" id="bg-mentor" src="patateviolette.png" alt="">
       <div class="mentor-team-bar">
         <div><div class="mch-name" id="mentor-team-name">Sélectionnez une équipe</div><div class="mch-day" id="mentor-team-info">—</div></div>
         <div class="prog-dots" id="mentor-prog"></div>
@@ -1131,8 +1165,8 @@ body::before{background:radial-gradient(ellipse 60% 50% at 85% 5%,rgba(62,212,24
     </div>
   </div>
   <div class="fac-layout">
+    <img class="page-bg-shape" id="bg-fac" src="patatebleuelongue.png" alt="">
     <div class="fac-sidebar">
-      <img class="shape lpi-shape lpi-side-fac" alt="Décor Learning Planet">
       <div class="fs-title">Navigation</div>
       <div class="fs-nav sel" onclick="facNav('equipes',this)">📋 Mes équipes</div>
       <div class="fs-nav" onclick="facNav('validation',this)">📬 Validation <span class="fs-badge" id="val-badge" style="display:none;">0</span></div>
@@ -2561,6 +2595,7 @@ async function ouvrirPanelMentor(id){
 
   target.classList.add('open');
   if(overlay) overlay.classList.add('show');
+  document.querySelector('.mentor-main')?.classList.add('panel-open');
   if(id==='conv' && btnConv) btnConv.classList.add('active');
   if(id==='canal' && btnCanal) btnCanal.classList.add('active');
 
@@ -2602,6 +2637,7 @@ async function ouvrirPanelMentor(id){
 
 function fermerPanelsMentor(){
   document.querySelectorAll('.mentor-panel').forEach(p=>p.classList.remove('open'));
+  document.querySelector('.mentor-main')?.classList.remove('panel-open');
   const overlay=document.getElementById('mentor-panel-overlay');
   if(overlay) overlay.classList.remove('show');
   const btnConv=document.getElementById('btn-mentor-conv');
@@ -2682,6 +2718,7 @@ async function renderFacEquipes(){
 }
 
 async function openConvDrawer(eqId, nom, college, etape){
+  document.querySelector('.fac-layout')?.classList.add('drawer-open');
   document.querySelectorAll('.team-card').forEach(c=>c.classList.remove('active-drawer'));
   const activeCard=document.getElementById('card-eq-'+eqId);
   if(activeCard) activeCard.classList.add('active-drawer');
@@ -2866,12 +2903,14 @@ function ouvrirCarnet(){
   document.getElementById('carnet-drawer').classList.add('open');
   document.getElementById('carnet-overlay').classList.add('open');
   document.getElementById('notif-dot').style.display='none';
+  document.querySelector('.eleve-workspace')?.classList.add('drawer-open');
   chargerCarnet();
 }
 
 function fermerCarnet(){
   document.getElementById('carnet-drawer').classList.remove('open');
   document.getElementById('carnet-overlay').classList.remove('open');
+  document.querySelector('.eleve-workspace')?.classList.remove('drawer-open');
 }
 async function sauvegarderCarnet(){
   if(!currentEquipe) return;
@@ -3141,6 +3180,7 @@ async function sauvegarderVitrineEtape(vitrineId, etape, equipeId = facDrawerEqu
   await loadDrawerVitrine(equipeId, Number(etape));
 }
 function closeConvDrawer(){
+  document.querySelector('.fac-layout')?.classList.remove('drawer-open');
   if(facDrawerConversationChannel){
     try{ sb.removeChannel(facDrawerConversationChannel); }catch(_){ }
     facDrawerConversationChannel = null;
