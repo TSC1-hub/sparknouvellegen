@@ -1057,23 +1057,31 @@ async function injectMockupShapes(){
     const res = await fetch('mockup-learning-planet-v2.html', { cache: 'no-store' });
     if(!res.ok) throw new Error(`HTTP ${res.status}`);
     const html = await res.text();
+    const pngArrayMatch = html.match(/const\s+LPI_SHAPE_PNGS\s*=\s*\[([\s\S]*?)\];/i);
+    let pngList = [];
+    if(pngArrayMatch?.[1]){
+      pngList = [...pngArrayMatch[1].matchAll(/'([^']+\.(?:png|webp|jpg|jpeg|svg))'/gi)]
+        .map(m => m[1])
+        .filter(Boolean);
+    }
+
     const matches = [...html.matchAll(/<img\s+class="shape"\s+src="([^"]+)"(?:\s+style="([^"]*)")?/gi)];
-    if(!matches.length) return;
+    const styleList = matches.map(m => m[2] || '');
+    const fallbackSrcs = matches.map(m => m[1]).filter(Boolean);
 
-    const shapes = matches
-      .map(m => ({ src: m[1], style: m[2] || '' }))
-      .filter(item => !!item.src);
-
-    if(!shapes.length) return;
+    const shapeSources = pngList.length ? pngList : fallbackSrcs;
+    if(!shapeSources.length) return;
 
     placeholders.forEach((img, index)=>{
-      const data = shapes[index % shapes.length];
-      if(!data?.src) return;
+      const src = shapeSources[index % shapeSources.length];
+      if(!src) return;
 
-      img.src = data.src;
+      const inlineStyle = styleList[index % Math.max(styleList.length, 1)] || '';
+
+      img.src = src;
       img.decoding = 'async';
       img.loading = 'lazy';
-      if(data.style) img.style.cssText = `${data.style}; z-index:0;`;
+      if(inlineStyle) img.style.cssText = `${inlineStyle}; z-index:0;`;
       img.style.display = 'block';
     });
   } catch (e) {
