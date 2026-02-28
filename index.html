@@ -626,6 +626,7 @@ body::before{background:radial-gradient(ellipse 60% 50% at 85% 5%,rgba(62,212,24
 #btn-mentor-conv:hover,#btn-mentor-conv.active{background:#fff;color:#7f31a6;border-color:#b768de;}
 #btn-mentor-canal{background:#9040b8;color:#fff;border-color:#9040b8;}
 #btn-mentor-canal:hover,#btn-mentor-canal.active{background:#7f31a6;color:#fff;border-color:#7f31a6;}
+.mentor-conv-badge{background:#1890b0;color:#fff;font-size:.55rem;font-weight:700;padding:2px 6px;border-radius:10px;min-width:18px;text-align:center;display:none;}
 .mentor-canal-badge{background:var(--terra);}
 
 .mentor-panel-overlay{background:rgba(0,0,0,.2);}
@@ -836,7 +837,8 @@ body::before{background:radial-gradient(ellipse 60% 50% at 85% 5%,rgba(62,212,24
       <div class="mentor-vitrine-readonly">👁 Lecture seule — Code non accessible au mentor</div>
 
       <div class="mentor-float-btns">
-        <button id="btn-mentor-conv" class="mentor-float-btn" onclick="ouvrirPanelMentor('conv')">💬 Conversation SPARK</button>
+        <button id="btn-mentor-conv" class="mentor-float-btn" onclick="ouvrirPanelMentor('conv')">💬 Conversation SPARK <span id="mentor-conv-notif" class="mentor-conv-badge">0</span></button>
+
         <button id="btn-mentor-canal" class="mentor-float-btn" onclick="ouvrirPanelMentor('canal')">🎓 Canal Mentor <span id="mentor-canal-notif" class="mentor-canal-badge">2</span></button>
       </div>
 
@@ -969,14 +971,17 @@ let conversationHistory = [];
 let eleveMessagesCache = [];
 let eleveCanalActif = 'spark';
 let eleveMentorUnread = 0;
+let eleveConversationChannel = null;
 let masterPrompt = '';
 let selectedEquipeId = null;
 let resetEquipeId = null;
 let mentorVitrineChannel = null;
 let mentorConversationChannel = null;
+let mentorTeamMessagesChannel = null;
 let mentorVitrinesData = [];
 let mentorEtapeAffichee = null;
 let mentorEtapeCourante = 0;
+let mentorConvUnread = 0;
 let eleveVitrinesData = [];
 let eleveEtapeAffichee = null;
 let eleveEtapeEdition = null;
@@ -985,6 +990,7 @@ let facDrawerVitrines = [];
 let facDrawerConvMessages = [];
 let facDrawerCanalActif = 'spark';
 let facMentorMessagesChannel = null;
+let facDrawerConversationChannel = null;
 
 function getEtapeActiveEquipe(){
   const etape = Number(currentEquipe?.etape_courante ?? 0);
@@ -1458,9 +1464,21 @@ function resetBtn() {
 }
 
 function doLogout() {
+  if(eleveConversationChannel){
+    try{ sb.removeChannel(eleveConversationChannel); }catch(_){ }
+    eleveConversationChannel = null;
+  }
   if(facMentorMessagesChannel){
     try{ sb.removeChannel(facMentorMessagesChannel); }catch(_){ }
     facMentorMessagesChannel = null;
+  }
+  if(facDrawerConversationChannel){
+    try{ sb.removeChannel(facDrawerConversationChannel); }catch(_){ }
+    facDrawerConversationChannel = null;
+  }
+  if(mentorTeamMessagesChannel){
+    try{ sb.removeChannel(mentorTeamMessagesChannel); }catch(_){ }
+    mentorTeamMessagesChannel = null;
   }
   currentUser = null;
   currentEquipe = null;
@@ -1487,7 +1505,7 @@ async function initEleve(){
   await loadConversation();
   if(conversationHistory.length===0) await sparkGreet();
   requestAnimationFrame(()=>scrollBot());
-  listenMentorMessages();
+  listenEleveConversations();
   listenVitrine();
 }
 
@@ -2039,25 +2057,33 @@ function login() {
   }
 }
 
-function listenMentorMessages(){
+function listenEleveConversations(){
   if(!currentEquipe) return;
-  sb.channel('realtime-mentor-'+currentEquipe.id)
+  if(eleveConversationChannel){
+    try{ sb.removeChannel(eleveConversationChannel); }catch(_){ }
+    eleveConversationChannel = null;
+  }
+
+  eleveConversationChannel = sb.channel('realtime-eleve-'+currentEquipe.id)
     .on('postgres_changes',{event:'INSERT',schema:'public',table:'conversations',filter:`equipe_id=eq.${currentEquipe.id}`},p=>{
       const m=p.new;
-      if(m.role==='mentor'&&m.statut==='visible'){
-        eleveMessagesCache.push(m);
-        if(eleveCanalActif!=='mentor'){
-          eleveMentorUnread += 1;
-          const badge=document.getElementById('eleve-mentor-badge');
-          if(badge){
-            badge.textContent=String(eleveMentorUnread);
-            badge.style.display='inline-block';
-          }
+      if(m.statut!=='visible') return;
+      if(m.auteur_code===currentUser?.code) return;
+
+      eleveMessagesCache.push(m);
+      if(m.role==='mentor' && eleveCanalActif!=='mentor'){
+        eleveMentorUnread += 1;
+        const badge=document.getElementById('eleve-mentor-badge');
+        if(badge){
+          badge.textContent=String(eleveMentorUnread);
+          badge.style.display='inline-block';
         }
-        renderEleveConversation();
-        showToast('Message de '+m.pseudo,'success');
       }
-    }).subscribe();
+
+      renderEleveConversation();
+      if(m.role==='mentor') showToast('Message de '+m.pseudo,'success');
+    })
+    .subscribe();
 }
 
 // ── VUE MENTOR ──
@@ -2092,6 +2118,9 @@ async function loadMentorTeam(eq,el){
   document.querySelectorAll('.ms-team').forEach(t=>t.classList.remove('sel'));
   el.classList.add('sel');
   selectedEquipeId=eq.id;
+  mentorConvUnread = 0;
+  const convBadge=document.getElementById('mentor-conv-notif');
+  if(convBadge) convBadge.style.display='none';
   mentorEtapeCourante = Number(eq.etape_courante || 0);
   document.getElementById('mentor-team-name').textContent=`🌿 ${eq.nom||eq.code_equipe}`;
   document.getElementById('mentor-team-info').textContent=`${eq.college||''} · Jour ${eq.etape_courante}/5`;
@@ -2104,6 +2133,7 @@ async function loadMentorTeam(eq,el){
   for(let i=0;i<5;i++){const d=document.createElement('div');d.className='pdot '+(i<eq.etape_courante?'d':i===eq.etape_courante?'a':'p');pg.appendChild(d);}
   await chargerVitrinesMentor(eq.id, Number(eq.etape_courante || 0));
   listenVitrinesMentor(eq.id);
+  listenMentorTeamMessages(eq.id);
 
   if(document.getElementById('panel-conv-mentor')?.classList.contains('open')){
     await ouvrirPanelMentor('conv');
@@ -2193,6 +2223,33 @@ function listenVitrinesMentor(eqId){
     .subscribe();
 }
 
+function listenMentorTeamMessages(eqId){
+  if(mentorTeamMessagesChannel){
+    try{ sb.removeChannel(mentorTeamMessagesChannel); }catch(_){ }
+    mentorTeamMessagesChannel = null;
+  }
+
+  mentorTeamMessagesChannel = sb.channel('mentor-team-msg-'+eqId)
+    .on('postgres_changes',{event:'INSERT',schema:'public',table:'conversations',filter:`equipe_id=eq.${eqId}`}, async (payload)=>{
+      const m = payload?.new;
+      if(m?.role !== 'user') return;
+      const isConvOpen = document.getElementById('panel-conv-mentor')?.classList.contains('open');
+      if(isConvOpen){
+        await chargerConversationMentor(eqId);
+        return;
+      }
+
+      mentorConvUnread += 1;
+      const badge=document.getElementById('mentor-conv-notif');
+      if(badge){
+        badge.textContent=String(mentorConvUnread);
+        badge.style.display='inline-block';
+      }
+      showToast('Nouveau message Team','success');
+    })
+    .subscribe();
+}
+
 async function chargerConversationMentor(eqId){
   const c=document.getElementById('mentor-conv-msgs');
   if(!c) return;
@@ -2201,12 +2258,13 @@ async function chargerConversationMentor(eqId){
     .order('created_at',{ascending:true});
 
   c.innerHTML='';
-  if(!msgs || msgs.length===0){
+  const visibles = (msgs || []).filter(m=>m.role!=='mentor');
+  if(!visibles.length){
     c.innerHTML='<div class="read-note">📖 Aucun message pour l\'instant</div>';
     return;
   }
 
-  msgs.forEach(m=>{
+  visibles.forEach(m=>{
     const d=document.createElement('div');
     if(m.role==='assistant'){d.className='msg spark-msg';d.innerHTML=`<div class="msg-av">⚡</div><div class="msg-col"><div class="msg-who">SPARK ⚡</div><div class="msg-bubble">${formatTxt(m.message)}</div></div>`;}
     else if(m.role==='user'){d.className='msg eleve-msg';d.innerHTML=`<div class="msg-av">👥</div><div class="msg-col"><div class="msg-who">${m.pseudo||'La Team'}</div><div class="msg-bubble">${formatTxt(m.message)}</div></div>`;}
@@ -2216,10 +2274,26 @@ async function chargerConversationMentor(eqId){
   c.scrollTop=c.scrollHeight;
 }
 
-function alimenterCanalMentor(){
+async function alimenterCanalMentor(eqId){
   const c=document.getElementById('mentor-canal-msgs');
   if(!c) return;
-  c.innerHTML='<div class="read-note">🎓 Envoie un message à l\'équipe sélectionnée. Il sera validé par le facilitateur avant affichage.</div>';
+  const { data: msgs } = await sb.from('conversations')
+    .select('*').eq('equipe_id',eqId).eq('statut','visible').eq('role','mentor')
+    .order('created_at',{ascending:true});
+
+  c.innerHTML='';
+  if(!msgs || msgs.length===0){
+    c.innerHTML='<div class="read-note">🎓 Envoie un message à l\'équipe sélectionnée. Il sera validé par le facilitateur avant affichage.</div>';
+    return;
+  }
+
+  msgs.forEach(m=>{
+    const d=document.createElement('div');
+    d.className='msg mentor-msg';
+    d.innerHTML=`<div class="msg-av">🎓</div><div class="msg-col"><div class="msg-who">${m.pseudo||'Mentor'}</div><div class="msg-bubble">${formatTxt(m.message)}</div></div>`;
+    c.appendChild(d);
+  });
+  c.scrollTop=c.scrollHeight;
 }
 
 async function ouvrirPanelMentor(id){
@@ -2251,15 +2325,25 @@ async function ouvrirPanelMentor(id){
   if(id==='canal'){
     const badge=document.getElementById('mentor-canal-notif');
     if(badge) badge.style.display='none';
-    alimenterCanalMentor();
+    if(!selectedEquipeId) return;
+    await alimenterCanalMentor(selectedEquipeId);
     if(mentorConversationChannel){
       try{ sb.removeChannel(mentorConversationChannel); }catch(_){ }
       mentorConversationChannel = null;
     }
+
+    mentorConversationChannel = sb.channel('mentor-canal-'+selectedEquipeId)
+      .on('postgres_changes',{event:'INSERT',schema:'public',table:'conversations',filter:`equipe_id=eq.${selectedEquipeId}`}, async (payload)=>{
+        if(payload?.new?.role==='mentor') await alimenterCanalMentor(selectedEquipeId);
+      })
+      .subscribe();
     return;
   }
 
   if(!selectedEquipeId) return;
+  mentorConvUnread = 0;
+  const convBadge=document.getElementById('mentor-conv-notif');
+  if(convBadge) convBadge.style.display='none';
   await chargerConversationMentor(selectedEquipeId);
 
   if(mentorConversationChannel){
@@ -2268,8 +2352,8 @@ async function ouvrirPanelMentor(id){
   }
 
   mentorConversationChannel = sb.channel('mentor-conv-'+selectedEquipeId)
-    .on('postgres_changes',{event:'INSERT',schema:'public',table:'conversations',filter:`equipe_id=eq.${selectedEquipeId}`}, async ()=>{
-      await chargerConversationMentor(selectedEquipeId);
+    .on('postgres_changes',{event:'INSERT',schema:'public',table:'conversations',filter:`equipe_id=eq.${selectedEquipeId}`}, async (payload)=>{
+      if(payload?.new?.role!=='mentor') await chargerConversationMentor(selectedEquipeId);
     })
     .subscribe();
 }
@@ -2416,6 +2500,28 @@ async function loadDrawerConv(eqId){
     </div>
     <div class="drawer-msgs" id="drawer-msgs"></div>`;
   renderFacConversationCanal();
+
+  if(facDrawerConversationChannel){
+    try{ sb.removeChannel(facDrawerConversationChannel); }catch(_){ }
+    facDrawerConversationChannel = null;
+  }
+
+  facDrawerConversationChannel = sb.channel('fac-drawer-conv-'+eqId)
+    .on('postgres_changes',{event:'INSERT',schema:'public',table:'conversations',filter:`equipe_id=eq.${eqId}`}, async ()=>{
+      const { data: liveMsgs } = await sb.from('conversations')
+        .select('*').eq('equipe_id',eqId).eq('statut','visible')
+        .order('created_at',{ascending:true});
+      facDrawerConvMessages = liveMsgs || [];
+      renderFacConversationCanal();
+    })
+    .on('postgres_changes',{event:'UPDATE',schema:'public',table:'conversations',filter:`equipe_id=eq.${eqId}`}, async ()=>{
+      const { data: liveMsgs } = await sb.from('conversations')
+        .select('*').eq('equipe_id',eqId).eq('statut','visible')
+        .order('created_at',{ascending:true});
+      facDrawerConvMessages = liveMsgs || [];
+      renderFacConversationCanal();
+    })
+    .subscribe();
 }
 
 function switchFacConversationCanal(canal){
@@ -2793,6 +2899,10 @@ async function sauvegarderVitrineEtape(vitrineId, etape, equipeId = facDrawerEqu
   await loadDrawerVitrine(equipeId, Number(etape));
 }
 function closeConvDrawer(){
+  if(facDrawerConversationChannel){
+    try{ sb.removeChannel(facDrawerConversationChannel); }catch(_){ }
+    facDrawerConversationChannel = null;
+  }
   // Retirer le highlight
   document.querySelectorAll('.team-card').forEach(c=>c.classList.remove('active-drawer'));
   // Reconstruire la vue normale
