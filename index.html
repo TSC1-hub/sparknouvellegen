@@ -1166,6 +1166,11 @@ function renderLoginGalaxy(shapeSources = galaxyShapeSources){
   if(cardRect.width < 40 || cardRect.height < 40) return;
   const cx = (cardRect.left - screenRect.left) + cardRect.width / 2;
   const cy = (cardRect.top - screenRect.top) + cardRect.height / 2;
+  const cardLeft = cardRect.left - screenRect.left;
+  const cardTop = cardRect.top - screenRect.top;
+  const cardRight = cardLeft + cardRect.width;
+  const cardBottom = cardTop + cardRect.height;
+  const cardExclusion = 18;
   const maxRadius = Math.min(screenRect.width, screenRect.height) * 0.52;
   const minSide = Math.min(screenRect.width, screenRect.height);
   const startRadius = Math.max(84, Math.min(120, cardRect.width * 0.36));
@@ -1176,9 +1181,16 @@ function renderLoginGalaxy(shapeSources = galaxyShapeSources){
   const placed = [];
   let srcIndex = 0;
 
-  function canPlace(x, y, size, factor = 0.60){
+  function canPlace(x, y, size, factor = 0.60, avoidCard = true){
     if(x < size * 0.35 || x > screenRect.width - (size * 0.35)) return false;
     if(y < size * 0.35 || y > screenRect.height - (size * 0.35)) return false;
+    if(avoidCard){
+      const touchLeft = cardLeft - cardExclusion - (size * 0.42);
+      const touchTop = cardTop - cardExclusion - (size * 0.42);
+      const touchRight = cardRight + cardExclusion + (size * 0.42);
+      const touchBottom = cardBottom + cardExclusion + (size * 0.42);
+      if(x > touchLeft && x < touchRight && y > touchTop && y < touchBottom) return false;
+    }
     return !placed.some(p => {
       const dx = x - p.x;
       const dy = y - p.y;
@@ -1246,17 +1258,18 @@ function renderLoginGalaxy(shapeSources = galaxyShapeSources){
     }
   }
 
-  const innerCount = Math.max(8, Math.min(14, Math.floor(count * 0.75)));
+  const innerBaseRadius = Math.min(maxRadius - 20, Math.max(146, Math.max(cardRect.width, cardRect.height) * 0.56));
+  const innerCount = Math.max(10, Math.min(18, Math.floor(count * 0.95)));
   for(let i=0;i<innerCount;i++){
     const size = 38 + ((i % 4) * 7);
     for(let attempt=0; attempt<14; attempt++){
       const theta = 0.25 + (i * 0.82) + (attempt * 0.19);
-      const radius = (startRadius * 0.20) + (i * 7) + (attempt * 4);
+      const radius = innerBaseRadius + (i * 6) + (attempt * 5);
       const x = cx + Math.cos(theta) * radius;
       const y = cy + Math.sin(theta) * radius * 0.72;
       if(canPlace(x, y, size, 0.54)){
         placed.push({ x, y, size });
-        appendShape(x, y, size, theta, 0.10 + ((i % 3) * 0.014));
+        appendShape(x, y, size, theta, 0.13 + ((i % 3) * 0.02));
         break;
       }
     }
@@ -1267,12 +1280,12 @@ function renderLoginGalaxy(shapeSources = galaxyShapeSources){
     const size = 30 + ((i % 3) * 6);
     for(let attempt=0; attempt<16; attempt++){
       const theta = 0.1 + (i * 1.05) + (attempt * 0.17);
-      const radius = 22 + (i * 5) + (attempt * 3);
+      const radius = Math.max(120, innerBaseRadius - 28) + (i * 4) + (attempt * 4);
       const x = cx + Math.cos(theta) * radius;
       const y = cy + Math.sin(theta) * radius * 0.72;
       if(canPlace(x, y, size, 0.52)){
         placed.push({ x, y, size });
-        appendShape(x, y, size, theta, 0.095 + ((i % 2) * 0.012));
+        appendShape(x, y, size, theta, 0.12 + ((i % 2) * 0.018));
         break;
       }
     }
