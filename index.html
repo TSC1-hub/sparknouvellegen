@@ -500,30 +500,57 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
 .shape{position:absolute;pointer-events:none;mix-blend-mode:multiply;z-index:0;}
 .lpi-shape{opacity:.22;display:none;animation:lpiSideFloat 17s ease-in-out infinite;}
 
-/* LPI shapes — système mockup V2 */
+/* LPI shapes — système mockup V2 — animations per-shape vers le centre */
 #s-login .lpi{position:absolute;mix-blend-mode:multiply;pointer-events:none;z-index:1;will-change:transform;}
-#s-login .lpi-nw{width:310px;top:-80px;left:-80px;opacity:.78;animation:orgA 18s ease-in-out infinite;}
-#s-login .lpi-ne{width:260px;top:-55px;right:-70px;opacity:.70;animation:orgB 15s ease-in-out infinite;}
-#s-login .lpi-sw{width:240px;bottom:-65px;left:-55px;opacity:.65;animation:orgC 20s ease-in-out infinite;}
-#s-login .lpi-se{width:280px;bottom:-75px;right:-65px;opacity:.73;animation:orgA 16s ease-in-out infinite reverse;}
-#s-login .lpi-ml{width:160px;top:42%;left:-38px;opacity:.55;animation:orgB 22s ease-in-out infinite;}
-#s-login .lpi-mr{width:150px;top:35%;right:-35px;opacity:.50;animation:orgC 19s ease-in-out infinite reverse;}
-#s-login .lpi-tc{width:120px;top:8%;left:38%;opacity:.32;animation:orgA 24s ease-in-out infinite;}
-#s-login .lpi-bc{width:110px;bottom:12%;right:32%;opacity:.28;animation:orgB 21s ease-in-out infinite reverse;}
+#s-login .lpi-nw{width:310px;top:-80px;left:-80px;opacity:.78;animation:toCtr-nw 13s ease-in-out infinite;}
+#s-login .lpi-ne{width:260px;top:-55px;right:-70px;opacity:.70;animation:toCtr-ne 11s ease-in-out infinite;}
+#s-login .lpi-sw{width:240px;bottom:-65px;left:-55px;opacity:.65;animation:toCtr-sw 14s ease-in-out infinite;}
+#s-login .lpi-se{width:280px;bottom:-75px;right:-65px;opacity:.73;animation:toCtr-se 12s ease-in-out infinite;}
+#s-login .lpi-ml{width:160px;top:42%;left:-38px;opacity:.55;animation:toCtr-ml 15s ease-in-out infinite;}
+#s-login .lpi-mr{width:150px;top:35%;right:-35px;opacity:.50;animation:toCtr-mr 13s ease-in-out infinite;}
+#s-login .lpi-tc{width:120px;top:8%;left:38%;opacity:.36;animation:toCtr-tc 16s ease-in-out infinite;}
+#s-login .lpi-bc{width:110px;bottom:12%;right:32%;opacity:.32;animation:toCtr-bc 14s ease-in-out infinite;}
 
-@keyframes orgA{
-  0%,100%{transform:rotate(-14deg) translateY(0) translateX(0);}
-  30%    {transform:rotate(-11deg) translateY(-14px) translateX(8px);}
-  70%    {transform:rotate(-17deg) translateY(10px) translateX(-6px);}
+/* Chaque shape dérive vers le centre — amplitude x4 */
+@keyframes toCtr-nw{
+  0%,100%{transform:rotate(-14deg) translate(0,0);}
+  40%    {transform:rotate(-10deg) translate(64px,54px);}
+  75%    {transform:rotate(-16deg) translate(22px,20px);}
 }
-@keyframes orgB{
-  0%,100%{transform:rotate(20deg) translateY(0);}
-  45%    {transform:rotate(17deg) translateY(-18px) translateX(7px);}
+@keyframes toCtr-ne{
+  0%,100%{transform:rotate(20deg) translate(0,0);}
+  40%    {transform:rotate(16deg) translate(-60px,52px);}
+  75%    {transform:rotate(23deg) translate(-20px,18px);}
 }
-@keyframes orgC{
-  0%,100%{transform:rotate(10deg) translateY(0);}
-  35%    {transform:rotate(13deg) translateY(12px) translateX(-8px);}
-  72%    {transform:rotate(8deg) translateY(-9px) translateX(5px);}
+@keyframes toCtr-sw{
+  0%,100%{transform:rotate(10deg) translate(0,0);}
+  40%    {transform:rotate(14deg) translate(58px,-50px);}
+  75%    {transform:rotate(7deg)  translate(20px,-17px);}
+}
+@keyframes toCtr-se{
+  0%,100%{transform:rotate(-22deg) translate(0,0);}
+  40%    {transform:rotate(-18deg) translate(-62px,-46px);}
+  75%    {transform:rotate(-25deg) translate(-22px,-15px);}
+}
+@keyframes toCtr-ml{
+  0%,100%{transform:rotate(6deg) translate(0,0);}
+  45%    {transform:rotate(10deg) translate(52px,-10px);}
+  80%    {transform:rotate(3deg)  translate(16px,6px);}
+}
+@keyframes toCtr-mr{
+  0%,100%{transform:rotate(-10deg) translate(0,0);}
+  45%    {transform:rotate(-6deg)  translate(-50px,-8px);}
+  80%    {transform:rotate(-13deg) translate(-16px,5px);}
+}
+@keyframes toCtr-tc{
+  0%,100%{transform:rotate(25deg) translate(0,0);}
+  50%    {transform:rotate(21deg) translate(0,42px);}
+  80%    {transform:rotate(28deg) translate(6px,14px);}
+}
+@keyframes toCtr-bc{
+  0%,100%{transform:rotate(-18deg) translate(0,0);}
+  50%    {transform:rotate(-13deg) translate(0,-38px);}
+  80%    {transform:rotate(-22deg) translate(-6px,-13px);}
 }
 
 .steps-sidebar,.mentor-sidebar,.fac-sidebar{position:relative;}
@@ -543,81 +570,170 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
 body{background:linear-gradient(180deg,#f8fbff 0%,#f5f7fb 100%);}
 body::before{background:radial-gradient(ellipse 60% 50% at 85% 5%,rgba(62,212,245,.13) 0%,transparent 65%),radial-gradient(ellipse 40% 60% at 10% 95%,rgba(200,127,240,.12) 0%,transparent 65%);}
 
-/* LOGIN — style mockup V2 (scopé) */
-#s-login{align-items:center;justify-content:center;background:#fff;position:relative;overflow:hidden;padding:12px;}
-#s-login .login-card{
-  width:min(440px,calc(100vw - 32px));
-  max-height:calc(100vh - 48px);
-  border-radius:28px;
-  border:1.5px solid var(--border);
-  box-shadow:0 8px 60px rgba(0,0,0,.08), 0 2px 12px rgba(0,0,0,.04);
+/* LOGIN — style mockup V2 exact (scopé #s-login) */
+#s-login{align-items:center;justify-content:center;background:#f2f0eb;position:relative;overflow:hidden;padding:12px;}
+/* Halos de fond */
+#s-login::after{
+  content:'';position:absolute;inset:0;
+  background:
+    radial-gradient(ellipse 60% 50% at 8% 20%, rgba(200,127,240,.14) 0%,transparent 60%),
+    radial-gradient(ellipse 55% 45% at 92% 78%, rgba(62,212,245,.13) 0%,transparent 58%),
+    radial-gradient(ellipse 45% 40% at 75% 8%,  rgba(0,212,160,.10) 0%,transparent 55%),
+    radial-gradient(ellipse 40% 35% at 20% 88%, rgba(245,197,24,.09) 0%,transparent 50%);
+  pointer-events:none;z-index:0;
 }
-#s-login .login-top{
-  padding:28px 32px 22px;
-  background:#f8f9fb;
+/* ─── CARTE PRINCIPALE ─── */
+#s-login .card{
+  position:relative;z-index:10;
+  width:min(468px,calc(100vw - 24px));
+  max-height:calc(100vh - 24px);
+  display:flex;flex-direction:column;
+  overflow:hidden;
+  background:rgba(255,255,255,.88);
+  backdrop-filter:blur(32px) saturate(1.5);
+  border:1.5px solid rgba(255,255,255,.9);
+  border-radius:30px;
+  box-shadow:0 1px 0 rgba(255,255,255,.95) inset, 0 32px 80px rgba(24,24,32,.12), 0 8px 24px rgba(24,24,32,.07);
+  animation:cardIn .7s cubic-bezier(.22,1,.36,1) both;
+}
+@keyframes cardIn{
+  from{opacity:0;transform:translateY(28px) scale(.96);}
+  to  {opacity:1;transform:none;}
+}
+/* ─── EN-TÊTE CARTE ─── */
+#s-login .ch{
+  padding:26px 30px 20px;
+  background:linear-gradient(170deg,rgba(255,255,255,1) 0%,rgba(248,250,252,1) 100%);
   border-bottom:1px solid var(--border);
-  text-align:center;
+  position:relative;overflow:hidden;flex-shrink:0;
 }
-#s-login .login-logo{
-  font-family:'Syne',sans-serif;
-  font-weight:800;
-  font-size:1.8rem;
-  letter-spacing:2px;
-  color:var(--text);
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  gap:10px;
+#s-login .ch::before{
+  content:'';position:absolute;top:0;left:0;right:0;height:4px;
+  background:linear-gradient(90deg,
+    var(--moss) 0%,var(--moss) 20%,
+    var(--fac)  20%,var(--fac)  40%,
+    var(--mentor) 40%,var(--mentor) 60%,
+    var(--sun)  60%,var(--sun)  80%,
+    var(--terra) 80%,var(--terra) 100%
+  );
 }
-#s-login .login-logo-spark{color:var(--sun);}
-#s-login .login-sub{
-  margin-top:4px;
-  font-size:.65rem;
-  color:var(--light);
-  letter-spacing:1.5px;
-  text-transform:uppercase;
-  font-style:normal;
+#s-login .ch::after{
+  content:'';position:absolute;top:-30px;left:-20px;
+  width:200px;height:200px;
+  background:radial-gradient(circle,rgba(0,212,160,.08) 0%,transparent 70%);
+  pointer-events:none;
 }
-#s-login .lpi-dots{display:flex;gap:6px;justify-content:center;margin-top:10px;}
-#s-login .lpi-dot{width:9px;height:9px;border-radius:50%;}
-#s-login .login-body{padding:20px 26px 22px;overflow-y:auto;}
-
-#s-login .role-cards{gap:7px;margin-bottom:16px;}
-#s-login .role-card{padding:11px 14px;border-radius:14px;border:1.5px solid var(--border);background:#fff;}
-#s-login .role-card:hover{background:#f8f9fb;transform:none;}
-#s-login .role-card.active-eleve{border-color:var(--moss);background:rgba(0,212,160,.05);box-shadow:none;}
-#s-login .role-card.active-mentor{border-color:var(--mentor);background:rgba(200,127,240,.05);box-shadow:none;}
-#s-login .role-card.active-fac{border-color:var(--fac);background:rgba(62,212,245,.05);box-shadow:none;}
-
-#s-login .rc-icon{width:36px;height:36px;border-radius:10px;font-size:1rem;background:#f8f9fb;}
-#s-login .role-card.active-eleve .rc-icon{background:rgba(0,212,160,.1);}
-#s-login .role-card.active-mentor .rc-icon{background:rgba(200,127,240,.1);}
-#s-login .role-card.active-fac .rc-icon{background:rgba(62,212,245,.1);}
-
-#s-login .rc-title{font-family:'Syne',sans-serif;font-weight:700;font-size:.82rem;color:var(--text);}
-#s-login .rc-desc{font-size:.6rem;color:var(--light);margin-top:1px;line-height:1.4;}
-#s-login .rc-check{width:18px;height:18px;border:1.5px solid var(--border);font-size:.55rem;}
-
-#s-login .field-wrap{margin-bottom:10px;}
-#s-login .field-label{font-size:.57rem;letter-spacing:1.2px;color:var(--light);margin-bottom:5px;}
-#s-login .field-input{padding:10px 13px;border:1.5px solid var(--border);border-radius:11px;background:#fff;font-size:.83rem;}
-#s-login .field-input.eleve:focus{border-color:var(--moss);box-shadow:none;}
-#s-login .field-input.mentor:focus{border-color:var(--mentor);box-shadow:none;}
-#s-login .field-input.fac:focus{border-color:var(--fac);box-shadow:none;}
-
-#s-login .btn-connect{margin-top:14px;font-family:'Syne',sans-serif;font-size:.88rem;font-weight:700;letter-spacing:.3px;}
-#s-login .btn-connect.eleve{background:var(--moss);}
-#s-login .btn-connect.eleve:hover{background:#00bfa0;box-shadow:0 6px 20px rgba(0,212,160,.3);}
-#s-login .btn-connect.mentor{background:var(--mentor);}
-#s-login .btn-connect.mentor:hover{background:#b060d8;box-shadow:0 6px 20px rgba(200,127,240,.3);}
-#s-login .btn-connect.fac{background:var(--fac);color:var(--text);}
-#s-login .btn-connect.fac:hover{background:#20c0e0;box-shadow:0 6px 20px rgba(62,212,245,.25);}
-
-#s-login .consent-wrap{margin-top:10px;padding:9px 11px;background:#f8f9fb;border:1px solid var(--border);border-radius:9px;}
-#s-login .consent-check{accent-color:var(--moss);}
-#s-login .consent-text{font-size:.6rem;color:var(--light);line-height:1.55;}
-#s-login .consent-note{font-size:.58rem;color:var(--light);line-height:1.5;}
-#s-login .rgpd-box{margin-top:10px;padding:9px 11px;background:#f8f9fb;border:1px solid var(--border);border-radius:9px;font-size:.6rem;color:var(--mid);line-height:1.55;}
+#s-login .ch-top{display:flex;align-items:center;gap:14px;position:relative;z-index:1;}
+#s-login .ch-mark{
+  width:48px;height:48px;border-radius:16px;
+  background:linear-gradient(135deg,#111118,#2a2a3a);
+  display:flex;align-items:center;justify-content:center;
+  font-size:1.4rem;flex-shrink:0;
+  box-shadow:0 6px 18px rgba(0,0,0,.22);
+}
+#s-login .ch-name{display:flex;flex-direction:column;}
+#s-login .ch-title{font-family:'Syne',sans-serif;font-weight:800;font-size:1.7rem;letter-spacing:1.5px;line-height:1;color:var(--text);}
+#s-login .ch-title em{font-style:normal;color:var(--sun);}
+#s-login .ch-sub{font-size:.6rem;font-weight:500;letter-spacing:2px;text-transform:uppercase;color:var(--light);margin-top:3px;}
+#s-login .ch-pills{display:flex;align-items:center;gap:8px;margin-top:14px;position:relative;z-index:1;}
+#s-login .ch-pill-gen{
+  display:flex;align-items:center;gap:6px;padding:5px 13px;
+  background:rgba(0,212,160,.09);border:1px solid rgba(0,212,160,.22);
+  border-radius:20px;font-size:.63rem;font-weight:600;color:#00b08a;letter-spacing:.3px;
+}
+#s-login .live-dot{width:7px;height:7px;border-radius:50%;background:var(--moss);animation:livePulse 2.2s ease-in-out infinite;}
+@keyframes livePulse{
+  0%,100%{opacity:1;box-shadow:0 0 0 0 rgba(0,212,160,.4);}
+  50%    {opacity:.5;box-shadow:0 0 0 4px rgba(0,212,160,0);}
+}
+#s-login .ch-dots{display:flex;gap:4px;margin-left:auto;}
+#s-login .ch-dot{width:8px;height:8px;border-radius:50%;}
+/* ─── CORPS CARTE ─── */
+#s-login .cb{padding:20px 26px 18px;overflow-y:auto;flex:1;display:flex;flex-direction:column;gap:14px;}
+#s-login .cb::-webkit-scrollbar{width:3px;}
+#s-login .cb::-webkit-scrollbar-thumb{background:rgba(0,0,0,.08);border-radius:3px;}
+#s-login .slabel{font-size:.52rem;font-weight:700;letter-spacing:2.2px;text-transform:uppercase;color:var(--light);}
+/* ─── RÔLES ─── */
+#s-login .roles{display:flex;flex-direction:column;gap:6px;}
+#s-login .role{
+  display:flex;align-items:center;gap:12px;padding:11px 14px;
+  border-radius:15px;border:1.5px solid var(--border);
+  cursor:pointer;transition:all .2s cubic-bezier(.4,0,.2,1);
+  background:white;position:relative;overflow:hidden;user-select:none;
+}
+#s-login .role:hover{transform:translateX(3px);}
+#s-login .role.on-eleve {border-color:var(--moss);  background:linear-gradient(135deg,#f0fffb,#f5fffc);box-shadow:0 0 0 3px rgba(0,212,160,.07);}
+#s-login .role.on-mentor{border-color:var(--mentor);background:linear-gradient(135deg,#fdf4ff,#faf0ff);box-shadow:0 0 0 3px rgba(200,127,240,.07);}
+#s-login .role.on-fac   {border-color:var(--fac);   background:linear-gradient(135deg,#f0fbff,#eefaff);box-shadow:0 0 0 3px rgba(62,212,245,.07);}
+#s-login .role-ic{width:38px;height:38px;border-radius:11px;display:flex;align-items:center;justify-content:center;font-size:1.1rem;flex-shrink:0;background:rgba(24,24,32,.04);transition:all .2s;}
+#s-login .role.on-eleve  .role-ic{background:rgba(0,212,160,.12);}
+#s-login .role.on-mentor .role-ic{background:rgba(200,127,240,.12);}
+#s-login .role.on-fac    .role-ic{background:rgba(62,212,245,.12);}
+#s-login .role-body{flex:1;min-width:0;}
+#s-login .role-name{font-family:'Syne',sans-serif;font-weight:700;font-size:.82rem;color:var(--text);line-height:1.2;}
+#s-login .role-desc{font-size:.6rem;color:var(--light);margin-top:2px;line-height:1.4;}
+#s-login .role-ck{
+  width:20px;height:20px;border-radius:50%;border:1.5px solid var(--border);
+  flex-shrink:0;display:flex;align-items:center;justify-content:center;
+  font-size:.58rem;color:transparent;transition:all .2s;
+}
+#s-login .role.on-eleve  .role-ck{background:var(--moss);  border-color:var(--moss);  color:white;}
+#s-login .role.on-mentor .role-ck{background:var(--mentor);border-color:var(--mentor);color:white;}
+#s-login .role.on-fac    .role-ck{background:var(--fac);   border-color:var(--fac);   color:#111;}
+/* ─── CHAMP CODE ─── */
+#s-login .field{display:flex;flex-direction:column;gap:5px;}
+#s-login .field-lbl{font-size:.54rem;font-weight:700;letter-spacing:1.8px;text-transform:uppercase;color:var(--light);padding-left:2px;}
+#s-login .field-row{position:relative;display:flex;align-items:center;}
+#s-login .fi{
+  width:100%;padding:12px 14px 12px 44px;border:1.5px solid var(--border);border-radius:13px;
+  font-size:.9rem;color:var(--text);background:white;outline:none;transition:all .22s;
+  font-family:monospace;letter-spacing:2px;
+}
+#s-login .fi::placeholder{color:var(--light);letter-spacing:1px;font-family:'DM Sans',sans-serif;}
+#s-login .fi:focus        {border-color:var(--moss);  box-shadow:0 0 0 3px rgba(0,212,160,.10);}
+#s-login .fi.f-mentor:focus{border-color:var(--mentor);box-shadow:0 0 0 3px rgba(200,127,240,.10);}
+#s-login .fi.f-fac:focus   {border-color:var(--fac);   box-shadow:0 0 0 3px rgba(62,212,245,.10);}
+#s-login .field-ico{position:absolute;left:14px;font-size:.95rem;opacity:.45;pointer-events:none;transition:opacity .2s;}
+#s-login .field-row:focus-within .field-ico{opacity:.7;}
+/* ─── BOUTON ─── */
+#s-login .btn-connect{
+  width:100%;padding:13px 18px;border:none;border-radius:14px;
+  font-family:'Syne',sans-serif;font-size:.88rem;font-weight:700;
+  cursor:pointer;display:flex;align-items:center;justify-content:center;gap:9px;
+  letter-spacing:.3px;transition:all .22s cubic-bezier(.4,0,.2,1);
+  position:relative;overflow:hidden;
+}
+#s-login .btn-connect::before{
+  content:'';position:absolute;top:0;left:0;right:0;height:50%;
+  background:linear-gradient(180deg,rgba(255,255,255,.18) 0%,transparent 100%);
+  pointer-events:none;border-radius:inherit;
+}
+#s-login .btn-connect.eleve {background:linear-gradient(135deg,var(--moss),#00b08a);color:white;box-shadow:0 6px 22px rgba(0,212,160,.30);}
+#s-login .btn-connect.eleve:hover {transform:translateY(-2px);box-shadow:0 10px 30px rgba(0,212,160,.38);}
+#s-login .btn-connect.mentor{background:linear-gradient(135deg,var(--mentor),#a050c8);color:white;box-shadow:0 6px 22px rgba(200,127,240,.30);}
+#s-login .btn-connect.mentor:hover{transform:translateY(-2px);box-shadow:0 10px 30px rgba(200,127,240,.38);}
+#s-login .btn-connect.fac  {background:linear-gradient(135deg,var(--fac),#20b8d8);color:#0a1a22;box-shadow:0 6px 22px rgba(62,212,245,.28);}
+#s-login .btn-connect.fac:hover  {transform:translateY(-2px);box-shadow:0 10px 30px rgba(62,212,245,.36);}
+/* ─── CONSENTEMENT ─── */
+#s-login .consent{
+  display:flex;gap:9px;align-items:flex-start;
+  padding:10px 12px;background:rgba(24,24,32,.03);
+  border:1px solid var(--border);border-radius:12px;
+}
+#s-login .consent input{margin-top:2px;accent-color:var(--moss);flex-shrink:0;cursor:pointer;}
+#s-login .consent-txt{font-size:.61rem;color:var(--mid);line-height:1.65;}
+#s-login .consent-txt strong{color:var(--text);font-weight:600;}
+/* ─── PIED CARTE ─── */
+#s-login .cf{
+  padding:10px 20px;border-top:1px solid var(--border);
+  display:flex;align-items:center;justify-content:center;gap:10px;
+  flex-shrink:0;background:rgba(24,24,32,.02);
+}
+#s-login .cf-brand{display:flex;align-items:center;gap:6px;font-size:.59rem;color:var(--light);font-weight:500;}
+#s-login .cf-cdots{display:flex;gap:3px;}
+#s-login .cf-cdot{width:6px;height:6px;border-radius:50%;}
+#s-login .cf-sep{width:1px;height:14px;background:var(--border);}
+#s-login .cf-gen{font-size:.59rem;color:var(--light);}
 
 .login-card{position:relative;z-index:5;border-radius:30px;overflow:hidden;}
 .login-card,.team-card,.fac-page-head,.vcard,.modal-card,.conv-drawer,.drawer-hdr,.carnet-drawer,.mentor-panel{border:1.5px solid var(--border);box-shadow:0 14px 40px rgba(23,26,43,.08);}
@@ -797,43 +913,66 @@ body::before{background:radial-gradient(ellipse 60% 50% at 85% 5%,rgba(62,212,24
   <img class="lpi lpi-mr" src="LPI_Shapes_Shape 2 copie.png" alt="">
   <img class="lpi lpi-tc" src="LPI_Shapes_Shape 3 copie.png" alt="">
   <img class="lpi lpi-bc" src="LPI_Shapes_Shape 5 copie.png" alt="">
-  <div class="login-card">
-    <div class="login-top">
-      <div class="login-logo">🌿 SPARK <span class="login-logo-spark">⚡</span></div>
-      <div class="login-sub">The Schools Challenge · Nouvelle Génération</div>
-      <div class="lpi-dots" aria-hidden="true">
-        <span class="lpi-dot" style="background:var(--moss);"></span>
-        <span class="lpi-dot" style="background:var(--fac);"></span>
-        <span class="lpi-dot" style="background:var(--mentor);"></span>
-        <span class="lpi-dot" style="background:var(--sun);"></span>
+  <div class="card">
+    <!-- En-tête carte -->
+    <div class="ch">
+      <div class="ch-top">
+        <div class="ch-mark">🌿</div>
+        <div class="ch-name">
+          <div class="ch-title">SPARK <em>⚡</em></div>
+          <div class="ch-sub">The Schools Challenge</div>
+        </div>
+      </div>
+      <div class="ch-pills">
+        <div class="ch-pill-gen"><div class="live-dot"></div>Génération 10 · Programme actif</div>
+        <div class="ch-dots">
+          <div class="ch-dot" style="background:var(--moss);"></div>
+          <div class="ch-dot" style="background:var(--fac);"></div>
+          <div class="ch-dot" style="background:var(--mentor);"></div>
+          <div class="ch-dot" style="background:var(--sun);"></div>
+          <div class="ch-dot" style="background:var(--terra);"></div>
+        </div>
       </div>
     </div>
-    <div class="login-body">
-      <div class="role-cards">
-        <div class="role-card active-eleve" id="rc-eleve" onclick="pickRole('eleve')">
-          <div class="rc-icon">👥</div>
-          <div class="rc-text"><div class="rc-title">Je suis élève</div><div class="rc-desc">Accéder au chat SPARK avec mon équipe</div></div>
-          <div class="rc-check">✓</div>
+    <!-- Corps carte -->
+    <div class="cb">
+      <div class="slabel">Je suis…</div>
+      <div class="roles">
+        <div class="role on-eleve" id="rc-eleve" onclick="pickRole('eleve')">
+          <div class="role-ic">👥</div>
+          <div class="role-body">
+            <div class="role-name">Élève</div>
+            <div class="role-desc">Accéder au chat SPARK avec mon équipe</div>
+          </div>
+          <div class="role-ck">✓</div>
         </div>
-        <div class="role-card" id="rc-mentor" onclick="pickRole('mentor')">
-          <div class="rc-icon">🎓</div>
-          <div class="rc-text"><div class="rc-title">Je suis mentor</div><div class="rc-desc">Suivre et encourager mes équipes assignées</div></div>
-          <div class="rc-check"></div>
+        <div class="role" id="rc-mentor" onclick="pickRole('mentor')">
+          <div class="role-ic">🎓</div>
+          <div class="role-body">
+            <div class="role-name">Mentor</div>
+            <div class="role-desc">Suivre et encourager mes équipes assignées</div>
+          </div>
+          <div class="role-ck"></div>
         </div>
-        <div class="role-card" id="rc-fac" onclick="pickRole('fac')">
-          <div class="rc-icon">🛡️</div>
-          <div class="rc-text"><div class="rc-title">Je suis facilitateur</div><div class="rc-desc">Gérer mes équipes et valider les messages</div></div>
-          <div class="rc-check"></div>
+        <div class="role" id="rc-fac" onclick="pickRole('fac')">
+          <div class="role-ic">🛡️</div>
+          <div class="role-body">
+            <div class="role-name">Facilitateur</div>
+            <div class="role-desc">Gérer les équipes et valider les messages</div>
+          </div>
+          <div class="role-ck"></div>
         </div>
       </div>
 
-      <div class="field-wrap">
-        <!-- ✅ CORRECTION : Ajout de l'attribut for -->
-        <label class="field-label" for="code-input" id="code-lbl">CODE ÉQUIPE</label>
-        <input class="field-input eleve" id="code-input"
-          placeholder="ex : TEAM-0000"
-          style="text-transform:uppercase;letter-spacing:2px;font-family:monospace;"
-          onkeydown="if(event.key==='Enter')doLogin()">
+      <div class="field">
+        <div class="field-lbl" id="code-lbl">CODE ÉQUIPE</div>
+        <div class="field-row">
+          <span class="field-ico">🔑</span>
+          <input class="fi" id="code-input"
+            placeholder="ex : TEAM-0000"
+            style="text-transform:uppercase;"
+            onkeydown="if(event.key==='Enter')doLogin()">
+        </div>
       </div>
 
       <div id="pseudo-block" style="display:none;">
@@ -859,18 +998,32 @@ body::before{background:radial-gradient(ellipse 60% 50% at 85% 5%,rgba(62,212,24
         </div>
       </div>
 
-      <button class="btn-connect eleve" id="btn-connect" onclick="doLogin()">Rejoindre l'atelier 🌱</button>
+      <button class="btn-connect eleve" id="btn-connect" onclick="doLogin()">
+        <span id="btxt">Rejoindre l'atelier 🌱</span>
+        <span class="btn-arrow">→</span>
+      </button>
       <div class="login-error" id="login-error">Code invalide.</div>
-      <div class="consent-wrap">
-        <div class="consent-line">
-          <input type="checkbox" id="rgpd-consent" class="consent-check" />
-          <label for="rgpd-consent" class="consent-text">
-            Je comprends et j'accepte le traitement des données nécessaires au fonctionnement de l'atelier (authentification, échanges de messages, suivi de progression), conservées pendant 9 mois.
-          </label>
-        </div>
-        <div class="consent-note">Vous pouvez demander la suppression ou la rectification de vos données auprès de l'équipe facilitatrice.</div>
+      <div class="consent">
+        <input type="checkbox" id="rgpd-consent" />
+        <label for="rgpd-consent" class="consent-txt">
+          J'accepte le traitement des données nécessaires au fonctionnement de l'atelier
+          (<strong>authentification, échanges, progression</strong>),
+          conservées pendant 9 mois. Droit de suppression sur demande.
+        </label>
       </div>
-      <div class="rgpd-box"><strong>🔒 RGPD</strong> — Les données sont utilisées uniquement pour l'atelier, avec accès limité aux personnes autorisées, et une durée de conservation de 9 mois.</div>
+    </div>
+    <!-- Pied carte -->
+    <div class="cf">
+      <div class="cf-brand">
+        <div class="cf-cdots">
+          <div class="cf-cdot" style="background:var(--moss);"></div>
+          <div class="cf-cdot" style="background:var(--fac);"></div>
+          <div class="cf-cdot" style="background:var(--mentor);"></div>
+        </div>
+        Learning Planet Institute
+      </div>
+      <div class="cf-sep"></div>
+      <div class="cf-gen">Génération 10 · 2025–2026</div>
     </div>
   </div>
 </div>
@@ -1113,12 +1266,12 @@ function getEtapeActiveEquipe(){
 function pickRole(role) {
   activeRole = role;
   
-  // Mise à jour visuelle des cartes de rôle
+  // Mise à jour visuelle des cartes de rôle (système mockup V2)
   ['eleve', 'mentor', 'fac'].forEach(r => {
     const c = document.getElementById('rc-' + r);
     if (c) {
-      c.className = 'role-card' + (r === role ? ' active-' + r : '');
-      const check = c.querySelector('.rc-check');
+      c.className = 'role' + (r === role ? ' on-' + r : '');
+      const check = c.querySelector('.role-ck');
       if (check) check.textContent = r === role ? '✓' : '';
     }
   });
@@ -1131,15 +1284,16 @@ function pickRole(role) {
   document.getElementById('code-lbl').textContent = lbl[role];
   const input = document.getElementById('code-input');
   input.placeholder = ph[role];
-  input.className = 'field-input ' + role;
-  
+  input.className = 'fi ' + (role === 'mentor' ? 'f-mentor' : role === 'fac' ? 'f-fac' : '');
+
   // Afficher le bloc pseudo uniquement pour le mentor
   const pBlock = document.getElementById('pseudo-block');
   if (pBlock) pBlock.style.display = role === 'mentor' ? 'block' : 'none';
 
   const btn = document.getElementById('btn-connect');
   btn.className = 'btn-connect ' + role;
-  btn.textContent = tx[role];
+  const btxt = document.getElementById('btxt');
+  if (btxt) btxt.textContent = tx[role]; else btn.textContent = tx[role];
 }
 
 function pickAv(element, emoji) {
