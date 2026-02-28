@@ -168,7 +168,7 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
 .step-item.active .step-name{color:white;font-weight:700;}
 .step-item.locked .step-name{color:rgba(245,240,232,.35);}
 .spark-id{margin:auto 10px 10px;padding:10px 12px;background:rgba(122,182,72,.07);
-  border:1px solid rgba(122,182,72,.18);border-radius:12px;display:flex;align-items:center;gap:10px;}
+  border:1px solid rgba(122,182,72,.18);border-radius:12px;display:flex;align-items:center;gap:10px;position:relative;z-index:3;}
 .spark-id-av{width:36px;height:36px;border-radius:50%;background:var(--moss);
   display:flex;align-items:center;justify-content:center;font-size:1.2rem;flex-shrink:0;}
 .spark-id-name{font-family:'Fraunces',serif;font-weight:700;font-size:.82rem;color:var(--sun);}
@@ -177,6 +177,11 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
 @keyframes blink{0%,100%{opacity:1;}50%{opacity:.2;}}
 
 .chat-zone{flex:1;display:flex;flex-direction:column;padding:16px;gap:10px;background:var(--warm);overflow:hidden;}
+.eleve-chat-tabs{display:flex;gap:8px;flex-shrink:0;}
+.eleve-chat-tab{padding:7px 12px;border-radius:999px;border:1.5px solid var(--border);background:#fff;color:var(--mid);font-size:.68rem;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:6px;transition:all .2s;}
+.eleve-chat-tab.active{background:rgba(62,212,245,.08);border-color:rgba(62,212,245,.28);color:var(--text);}
+.eleve-chat-tab.mentor.active{background:var(--mentor-l);border-color:var(--mentor-b);color:#9040b8;}
+.eleve-chat-badge{display:none;min-width:18px;padding:2px 6px;border-radius:999px;background:var(--terra);color:#fff;font-size:.55rem;line-height:1;text-align:center;}
 .messages{flex:1;overflow-y:auto;display:flex;flex-direction:column;gap:12px;padding:2px 4px;scroll-behavior:smooth;}
 .messages::-webkit-scrollbar{width:3px;}
 .messages::-webkit-scrollbar-thumb{background:rgba(90,122,90,.25);border-radius:2px;}
@@ -238,7 +243,7 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
 .ms-team-day{font-size:.56rem;color:rgba(212,184,248,.3);margin-top:1px;}
 .ms-notif{margin-left:auto;background:var(--mentor);color:white;font-size:.58rem;font-weight:700;padding:2px 6px;border-radius:20px;}
 .ms-identity{margin:auto 10px 10px;padding:10px 12px;background:rgba(123,94,167,.1);
-  border:1px solid rgba(123,94,167,.18);border-radius:12px;display:flex;align-items:center;gap:8px;}
+  border:1px solid rgba(123,94,167,.18);border-radius:12px;display:flex;align-items:center;gap:8px;position:relative;z-index:3;}
 .ms-id-av{width:30px;height:30px;border-radius:8px;background:var(--mentor);display:flex;align-items:center;justify-content:center;font-size:.9rem;flex-shrink:0;}
 .ms-id-name{font-family:'Fraunces',serif;font-size:.77rem;font-weight:700;color:#d4b8f8;}
 .ms-id-code{font-size:.57rem;color:rgba(212,184,248,.4);font-family:monospace;margin-top:1px;}
@@ -307,7 +312,7 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
 .fs-nav:hover{background:rgba(29,111,164,.08);color:rgba(147,197,232,.7);}
 .fs-nav.sel{background:rgba(29,111,164,.15);border-left-color:var(--fac);color:white;font-weight:500;}
 .fs-badge{margin-left:auto;background:var(--terra);color:white;font-size:.58rem;font-weight:700;padding:2px 6px;border-radius:20px;}
-.fs-identity{margin:auto 10px 10px;padding:10px 12px;background:rgba(29,111,164,.1);border:1px solid rgba(29,111,164,.18);border-radius:12px;display:flex;align-items:center;gap:10px;}
+.fs-identity{margin:auto 10px 10px;padding:10px 12px;background:rgba(29,111,164,.1);border:1px solid rgba(29,111,164,.18);border-radius:12px;display:flex;align-items:center;gap:10px;position:relative;z-index:3;}
 .fs-id-av{width:32px;height:32px;border-radius:9px;background:var(--fac);display:flex;align-items:center;justify-content:center;font-size:1rem;flex-shrink:0;}
 .fs-id-name{font-family:'Fraunces',serif;font-size:.8rem;font-weight:700;color:#93c5e8;}
 .fs-id-role{font-size:.58rem;color:rgba(29,111,164,.6);margin-top:1px;}
@@ -406,6 +411,10 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
 .drawer-msgs::-webkit-scrollbar{width:3px;}
 .drawer-msgs::-webkit-scrollbar-thumb{background:rgba(29,111,164,.15);border-radius:2px;}
 .drawer-empty{align-self:center;margin-top:40px;font-size:.75rem;color:var(--light);font-style:italic;}
+.fac-conv-tabs{display:flex;gap:8px;padding:10px 16px;border-bottom:1px solid rgba(0,0,0,.06);background:#fff;}
+.fac-conv-tab{padding:6px 12px;border-radius:999px;border:1.5px solid var(--border);background:#fff;color:#4a6b85;font-size:.66rem;font-weight:700;cursor:pointer;transition:all .2s;}
+.fac-conv-tab.active{background:rgba(62,212,245,.08);border-color:rgba(62,212,245,.25);color:#1890b0;}
+.fac-conv-tab.mentor.active{background:var(--mentor-l);border-color:var(--mentor-b);color:#9040b8;}
 
 .team-card.active-drawer{border-color:var(--fac);box-shadow:0 0 0 2px rgba(29,111,164,.15);}
 .fac-empty{background:white;border:1px dashed rgba(29,111,164,.28);border-radius:14px;padding:24px;text-align:center;color:#4a6b85;font-size:.8rem;box-shadow:0 4px 14px rgba(10,25,41,.04);}
@@ -502,7 +511,7 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
 .steps-sidebar,.mentor-sidebar,.fac-sidebar{position:relative;}
 .steps-sidebar .lpi-side-eleve,
 .mentor-sidebar .lpi-side-mentor,
-.fac-sidebar .lpi-side-fac{width:155px;bottom:-14px;right:-32px;opacity:.24;z-index:2;}
+.fac-sidebar .lpi-side-fac{width:155px;left:10px;right:auto;bottom:64px;opacity:.24;z-index:2;}
 
 :root{
   --moss:#00d4a0;--sage:#00bfa0;--leaf:#00d4a0;
@@ -781,6 +790,10 @@ body::before{background:radial-gradient(ellipse 60% 50% at 85% 5%,rgba(62,212,24
       </div>
     </div>
     <div class="chat-zone">
+      <div class="eleve-chat-tabs">
+        <button id="btn-eleve-canal-spark" class="eleve-chat-tab active" onclick="switchEleveCanal('spark')">💬 Conversation SPARK</button>
+        <button id="btn-eleve-canal-mentor" class="eleve-chat-tab mentor" onclick="switchEleveCanal('mentor')">🎓 Canal Mentor <span id="eleve-mentor-badge" class="eleve-chat-badge">0</span></button>
+      </div>
       <div class="messages" id="chat-messages"></div>
       <div class="input-zone">
         <div class="input-row">
@@ -953,6 +966,9 @@ let selAv = '🦁';
 let currentUser = null;
 let currentEquipe = null;
 let conversationHistory = [];
+let eleveMessagesCache = [];
+let eleveCanalActif = 'spark';
+let eleveMentorUnread = 0;
 let masterPrompt = '';
 let selectedEquipeId = null;
 let resetEquipeId = null;
@@ -966,6 +982,8 @@ let eleveEtapeAffichee = null;
 let eleveEtapeEdition = null;
 let facDrawerEquipeId = null;
 let facDrawerVitrines = [];
+let facDrawerConvMessages = [];
+let facDrawerCanalActif = 'spark';
 
 function getEtapeActiveEquipe(){
   const etape = Number(currentEquipe?.etape_courante ?? 0);
@@ -1409,9 +1427,13 @@ function doLogout() {
 async function initEleve(){
   const{data:eq}=await sb.from('equipes').select('*').eq('code_equipe',currentUser.code).single();
   currentEquipe=eq;
+  eleveCanalActif='spark';
+  eleveMentorUnread=0;
+  eleveMessagesCache=[];
   document.getElementById('eleve-pill').textContent=eq?`${eq.code_equipe} · ${eq.nom||'Équipe'}`:currentUser.code;
   updateSteps(eq?.etape_courante||0);
   go('eleve');
+  switchEleveCanal('spark', true);
   await loadConversation();
   if(conversationHistory.length===0) await sparkGreet();
   requestAnimationFrame(()=>scrollBot());
@@ -1432,19 +1454,73 @@ async function loadConversation(){
   const{data:msgs}=await sb.from('conversations')
     .select('*').eq('equipe_id',currentEquipe.id).eq('statut','visible')
     .order('created_at',{ascending:true});
-  const c=document.getElementById('chat-messages');
-  c.innerHTML=''; conversationHistory=[];
-  if(msgs) msgs.forEach(m=>{
-    conversationHistory.push({role:m.role==='assistant'?'model':'user',parts:[{text:m.message}]});
-    renderMsg(m.role,m.message,m.pseudo);
+  eleveMessagesCache = msgs || [];
+  conversationHistory=[];
+  eleveMessagesCache.forEach(m=>{
+    if(m.role==='assistant' || m.role==='user'){
+      conversationHistory.push({role:m.role==='assistant'?'model':'user',parts:[{text:m.message}]});
+    }
   });
+  renderEleveConversation();
+}
+
+function renderEleveConversation(){
+  const c=document.getElementById('chat-messages');
+  if(!c) return;
+  c.innerHTML='';
+
+  const visible = eleveCanalActif==='mentor'
+    ? eleveMessagesCache.filter(m=>m.role==='mentor')
+    : eleveMessagesCache.filter(m=>m.role!=='mentor');
+
+  if(!visible.length){
+    const note=document.createElement('div');
+    note.className='read-note';
+    note.textContent = eleveCanalActif==='mentor'
+      ? '🎓 Aucun message mentor pour le moment.'
+      : '💬 Démarrez la conversation avec SPARK.';
+    c.appendChild(note);
+    return;
+  }
+
+  visible.forEach(m=>renderMsg(m.role,m.message,m.pseudo));
   scrollBot();
+}
+
+function switchEleveCanal(canal, silent=false){
+  eleveCanalActif = canal === 'mentor' ? 'mentor' : 'spark';
+  const btnSpark=document.getElementById('btn-eleve-canal-spark');
+  const btnMentor=document.getElementById('btn-eleve-canal-mentor');
+  if(btnSpark) btnSpark.classList.toggle('active', eleveCanalActif==='spark');
+  if(btnMentor) btnMentor.classList.toggle('active', eleveCanalActif==='mentor');
+
+  const input=document.getElementById('msg-input');
+  const sendBtn=document.getElementById('btn-send');
+  if(input && sendBtn){
+    const isMentor = eleveCanalActif==='mentor';
+    input.disabled = isMentor;
+    sendBtn.disabled = isMentor;
+    input.placeholder = isMentor
+      ? 'Canal Mentor en lecture seule.'
+      : 'Tapez votre message...';
+    sendBtn.textContent = isMentor ? 'Lecture seule' : 'Envoyer 🌱';
+  }
+
+  if(eleveCanalActif==='mentor'){
+    eleveMentorUnread = 0;
+    const badge=document.getElementById('eleve-mentor-badge');
+    if(badge) badge.style.display='none';
+  }
+
+  renderEleveConversation();
+  if(!silent) scrollBot();
 }
 
 async function sparkGreet(){
   const g="Bienvenue dans le programme The Schools Challenge, vous êtes la 10ème génération à découvrir ce programme ! 🥳 Vous allez lors de 6 prochains mois collaborer tous.tes ensemble dans la résolution d'un problème ! Etes-vous prêt.e.s? 💪";
   await saveMsg('assistant',g,'SPARK ⚡');
-  renderMsg('assistant',g,'SPARK ⚡');
+  eleveMessagesCache.push({role:'assistant',message:g,pseudo:'SPARK ⚡'});
+  renderEleveConversation();
   conversationHistory.push({role:'model',parts:[{text:g}]});
   scrollBot();
 }
@@ -1452,11 +1528,12 @@ async function sparkGreet(){
 async function sendMessage(){
   const inp=document.getElementById('msg-input');
   const txt=inp.value.trim();
-  if(!txt||!currentEquipe) return;
+  if(!txt||!currentEquipe||eleveCanalActif!=='spark') return;
   inp.value=''; inp.style.height='auto';
   document.getElementById('btn-send').disabled=true;
   
-  renderMsg('user',txt,'La Team');
+  eleveMessagesCache.push({role:'user',message:txt,pseudo:'La Team'});
+  renderEleveConversation();
   await saveMsg('user',txt,'La Team');
   conversationHistory.push({role:'user',parts:[{text:txt}]});
   scrollBot(); showTyping();
@@ -1476,7 +1553,8 @@ async function sendMessage(){
     const rVisible = r.replace(/```[\s\S]*?```/gi, '').trim();
 
     if (rVisible && !htmlBlockVideSeulement) {
-      renderMsg('assistant', rVisible, 'SPARK ⚡');
+      eleveMessagesCache.push({role:'assistant',message:rVisible,pseudo:'SPARK ⚡'});
+      renderEleveConversation();
       await saveMsg('assistant', rVisible, 'SPARK ⚡');
     }
     conversationHistory.push({role:'model',parts:[{text:r}]});
@@ -1507,7 +1585,8 @@ async function sendMessage(){
       const rRetryVisible = rRetry.replace(/```[\s\S]*?```/gi, '').trim();
 
       if (rRetryVisible && !retryHtmlBlockVideSeulement) {
-        renderMsg('assistant', rRetryVisible, 'SPARK ⚡');
+        eleveMessagesCache.push({role:'assistant',message:rRetryVisible,pseudo:'SPARK ⚡'});
+        renderEleveConversation();
         await saveMsg('assistant', rRetryVisible, 'SPARK ⚡');
       }
 
@@ -1916,8 +1995,17 @@ function listenMentorMessages(){
     .on('postgres_changes',{event:'INSERT',schema:'public',table:'conversations',filter:`equipe_id=eq.${currentEquipe.id}`},p=>{
       const m=p.new;
       if(m.role==='mentor'&&m.statut==='visible'){
-        renderMsg('mentor',m.message,m.pseudo);
-        scrollBot(); showToast('Message de '+m.pseudo,'success');
+        eleveMessagesCache.push(m);
+        if(eleveCanalActif!=='mentor'){
+          eleveMentorUnread += 1;
+          const badge=document.getElementById('eleve-mentor-badge');
+          if(badge){
+            badge.textContent=String(eleveMentorUnread);
+            badge.style.display='inline-block';
+          }
+        }
+        renderEleveConversation();
+        showToast('Message de '+m.pseudo,'success');
       }
     }).subscribe();
 }
@@ -2251,10 +2339,38 @@ async function loadDrawerConv(eqId){
     .select('*').eq('equipe_id',eqId).eq('statut','visible')
     .order('created_at',{ascending:true});
   const c=document.getElementById('drawer-content');
-  c.innerHTML='<div class="drawer-msgs" id="drawer-msgs"></div>';
+  facDrawerConvMessages = msgs || [];
+  facDrawerCanalActif = 'spark';
+  c.innerHTML=`
+    <div class="fac-conv-tabs">
+      <button id="fac-conv-spark" class="fac-conv-tab active" onclick="switchFacConversationCanal('spark')">💬 Conversation SPARK</button>
+      <button id="fac-conv-mentor" class="fac-conv-tab mentor" onclick="switchFacConversationCanal('mentor')">🎓 Canal Mentor</button>
+    </div>
+    <div class="drawer-msgs" id="drawer-msgs"></div>`;
+  renderFacConversationCanal();
+}
+
+function switchFacConversationCanal(canal){
+  facDrawerCanalActif = canal === 'mentor' ? 'mentor' : 'spark';
+  const spark=document.getElementById('fac-conv-spark');
+  const mentor=document.getElementById('fac-conv-mentor');
+  if(spark) spark.classList.toggle('active', facDrawerCanalActif==='spark');
+  if(mentor) mentor.classList.toggle('active', facDrawerCanalActif==='mentor');
+  renderFacConversationCanal();
+}
+
+function renderFacConversationCanal(){
   const msgs_el=document.getElementById('drawer-msgs');
+  if(!msgs_el) return;
+  const msgs = facDrawerCanalActif==='mentor'
+    ? facDrawerConvMessages.filter(m=>m.role==='mentor')
+    : facDrawerConvMessages.filter(m=>m.role!=='mentor');
+
+  msgs_el.innerHTML='';
   if(!msgs||msgs.length===0){
-    msgs_el.innerHTML='<div class="drawer-empty">Aucun message pour l\'instant.</div>';
+    msgs_el.innerHTML = facDrawerCanalActif==='mentor'
+      ? '<div class="drawer-empty">Aucun message mentor pour l\'instant.</div>'
+      : '<div class="drawer-empty">Aucun message SPARK / Team pour l\'instant.</div>';
     return;
   }
   msgs.forEach(m=>{
