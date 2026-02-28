@@ -203,7 +203,9 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
 .eleve-chat-tabs{display:flex;gap:8px;flex-shrink:0;}
 .eleve-chat-tab{padding:7px 12px;border-radius:999px;border:1.5px solid var(--border);background:#fff;color:var(--mid);font-size:.68rem;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:6px;transition:all .2s;}
 .eleve-chat-tab.active{background:rgba(62,212,245,.08);border-color:rgba(62,212,245,.28);color:var(--text);}
-.eleve-chat-tab.mentor.active{background:var(--mentor-l);border-color:var(--mentor-b);color:#9040b8;}
+.eleve-chat-tab.mentor{border-color:rgba(144,64,184,.25);color:#9040b8;background:rgba(144,64,184,.06);}
+.eleve-chat-tab.mentor.active{background:rgba(144,64,184,.12);border-color:rgba(144,64,184,.45);color:#6b21a8;font-weight:800;}
+.eleve-chat-carnet{margin-left:auto;border-color:rgba(0,212,160,.30)!important;color:#009978!important;background:rgba(0,212,160,.07)!important;font-family:'Syne',sans-serif;}
 .eleve-chat-badge{display:none;min-width:18px;padding:2px 6px;border-radius:999px;background:var(--terra);color:#fff;font-size:.55rem;line-height:1;text-align:center;}
 .messages{flex:1;overflow-y:auto;display:flex;flex-direction:column;gap:12px;padding:2px 4px;scroll-behavior:smooth;}
 .messages::-webkit-scrollbar{width:3px;}
@@ -867,7 +869,7 @@ body::before{background:radial-gradient(ellipse 60% 50% at 85% 5%,rgba(62,212,24
 .fs-id-role{color:rgba(10,122,151,.65)!important;}
 /* (règles ms-team et fac-sidebar consolidées dans le bloc ci-dessus) */
 /* ─── Image déco centrée sur la zone conversation (hors sidebar) ─── */
-#s-eleve .page-bg-shape{left:calc(50% + 100px);}
+#s-eleve .page-bg-shape{left:calc(50% + 48px);}
 #s-fac .page-bg-shape{left:calc(50% + 105px);}
 
 .chat-zone{background:linear-gradient(180deg,#ffffff,#fcfdff);}
@@ -1240,7 +1242,6 @@ body::before{background:radial-gradient(ellipse 60% 50% at 85% 5%,rgba(62,212,24
     <div class="h-logo">🌿 SPARK <span class="h-logo-sub">Design Thinking</span></div>
     <div style="display:flex;align-items:center;gap:8px;">
       <div class="h-pill" id="eleve-pill">TEAM</div>
-      <button class="btn-carnet" id="btn-carnet" onclick="ouvrirCarnet()">📓 Carnet <span class="notif-dot" id="notif-dot" style="display:none;">●</span></button>
 <button class="btn-logout" onclick="doLogout()">↩ Quitter</button>
     </div>
   </div>
@@ -1263,6 +1264,7 @@ body::before{background:radial-gradient(ellipse 60% 50% at 85% 5%,rgba(62,212,24
       <div class="eleve-chat-tabs">
         <button id="btn-eleve-canal-spark" class="eleve-chat-tab active" onclick="switchEleveCanal('spark')">💬 Conversation SPARK</button>
         <button id="btn-eleve-canal-mentor" class="eleve-chat-tab mentor" onclick="switchEleveCanal('mentor')">🎓 Canal Mentor <span id="eleve-mentor-badge" class="eleve-chat-badge">0</span></button>
+        <button class="btn-carnet eleve-chat-carnet" id="btn-carnet" onclick="ouvrirCarnet()">📓 Carnet <span class="notif-dot" id="notif-dot" style="display:none;">●</span></button>
       </div>
       <div class="messages" id="chat-messages"></div>
       <div class="input-zone">
