@@ -3126,7 +3126,10 @@ async function openConvDrawer(eqId, nom, college, etape){
         <div class="drawer-title">🌿 ${nom}</div>
         <div class="drawer-sub">${college||'—'} · Jour ${etape}/5</div>
       </div>
-      <button class="btn-drawer-close" onclick="closeConvDrawer()">✕</button>
+      <div style="display:flex;gap:8px;align-items:center;">
+        <button class="btn-reset" onclick="confirmerSuppressionConv(${eqId})" title="Supprimer conversation + vitrines">🗑️ Supprimer</button>
+        <button class="btn-drawer-close" onclick="closeConvDrawer()">✕</button>
+      </div>
     </div>
     <div class="drawer-tabs">
       <div class="drawer-tab active" id="tab-conv" onclick="switchDrawerTab('conv',${eqId})">💬 Conversation</div>
@@ -3268,6 +3271,13 @@ function showVitrineEtape(etape, vitrinesData){
   saveBtn.textContent='💾 Sauvegarder';
   saveBtn.style.cssText='padding:7px 18px;background:#7ab648;border:none;color:white;font-family:\'DM Sans\',sans-serif;font-size:.75rem;font-weight:600;cursor:pointer;flex-shrink:0;';
   saveBtn.onclick=()=>sauvegarderVitrineEtape(v.id, etape, facDrawerEquipeId);
+  // Live preview : mise à jour iframe à la frappe
+  code.addEventListener('input', () => {
+    const d = iframe.contentDocument || iframe.contentWindow.document;
+    d.open();
+    d.write(code.value || '<html><body></body></html>');
+    d.close();
+  });
   codeWrap.appendChild(code);
   codeWrap.appendChild(saveBtn);
   split.appendChild(codeWrap);
@@ -3559,6 +3569,21 @@ function listenVitrine(){
       chargerCarnet();
     }).subscribe();
 }
+function confirmerSuppressionConv(eqId) {
+  if (!confirm('Supprimer définitivement la conversation ET le code (vitrines) de cette équipe ?\nCette action est irréversible.')) return;
+  supprimerConversationEquipe(eqId);
+}
+
+async function supprimerConversationEquipe(eqId) {
+  if (!eqId) return;
+  await sb.from('conversations').delete().eq('equipe_id', eqId);
+  await sb.from('vitrines').delete().eq('equipe_id', eqId);
+  await sb.from('equipes').update({ etape_courante: 0 }).eq('id', eqId);
+  closeConvDrawer();
+  showToast('Conversation et vitrines supprimées', 'success');
+  await renderFacEquipes();
+}
+
 async function sauvegarderVitrineEtape(vitrineId, etape, equipeId = facDrawerEquipeId){
   if(!equipeId){
     showToast('Équipe introuvable','error');
