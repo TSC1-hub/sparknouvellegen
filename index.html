@@ -153,7 +153,7 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
 .step-item{display:flex;align-items:center;gap:9px;padding:8px 12px;border-left:3px solid transparent;}
 .step-item.done{border-left-color:var(--leaf);}
 .step-item.active{background:rgba(240,192,64,.1);border-left-color:var(--sun);}
-.step-item.locked{opacity:.3;}
+.step-item.locked{opacity:.68;}
 .step-orb{width:28px;height:28px;border-radius:8px;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:.9rem;}
 .step-item.done .step-orb{background:rgba(122,182,72,.15);}
 .step-item.active .step-orb{background:rgba(240,192,64,.18);}
@@ -803,20 +803,23 @@ body::before{background:radial-gradient(ellipse 60% 50% at 85% 5%,rgba(62,212,24
 /* ─── Step items élève — police unique #1a5c48 ─── */
 .step-item,.ms-team,.fs-nav{border-left-width:2.5px;}
 .step-item.active{
-  background:rgba(255,255,255,.32);
-  border-left-color:#1a5c48;
-  box-shadow:inset 0 0 0 1px rgba(255,255,255,.5);
-  border-radius:0 8px 8px 0;
+  background:rgba(255,255,255,.62);
+  border-left-color:#0e4433;
+  border-left-width:3.5px;
+  box-shadow:inset 0 0 0 1px rgba(255,255,255,.75), 0 3px 12px rgba(0,80,55,.18);
+  border-radius:0 10px 10px 0;
+  transform:translateX(2px);
 }
-.step-item.done{border-left-color:rgba(0,80,55,.45);}
-.step-item.done .step-orb{background:rgba(255,255,255,.3);}
-.step-item.active .step-orb{background:rgba(255,255,255,.5);box-shadow:0 2px 8px rgba(0,80,55,.15);}
+.step-item.done{border-left-color:rgba(0,80,55,.55);}
+.step-item.done .step-orb{background:rgba(255,255,255,.4);}
+.step-item.active .step-orb{background:#fff;box-shadow:0 2px 10px rgba(0,80,55,.22);}
 .step-item.done .step-day{color:rgba(0,70,48,.7);}
-.step-item.active .step-day{color:#1a5c48;font-weight:700;}
+.step-item.active .step-day{color:#0e4433;font-weight:800;letter-spacing:2px;}
 .step-item.done .step-name,.step-item.active .step-name{color:#1a3d2a;}
+.step-item.active .step-name{color:#0a2e1f!important;font-weight:800;}
 .step-name,.step-day{color:#1a5c48;}
-.step-item.locked .step-orb{background:rgba(255,255,255,.12);}
-.step-item.locked .step-name,.step-item.locked .step-day{color:rgba(0,70,48,.28);}
+.step-item.locked .step-orb{background:rgba(255,255,255,.20);}
+.step-item.locked .step-name,.step-item.locked .step-day{color:rgba(0,70,48,.50);}
 /* ─── Teams mentor — police unique #3d1060 ─── */
 .ms-team:hover{background:rgba(255,255,255,.25)!important;}
 .ms-team.sel{
@@ -1955,6 +1958,7 @@ function doLogout() {
   if (chat) chat.innerHTML = '';
   document.getElementById('code-input').value = '';
   pickRole('eleve');
+  resetBtn();
   go('login');
   showToast('Déconnecté', 'success');
 }
