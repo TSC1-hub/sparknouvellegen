@@ -500,8 +500,8 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
 #s-login .lpi-login-4{width:170px;bottom:-26px;right:-20px;transform:rotate(16deg);}
 
 .steps-sidebar .lpi-side-eleve{width:160px;bottom:-20px;right:-40px;opacity:.18;}
-.mentor-sidebar .lpi-side-mentor{width:155px;bottom:-14px;right:-32px;opacity:.16;}
-.fac-sidebar .lpi-side-fac{width:155px;bottom:-14px;right:-32px;opacity:.16;}
+.mentor-sidebar .lpi-side-mentor{width:155px;bottom:-14px;right:-32px;opacity:.24;}
+.fac-sidebar .lpi-side-fac{width:155px;bottom:-14px;right:-32px;opacity:.24;}
 
 :root{
   --moss:#00d4a0;--sage:#00bfa0;--leaf:#00d4a0;
@@ -1054,6 +1054,21 @@ async function injectMockupShapes(){
   const placeholders = Array.from(document.querySelectorAll('.lpi-side-eleve,.lpi-side-mentor,.lpi-side-fac'));
   if(!placeholders.length) return;
 
+  const localShapeSources = [
+    'patateviolette.png',
+    'patatebleuelongue.png',
+    'LPI_Shapes_Shape 1 copie.png',
+    'LPI_Shapes_Shape 2 copie.png',
+    'LPI_Shapes_Shape 2.png',
+    'LPI_Shapes_Shape 3 copie.png',
+    'LPI_Shapes_Shape 3.png',
+    'LPI_Shapes_Shape 4.png',
+    'LPI_Shapes_Shape 5 copie.png',
+    'LPI_Shapes_Shape 5.png'
+  ];
+
+  let shapeSources = localShapeSources.slice();
+
   try {
     const res = await fetch('mockup-learning-planet-v2.html', { cache: 'no-store' });
     if(!res.ok) throw new Error(`HTTP ${res.status}`);
@@ -1067,19 +1082,13 @@ async function injectMockupShapes(){
     }
 
     const matches = [...html.matchAll(/<img\s+class="shape"\s+src="([^"]+)"(?:\s+style="([^"]*)")?/gi)];
-    const styleList = matches.map(m => m[2] || '');
     const fallbackSrcs = matches.map(m => m[1]).filter(Boolean);
 
-    const shapeSources = pngList.length ? pngList : fallbackSrcs;
-    if(!shapeSources.length) return;
+    const parsedSources = pngList.length ? pngList : fallbackSrcs;
+    if(parsedSources.length) shapeSources = parsedSources;
 
-    const mentorPurpleSrc =
-      shapeSources.find(s => /LPI_Shapes_Shape\s*5(?:\s*copie(?:\s*2)?)?\.png$/i.test(s)) ||
-      shapeSources[0];
-
-    const facBlueSrc =
-      shapeSources.find(s => /LPI_Shapes_Shape\s*2(?:\s*copie)?\.png$/i.test(s)) ||
-      shapeSources[0];
+    const mentorPurpleSrc = 'patateviolette.png';
+    const facBlueSrc = 'patatebleuelongue.png';
 
     renderLoginGalaxy(shapeSources);
 
@@ -1094,13 +1103,24 @@ async function injectMockupShapes(){
         src = facBlueSrc;
       }
 
-      img.src = src;
+      img.src = encodeURI(src);
       img.decoding = 'async';
       img.loading = 'lazy';
       img.style.display = 'block';
     });
   } catch (e) {
-    console.warn('Photos mockup non chargées:', e?.message || e);
+    console.warn('Photos mockup non chargées, fallback local utilisé:', e?.message || e);
+    renderLoginGalaxy(shapeSources);
+    placeholders.forEach((img, index)=>{
+      let src = shapeSources[index % shapeSources.length];
+      if(!src) return;
+      if(img.classList.contains('lpi-side-mentor')) src = 'patateviolette.png';
+      if(img.classList.contains('lpi-side-fac')) src = 'patatebleuelongue.png';
+      img.src = encodeURI(src);
+      img.decoding = 'async';
+      img.loading = 'lazy';
+      img.style.display = 'block';
+    });
   }
 }
 
@@ -1118,6 +1138,7 @@ function renderLoginGalaxy(shapeSources = galaxyShapeSources){
 
   const screenRect = screen.getBoundingClientRect();
   const cardRect = card.getBoundingClientRect();
+  if(cardRect.width < 40 || cardRect.height < 40) return;
   const cx = (cardRect.left - screenRect.left) + cardRect.width / 2;
   const cy = (cardRect.top - screenRect.top) + cardRect.height / 2;
   const maxRadius = Math.min(screenRect.width, screenRect.height) * 0.52;
@@ -1133,7 +1154,7 @@ function renderLoginGalaxy(shapeSources = galaxyShapeSources){
     const img = document.createElement('img');
     img.className = 'shape lpi-orbit';
     img.alt = 'Décor Learning Planet';
-    img.src = shapeSources[i % shapeSources.length];
+    img.src = encodeURI(shapeSources[i % shapeSources.length]);
     img.decoding = 'async';
     img.loading = 'lazy';
     img.style.left = `${x - (size / 2)}px`;
@@ -2600,6 +2621,9 @@ function handleKey(e){
 function go(id){
   document.querySelectorAll('.screen').forEach(s=>s.classList.remove('on'));
   document.getElementById('s-'+id).classList.add('on');
+  if(id==='login' && galaxyShapeSources.length){
+    requestAnimationFrame(()=>renderLoginGalaxy(galaxyShapeSources));
+  }
   if(currentUser) sessionStorage.setItem('spark_user', JSON.stringify(currentUser));
   if(id==='login') sessionStorage.removeItem('spark_user');
 }
