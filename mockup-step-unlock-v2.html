@@ -1,0 +1,579 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SPARK — Unlock Mix v2</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+body{
+  font-family:'Inter',sans-serif;
+  background:#0f172a;color:#fff;
+  min-height:100vh;
+  display:flex;flex-direction:column;align-items:center;
+  justify-content:center;gap:32px;padding:32px 16px;
+}
+
+h1{font-family:'Syne',sans-serif;font-size:1rem;letter-spacing:1.5px;text-transform:uppercase;color:rgba(255,255,255,.35);text-align:center;}
+
+/* ═══════════════════════════════════════
+   SIDEBAR DÉMO
+═══════════════════════════════════════ */
+.demo-wrap{
+  display:flex;gap:32px;align-items:flex-start;
+}
+.sidebar{
+  width:84px;background:#111c2d;border-radius:18px;
+  padding:12px 8px;display:flex;flex-direction:column;
+  align-items:center;gap:0;
+  border:1px solid rgba(255,255,255,.06);
+  flex-shrink:0;
+}
+.ss-title{
+  font-family:'Syne',sans-serif;font-size:.45rem;font-weight:800;
+  letter-spacing:2px;text-transform:uppercase;
+  color:rgba(255,255,255,.25);margin-bottom:10px;
+}
+
+/* ── Step item ── */
+.si{
+  display:flex;flex-direction:column;align-items:center;gap:4px;
+  padding:4px 0;cursor:pointer;width:100%;
+}
+
+/* ── Connecteur vertical ── */
+.sc{
+  width:2px;height:16px;
+  background:#1e2d42;
+  border-radius:2px;
+  transition:background .4s;
+}
+.sc.lit{
+  background:linear-gradient(180deg,#22c55e,#16a34a);
+  animation:beam-fill .5s ease-out forwards;
+}
+@keyframes beam-fill{
+  from{background:linear-gradient(180deg,#22c55e 0%,#1e2d42 0%);}
+  to{background:linear-gradient(180deg,#22c55e,#16a34a);}
+}
+
+/* ── Orb ── */
+.so-wrap{position:relative;width:52px;height:52px;}
+.so{
+  width:52px;height:52px;border-radius:50%;
+  display:flex;align-items:center;justify-content:center;
+  font-size:1.3rem;
+  background:#1e2d42;opacity:.4;
+  transition:all .5s cubic-bezier(.34,1.56,.64,1);
+  position:relative;z-index:2;
+  flex-shrink:0;
+}
+.so.done{
+  background:linear-gradient(135deg,#22c55e,#16a34a);
+  opacity:1;
+}
+.so.active{
+  background:linear-gradient(135deg,#f09433,#e6683c,#dc2743,#cc2366);
+  opacity:1;
+}
+
+/* ── Ripple rings (3 couches) ── */
+.rp{
+  position:absolute;inset:0;border-radius:50%;
+  border:2px solid rgba(34,197,94,.7);
+  opacity:0;z-index:1;pointer-events:none;
+}
+
+/* ── Badge ✓ ── */
+.so-badge{
+  position:absolute;top:-4px;right:-4px;z-index:3;
+  width:18px;height:18px;border-radius:50%;
+  background:#22c55e;color:#fff;
+  font-size:.55rem;font-weight:900;
+  display:flex;align-items:center;justify-content:center;
+  border:2px solid #111c2d;
+  transform:scale(0);opacity:0;
+  transition:all .3s cubic-bezier(.34,1.56,.64,1);
+}
+
+/* ── Lock icon sur étape locked ── */
+.so-lock{
+  position:absolute;inset:0;border-radius:50%;
+  background:rgba(0,0,0,.5);
+  display:flex;align-items:center;justify-content:center;
+  font-size:.9rem;z-index:3;
+  transition:all .3s;
+  pointer-events:none;
+}
+
+/* Step label */
+.sl{font-size:.48rem;font-weight:700;color:rgba(255,255,255,.3);letter-spacing:.5px;text-align:center;line-height:1.3;}
+.si.done .sl{color:rgba(34,197,94,.7);}
+.si.active .sl{color:rgba(255,255,255,.8);}
+.si.unlocking .sl{color:rgba(34,197,94,.8);}
+
+/* ── ÉTATS D'ANIMATION ── */
+
+/* 1. Validation — l'orb current passe en vert + ripples */
+.so-wrap.validating .so{
+  background:linear-gradient(135deg,#22c55e,#16a34a) !important;
+  opacity:1 !important;
+  animation:orb-pulse-green .5s cubic-bezier(.34,1.56,.64,1) forwards;
+}
+@keyframes orb-pulse-green{
+  0%{transform:scale(1);}
+  40%{transform:scale(1.25);box-shadow:0 0 0 8px rgba(34,197,94,.2);}
+  70%{transform:scale(.94);}
+  100%{transform:scale(1);box-shadow:0 0 14px rgba(34,197,94,.5);}
+}
+/* Check overlay sur l'orb */
+.so-wrap.validating .so::after{
+  content:'✓';
+  position:absolute;inset:0;border-radius:50%;
+  background:rgba(22,163,74,.9);
+  display:flex;align-items:center;justify-content:center;
+  font-size:1.3rem;font-weight:900;color:#fff;
+  animation:check-in .35s .15s cubic-bezier(.34,1.56,.64,1) both;
+}
+@keyframes check-in{
+  from{transform:scale(0) rotate(-25deg);opacity:0;}
+  to{transform:scale(1) rotate(0deg);opacity:1;}
+}
+/* Ripple 1 */
+.so-wrap.validating .rp:nth-child(1){
+  animation:ripple-out 1.1s .0s ease-out forwards;
+}
+/* Ripple 2 */
+.so-wrap.validating .rp:nth-child(2){
+  animation:ripple-out 1.1s .18s ease-out forwards;
+}
+/* Ripple 3 */
+.so-wrap.validating .rp:nth-child(3){
+  animation:ripple-out 1.1s .36s ease-out forwards;
+}
+@keyframes ripple-out{
+  0%{transform:scale(1);opacity:.8;}
+  100%{transform:scale(2.4);opacity:0;}
+}
+/* Badge ✓ petit */
+.so-wrap.validating .so-badge{
+  transform:scale(1);opacity:1;
+  transition-delay:.25s;
+}
+
+/* 2. Unlock — l'orb suivant s'ouvre */
+.so-wrap.unlocking .so{
+  animation:orb-unlock .7s cubic-bezier(.34,1.56,.64,1) forwards;
+}
+@keyframes orb-unlock{
+  0%{transform:scale(1);filter:brightness(.4);}
+  25%{transform:scale(.75);filter:brightness(.2);}
+  55%{transform:scale(1.2);filter:brightness(1.6);}
+  80%{transform:scale(.97);}
+  100%{transform:scale(1);filter:brightness(1);}
+}
+.so-wrap.unlocking .so-lock{
+  animation:lock-fly .5s .1s ease-out forwards;
+}
+@keyframes lock-fly{
+  0%{opacity:1;transform:scale(1) rotate(0);}
+  100%{opacity:0;transform:scale(0) rotate(25deg) translateY(-10px);}
+}
+.so-wrap.unlocking .rp:nth-child(1){
+  border-color:rgba(240,148,51,.6);
+  animation:ripple-out .9s .35s ease-out forwards;
+}
+.so-wrap.unlocking .rp:nth-child(2){
+  border-color:rgba(220,39,67,.5);
+  animation:ripple-out .9s .5s ease-out forwards;
+}
+
+/* ═══════════════════════════════════════
+   OVERLAY LEVEL UP
+═══════════════════════════════════════ */
+.overlay{
+  display:none;position:fixed;inset:0;z-index:9999;
+  background:rgba(6,14,28,.82);
+  backdrop-filter:blur(6px);
+  align-items:center;justify-content:center;
+}
+.overlay.show{display:flex;}
+
+.olu{
+  background:linear-gradient(160deg,#141f35,#0d1520);
+  border:1.5px solid rgba(34,197,94,.35);
+  border-radius:28px;padding:36px 40px;
+  display:flex;flex-direction:column;align-items:center;gap:14px;
+  max-width:340px;width:90%;position:relative;overflow:hidden;
+  animation:olu-in .55s cubic-bezier(.34,1.56,.64,1);
+}
+@keyframes olu-in{
+  from{transform:scale(.5) translateY(40px);opacity:0;}
+  to{transform:scale(1) translateY(0);opacity:1;}
+}
+
+/* Halo vert en fond */
+.olu-halo{
+  position:absolute;top:-40px;left:50%;transform:translateX(-50%);
+  width:220px;height:220px;border-radius:50%;
+  background:radial-gradient(circle,rgba(34,197,94,.18) 0%,transparent 70%);
+  pointer-events:none;
+}
+
+/* Icone animée */
+.olu-icon{
+  font-size:3.8rem;
+  animation:icon-bounce .7s .1s cubic-bezier(.34,1.56,.64,1) both;
+}
+@keyframes icon-bounce{
+  from{transform:scale(0) rotate(-20deg);opacity:0;}
+  to{transform:scale(1) rotate(0deg);opacity:1;}
+}
+
+/* Tag */
+.olu-tag{
+  background:rgba(34,197,94,.15);border:1px solid rgba(34,197,94,.3);
+  border-radius:20px;padding:4px 14px;
+  font-family:'Syne',sans-serif;font-size:.58rem;font-weight:800;
+  letter-spacing:2px;color:#4ade80;text-transform:uppercase;
+}
+
+/* Titre */
+.olu-title{
+  font-family:'Syne',sans-serif;font-size:1.5rem;font-weight:800;
+  color:#fff;text-align:center;line-height:1.2;
+}
+
+/* Desc */
+.olu-desc{
+  font-size:.72rem;color:rgba(255,255,255,.45);
+  text-align:center;line-height:1.6;
+}
+
+/* Progress mini */
+.olu-progress{
+  display:flex;gap:6px;align-items:center;
+}
+.olu-pip{
+  width:28px;height:5px;border-radius:3px;
+  background:rgba(255,255,255,.1);
+  transition:background .3s;
+}
+.olu-pip.done{background:#22c55e;}
+.olu-pip.next{
+  background:linear-gradient(90deg,#f09433,#cc2366);
+  animation:pip-glow 1.5s ease-in-out infinite alternate;
+}
+@keyframes pip-glow{
+  from{box-shadow:0 0 4px rgba(240,148,51,.4);}
+  to{box-shadow:0 0 12px rgba(220,39,67,.6);}
+}
+
+/* Bouton */
+.olu-btn{
+  margin-top:6px;padding:12px 32px;border-radius:24px;border:none;cursor:pointer;
+  font-family:'Syne',sans-serif;font-size:.78rem;font-weight:800;letter-spacing:.5px;
+  background:linear-gradient(135deg,#22c55e,#16a34a);color:#fff;
+  box-shadow:0 6px 20px rgba(34,197,94,.35);
+  transition:transform .15s,box-shadow .15s;
+}
+.olu-btn:hover{transform:scale(1.04);box-shadow:0 8px 24px rgba(34,197,94,.45);}
+
+/* Sparkle décoratifs */
+.sparkles{position:absolute;inset:0;pointer-events:none;overflow:hidden;}
+.sp{
+  position:absolute;font-size:.8rem;opacity:0;
+  animation:sp-float 2s ease-out infinite;
+}
+.sp:nth-child(1){left:10%;top:20%;animation-delay:0s;}
+.sp:nth-child(2){left:85%;top:15%;animation-delay:.4s;}
+.sp:nth-child(3){left:20%;top:75%;animation-delay:.8s;}
+.sp:nth-child(4){left:78%;top:70%;animation-delay:1.2s;}
+.sp:nth-child(5){left:50%;top:10%;animation-delay:1.6s;}
+@keyframes sp-float{
+  0%{opacity:0;transform:translateY(0) scale(.5);}
+  30%{opacity:.8;}
+  100%{opacity:0;transform:translateY(-30px) scale(1.2);}
+}
+
+/* ═══════════════════════════════════════
+   BOUTON DÉMO
+═══════════════════════════════════════ */
+.demo-ctrl{
+  display:flex;flex-direction:column;align-items:center;gap:12px;
+}
+.demo-btn{
+  padding:12px 32px;border-radius:24px;border:none;cursor:pointer;
+  font-family:'Syne',sans-serif;font-size:.78rem;font-weight:800;letter-spacing:.5px;
+  background:linear-gradient(135deg,#f09433,#cc2366);color:#fff;
+  box-shadow:0 6px 20px rgba(220,39,67,.3);
+  transition:transform .15s;
+}
+.demo-btn:hover{transform:scale(1.04);}
+.demo-hint{font-size:.62rem;color:rgba(255,255,255,.25);font-weight:600;letter-spacing:.5px;}
+
+/* Step label actif pulse */
+.si.active .so-wrap .so{
+  box-shadow:0 0 0 3px rgba(220,39,67,.3);
+}
+</style>
+</head>
+<body>
+
+<h1>⚡ Déblocage d'étape — Mix Ring + Beam + Overlay</h1>
+
+<!-- OVERLAY -->
+<div class="overlay" id="overlay" onclick="closeOverlay()">
+  <div class="olu" onclick="event.stopPropagation()">
+    <div class="olu-halo"></div>
+    <div class="sparkles">
+      <span class="sp">✨</span><span class="sp">⭐</span>
+      <span class="sp">✦</span><span class="sp">✨</span><span class="sp">⭐</span>
+    </div>
+    <div class="olu-icon" id="olu-icon">🔍</div>
+    <div class="olu-tag">Étape débloquée !</div>
+    <div class="olu-title" id="olu-title">Jour 1<br>Se questionner</div>
+    <div class="olu-desc" id="olu-desc">Votre équipe a complété l'étape 0 avec succès. La prochaine aventure commence !</div>
+    <div class="olu-progress">
+      <div class="olu-pip done" id="pp0"></div>
+      <div class="olu-pip next" id="pp1"></div>
+      <div class="olu-pip" id="pp2"></div>
+      <div class="olu-pip" id="pp3"></div>
+      <div class="olu-pip" id="pp4"></div>
+      <div class="olu-pip" id="pp5"></div>
+    </div>
+    <button class="olu-btn" onclick="closeOverlay()">On continue ! 🚀</button>
+  </div>
+</div>
+
+<div class="demo-wrap">
+
+  <!-- SIDEBAR -->
+  <div class="sidebar">
+    <div class="ss-title">Parcours</div>
+
+    <!-- Étape 0 — active au départ -->
+    <div class="si active" id="si-0">
+      <div class="so-wrap" id="sw-0">
+        <div class="rp"></div><div class="rp"></div><div class="rp"></div>
+        <div class="so">🌱</div>
+        <div class="so-badge">✓</div>
+      </div>
+      <div class="sl">Découvrir</div>
+    </div>
+
+    <div class="sc" id="sc-0-1"></div>
+
+    <!-- Étape 1 — locked -->
+    <div class="si locked" id="si-1">
+      <div class="so-wrap" id="sw-1">
+        <div class="rp"></div><div class="rp"></div><div class="rp"></div>
+        <div class="so">🔍</div>
+        <div class="so-lock">🔒</div>
+        <div class="so-badge">✓</div>
+      </div>
+      <div class="sl">Questionner</div>
+    </div>
+
+    <div class="sc" id="sc-1-2"></div>
+
+    <!-- Étape 2 — locked -->
+    <div class="si locked" id="si-2">
+      <div class="so-wrap" id="sw-2">
+        <div class="rp"></div><div class="rp"></div><div class="rp"></div>
+        <div class="so">✏️</div>
+        <div class="so-lock">🔒</div>
+        <div class="so-badge">✓</div>
+      </div>
+      <div class="sl">Concevoir</div>
+    </div>
+
+    <div class="sc" id="sc-2-3"></div>
+
+    <!-- Étape 3 — locked -->
+    <div class="si locked" id="si-3">
+      <div class="so-wrap" id="sw-3">
+        <div class="rp"></div><div class="rp"></div><div class="rp"></div>
+        <div class="so">🔨</div>
+        <div class="so-lock">🔒</div>
+        <div class="so-badge">✓</div>
+      </div>
+      <div class="sl">Fabriquer</div>
+    </div>
+
+    <div class="sc" id="sc-3-4"></div>
+
+    <!-- Étape 4 — locked -->
+    <div class="si locked" id="si-4">
+      <div class="so-wrap" id="sw-4">
+        <div class="rp"></div><div class="rp"></div><div class="rp"></div>
+        <div class="so">📢</div>
+        <div class="so-lock">🔒</div>
+        <div class="so-badge">✓</div>
+      </div>
+      <div class="sl">Diffuser</div>
+    </div>
+
+    <div class="sc" id="sc-4-5"></div>
+
+    <!-- Étape 5 — locked -->
+    <div class="si locked" id="si-5">
+      <div class="so-wrap" id="sw-5">
+        <div class="rp"></div><div class="rp"></div><div class="rp"></div>
+        <div class="so">🏆</div>
+        <div class="so-lock">🔒</div>
+        <div class="so-badge">✓</div>
+      </div>
+      <div class="sl">Convaincre</div>
+    </div>
+  </div>
+
+  <!-- CONTRÔLE -->
+  <div class="demo-ctrl">
+    <button class="demo-btn" id="main-btn" onclick="triggerUnlock()">
+      ⚡ Checkpoint reçu !<br>
+      <span style="font-size:.6rem;opacity:.7;font-weight:600;">SPARK_CHECKPOINT:etape0-preparation</span>
+    </button>
+    <div class="demo-hint" id="demo-hint">Étape active : 0 / Prochaine : 1</div>
+    <button class="demo-btn" onclick="resetDemo()" style="background:rgba(255,255,255,.08);box-shadow:none;font-size:.65rem;padding:8px 20px;">↺ Recommencer</button>
+  </div>
+
+</div>
+
+<script>
+const steps = [
+  { icon:'🌱', name:'Découvrir',    slug:'etape0-preparation' },
+  { icon:'🔍', name:'Se questionner', slug:'jour1-questionner' },
+  { icon:'✏️', name:'Concevoir',    slug:'jour2-concevoir' },
+  { icon:'🔨', name:'Fabriquer',    slug:'jour3-fabriquer' },
+  { icon:'📢', name:'Diffuser',     slug:'jour4-diffuser' },
+  { icon:'🏆', name:'Convaincre',   slug:'jour5-convaincre' },
+];
+
+let currentStep = 0;
+
+function triggerUnlock() {
+  if (currentStep >= 5) return;
+
+  const fromStep = currentStep;
+  const toStep   = currentStep + 1;
+
+  // ── Phase 1 : Validation de l'étape courante (ring ripple + vert)
+  const swFrom = document.getElementById('sw-' + fromStep);
+  swFrom.classList.add('validating');
+
+  // ── Phase 2 : Beam (connecteur s'allume)
+  setTimeout(() => {
+    const sc = document.getElementById('sc-' + fromStep + '-' + toStep);
+    if (sc) sc.classList.add('lit');
+  }, 500);
+
+  // ── Phase 3 : Unlock de l'étape suivante
+  setTimeout(() => {
+    const swTo = document.getElementById('sw-' + toStep);
+    swTo.classList.add('unlocking');
+  }, 900);
+
+  // ── Phase 4 : Mise à jour des classes CSS + overlay
+  setTimeout(() => {
+    // Finaliser l'étape from → done
+    const siFrom = document.getElementById('si-' + fromStep);
+    siFrom.className = 'si done';
+    swFrom.classList.remove('validating');
+
+    // Finaliser l'étape to → active
+    const siTo = document.getElementById('si-' + toStep);
+    const swTo = document.getElementById('sw-' + toStep);
+    siTo.className = 'si active';
+    swTo.classList.remove('unlocking');
+    swTo.querySelector('.so-lock').style.display = 'none';
+    const soTo = swTo.querySelector('.so');
+    soTo.style.background = 'linear-gradient(135deg,#f09433,#e6683c,#dc2743,#cc2366)';
+    soTo.style.opacity = '1';
+    soTo.style.boxShadow = '0 0 0 3px rgba(220,39,67,.35)';
+
+    currentStep = toStep;
+
+    // Overlay
+    showOverlay(fromStep, toStep);
+
+    // Mettre à jour le bouton
+    updateBtn();
+  }, 1500);
+}
+
+function showOverlay(from, to) {
+  const s = steps[to];
+  document.getElementById('olu-icon').textContent  = s.icon;
+  document.getElementById('olu-title').textContent = 'Jour ' + to + ' — ' + s.name;
+  document.getElementById('olu-desc').textContent  =
+    'Votre équipe a complété "' + steps[from].name + '" ✓\nLa prochaine étape est débloquée !';
+
+  // Progress pips
+  for (let i = 0; i <= 5; i++) {
+    const pip = document.getElementById('pp' + i);
+    if (i < to)       pip.className = 'olu-pip done';
+    else if (i === to) pip.className = 'olu-pip next';
+    else              pip.className = 'olu-pip';
+  }
+
+  document.getElementById('overlay').classList.add('show');
+}
+
+function closeOverlay() {
+  document.getElementById('overlay').classList.remove('show');
+}
+
+function updateBtn() {
+  const btn  = document.getElementById('main-btn');
+  const hint = document.getElementById('demo-hint');
+  if (currentStep >= 5) {
+    btn.textContent = '🏆 Parcours terminé !';
+    btn.disabled = true;
+    btn.style.opacity = '.5';
+    hint.textContent = 'Toutes les étapes validées';
+  } else {
+    const s = steps[currentStep];
+    btn.innerHTML = '⚡ Checkpoint reçu !<br><span style="font-size:.6rem;opacity:.7;font-weight:600;">SPARK_CHECKPOINT:' + s.slug + '</span>';
+    hint.textContent = 'Étape active : ' + currentStep + ' / Prochaine : ' + (currentStep + 1);
+  }
+}
+
+function resetDemo() {
+  currentStep = 0;
+  // Remettre toutes les classes
+  for (let i = 0; i <= 5; i++) {
+    const si = document.getElementById('si-' + i);
+    const sw = document.getElementById('sw-' + i);
+    const so = sw.querySelector('.so');
+    const lock = sw.querySelector('.so-lock');
+    sw.classList.remove('validating','unlocking');
+    if (i === 0) {
+      si.className = 'si active';
+      so.style.background = 'linear-gradient(135deg,#f09433,#e6683c,#dc2743,#cc2366)';
+      so.style.opacity = '1';
+      so.style.boxShadow = '0 0 0 3px rgba(220,39,67,.35)';
+      if (lock) lock.style.display = 'none';
+    } else {
+      si.className = 'si locked';
+      so.style.background = '#1e2d42';
+      so.style.opacity = '.4';
+      so.style.boxShadow = 'none';
+      if (lock) lock.style.display = 'flex';
+    }
+  }
+  // Reset connecteurs
+  for (let i = 0; i <= 4; i++) {
+    const sc = document.getElementById('sc-' + i + '-' + (i+1));
+    if (sc) sc.classList.remove('lit');
+  }
+  updateBtn();
+  closeOverlay();
+}
+
+// Init
+resetDemo();
+</script>
+</body>
+</html>
