@@ -196,6 +196,18 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
 .step-item.done .step-num{background:rgba(0,212,160,.12);color:#009978;}
 .step-item.active .step-num{background:#f0f0f0;color:#1a1a2e;}
 .step-item.locked .step-num{background:#f0f0f0;color:#ccc;}
+.step-item.viewing{background:rgba(240,148,51,.06);border-radius:10px;cursor:pointer;}
+.step-item.viewing .step-label{color:#c6410e;font-weight:700;}
+.step-item.viewing .step-num{background:rgba(240,148,51,.18);color:#c6410e;}
+.step-item.done,.step-item.active{cursor:pointer;}
+.step-item.done:hover,.step-item.active:hover{background:rgba(0,184,148,.05);border-radius:10px;}
+.conv-etape-header{font-size:.57rem;font-weight:700;letter-spacing:.9px;text-transform:uppercase;
+  color:rgba(150,150,160,.8);text-align:center;padding:5px 0 2px;flex-shrink:0;}
+.btn-vitrine{background:rgba(0,184,148,.07);border:1.5px solid rgba(0,184,148,.28);
+  border-radius:10px;padding:5px 13px;font-size:.62rem;font-weight:700;color:#009978;
+  cursor:pointer;transition:all .15s;font-family:'DM Sans',sans-serif;white-space:nowrap;}
+.btn-vitrine:hover{background:rgba(0,184,148,.16);}
+.btn-vitrine:disabled{opacity:.4;cursor:not-allowed;}
 /* anciens sélecteurs : masqués (migration vers .step-label) */
 .step-info,.step-day,.step-name{display:none;}
 /* ── Connecteur vertical entre steps ── */
@@ -1346,17 +1358,17 @@ body::before{background:radial-gradient(ellipse 60% 50% at 85% 5%,rgba(62,212,24
     <img class="page-bg-shape" id="bg-eleve" src="photoverte.png" alt="">
     <div class="steps-sidebar">
       <div class="ss-title">Votre parcours</div>
-      <div class="step-item active" id="step-0"><div class="step-num">0</div><div class="step-orb" id="step-orb-0"><div class="step-rp"></div><div class="step-rp"></div><div class="step-rp"></div><div class="step-ring-inner"><span class="step-emoji">🌱</span></div></div><div class="step-label">Découvrir</div></div>
+      <div class="step-item active" id="step-0" onclick="clickerEtapeSidebar(0)"><div class="step-num">0</div><div class="step-orb" id="step-orb-0"><div class="step-rp"></div><div class="step-rp"></div><div class="step-rp"></div><div class="step-ring-inner"><span class="step-emoji">🌱</span></div></div><div class="step-label">Découvrir</div></div>
       <div class="step-connector" id="step-conn-0-1"></div>
-      <div class="step-item locked" id="step-1"><div class="step-num">1</div><div class="step-orb" id="step-orb-1"><div class="step-rp"></div><div class="step-rp"></div><div class="step-rp"></div><div class="step-ring-inner"><span class="step-emoji">🔍</span></div><div class="step-lock">🔒</div></div><div class="step-label">Problé&shy;matiser</div></div>
+      <div class="step-item locked" id="step-1" onclick="clickerEtapeSidebar(1)"><div class="step-num">1</div><div class="step-orb" id="step-orb-1"><div class="step-rp"></div><div class="step-rp"></div><div class="step-rp"></div><div class="step-ring-inner"><span class="step-emoji">🔍</span></div><div class="step-lock">🔒</div></div><div class="step-label">Problé&shy;matiser</div></div>
       <div class="step-connector" id="step-conn-1-2"></div>
-      <div class="step-item locked" id="step-2"><div class="step-num">2</div><div class="step-orb" id="step-orb-2"><div class="step-rp"></div><div class="step-rp"></div><div class="step-rp"></div><div class="step-ring-inner"><span class="step-emoji">✏️</span></div><div class="step-lock">🔒</div></div><div class="step-label">Imaginer</div></div>
+      <div class="step-item locked" id="step-2" onclick="clickerEtapeSidebar(2)"><div class="step-num">2</div><div class="step-orb" id="step-orb-2"><div class="step-rp"></div><div class="step-rp"></div><div class="step-rp"></div><div class="step-ring-inner"><span class="step-emoji">✏️</span></div><div class="step-lock">🔒</div></div><div class="step-label">Imaginer</div></div>
       <div class="step-connector" id="step-conn-2-3"></div>
-      <div class="step-item locked" id="step-3"><div class="step-num">3</div><div class="step-orb" id="step-orb-3"><div class="step-rp"></div><div class="step-rp"></div><div class="step-rp"></div><div class="step-ring-inner"><span class="step-emoji">🔨</span></div><div class="step-lock">🔒</div></div><div class="step-label">Créer</div></div>
+      <div class="step-item locked" id="step-3" onclick="clickerEtapeSidebar(3)"><div class="step-num">3</div><div class="step-orb" id="step-orb-3"><div class="step-rp"></div><div class="step-rp"></div><div class="step-rp"></div><div class="step-ring-inner"><span class="step-emoji">🔨</span></div><div class="step-lock">🔒</div></div><div class="step-label">Créer</div></div>
       <div class="step-connector" id="step-conn-3-4"></div>
-      <div class="step-item locked" id="step-4"><div class="step-num">4</div><div class="step-orb" id="step-orb-4"><div class="step-rp"></div><div class="step-rp"></div><div class="step-rp"></div><div class="step-ring-inner"><span class="step-emoji">📢</span></div><div class="step-lock">🔒</div></div><div class="step-label">Chiffrer &amp; Pitcher</div></div>
+      <div class="step-item locked" id="step-4" onclick="clickerEtapeSidebar(4)"><div class="step-num">4</div><div class="step-orb" id="step-orb-4"><div class="step-rp"></div><div class="step-rp"></div><div class="step-rp"></div><div class="step-ring-inner"><span class="step-emoji">📢</span></div><div class="step-lock">🔒</div></div><div class="step-label">Chiffrer &amp; Pitcher</div></div>
       <div class="step-connector" id="step-conn-4-5"></div>
-      <div class="step-item locked" id="step-5"><div class="step-num">5</div><div class="step-orb" id="step-orb-5"><div class="step-rp"></div><div class="step-rp"></div><div class="step-rp"></div><div class="step-ring-inner"><span class="step-emoji">🏆</span></div><div class="step-lock">🔒</div></div><div class="step-label">S'entraîner<br>finale</div></div>
+      <div class="step-item locked" id="step-5" onclick="clickerEtapeSidebar(5)"><div class="step-num">5</div><div class="step-orb" id="step-orb-5"><div class="step-rp"></div><div class="step-rp"></div><div class="step-rp"></div><div class="step-ring-inner"><span class="step-emoji">🏆</span></div><div class="step-lock">🔒</div></div><div class="step-label">S'entraîner<br>finale</div></div>
     </div>
     <div class="chat-zone">
       <div class="eleve-chat-tabs">
@@ -1366,6 +1378,10 @@ body::before{background:radial-gradient(ellipse 60% 50% at 85% 5%,rgba(62,212,24
       </div>
       <div class="messages" id="chat-messages"></div>
       <div class="input-zone">
+        <div class="conv-etape-header" id="conv-etape-header">Étape 0 — Découvrir</div>
+        <div style="display:flex;justify-content:flex-end;padding:0 2px 4px 2px;">
+          <button class="btn-vitrine" id="btn-vitrine" onclick="demanderMiseAJourVitrine()" title="Demander à SPARK de générer le HTML pour votre vitrine">🎨 Mettre à jour la vitrine</button>
+        </div>
         <div class="input-row">
           <textarea class="msg-input" id="msg-input" placeholder="Tapez votre message..." onkeydown="handleKey(event)" rows="1"></textarea>
           <button class="btn-send" id="btn-send" onclick="sendMessage()">Envoyer 🌱</button>
@@ -1554,6 +1570,7 @@ let mentorConvUnread = 0;
 let eleveVitrinesData = [];
 let eleveEtapeAffichee = null;
 let eleveEtapeEdition = null;
+let eleveEtapeAfficheeConversation = 0; // étape dont la conversation est actuellement visible
 let facDrawerEquipeId = null;
 let facDrawerVitrines = [];
 let facDrawerConvMessages = [];
@@ -2169,10 +2186,16 @@ function showStepOverlay(fromEtape, toEtape) {
 function closeStepOverlay() {
   const ov = document.getElementById('step-unlock-overlay');
   if (ov) ov.classList.remove('show');
+  // Auto-basculer vers la nouvelle étape débloquée
+  const newEtape = getEtapeActiveEquipe();
+  if (newEtape !== eleveEtapeAfficheeConversation) {
+    clickerEtapeSidebar(newEtape);
+  }
 }
 
 async function loadConversation(){
   if(!currentEquipe) return;
+  eleveEtapeAfficheeConversation = getEtapeActiveEquipe();
   const{data:msgs}=await sb.from('conversations')
     .select('*').eq('equipe_id',currentEquipe.id).eq('statut','visible')
     .order('created_at',{ascending:true});
@@ -2183,6 +2206,7 @@ async function loadConversation(){
       conversationHistory.push({role:m.role==='assistant'?'model':'user',parts:[{text:m.message}]});
     }
   });
+  updateConvEtapeHeader();
   renderEleveConversation();
 }
 
@@ -2193,7 +2217,7 @@ function renderEleveConversation(){
 
   const visible = eleveCanalActif==='mentor'
     ? eleveMessagesCache.filter(m=>m.role==='mentor')
-    : eleveMessagesCache.filter(m=>m.role!=='mentor');
+    : eleveMessagesCache.filter(m=>m.role!=='mentor' && (Number(m.etape??0))===eleveEtapeAfficheeConversation);
 
   if(!visible.length){
     const note=document.createElement('div');
@@ -2220,11 +2244,13 @@ function switchEleveCanal(canal, silent=false){
   const sendBtn=document.getElementById('btn-send');
   if(input && sendBtn){
     const isMentor = eleveCanalActif==='mentor';
-    input.disabled = isMentor;
-    sendBtn.disabled = isMentor;
+    const isPastEtape = eleveCanalActif==='spark' && eleveEtapeAfficheeConversation < getEtapeActiveEquipe();
+    const locked = isMentor || isPastEtape;
+    input.disabled = locked;
+    sendBtn.disabled = locked;
     input.placeholder = isMentor
       ? 'Canal Mentor en lecture seule.'
-      : 'Tapez votre message...';
+      : (isPastEtape ? '📜 Conversation archivée — lecture seule.' : 'Tapez votre message...');
     sendBtn.textContent = isMentor ? 'Lecture seule' : 'Envoyer 🌱';
   }
 
@@ -2241,92 +2267,156 @@ function switchEleveCanal(canal, silent=false){
 async function sparkGreet(){
   const g="Bienvenue dans le programme The Schools Challenge, vous êtes la 10ème génération à découvrir ce programme ! 🥳 Vous allez lors de 6 prochains mois collaborer tous.tes ensemble dans la résolution d'un problème ! Etes-vous prêt.e.s? 💪";
   await saveMsg('assistant',g,'SPARK ⚡');
-  eleveMessagesCache.push({role:'assistant',message:g,pseudo:'SPARK ⚡'});
+  eleveMessagesCache.push({role:'assistant',message:g,pseudo:'SPARK ⚡',etape:0});
   renderEleveConversation();
   conversationHistory.push({role:'model',parts:[{text:g}]});
   scrollBot();
+}
+
+// ─────────────────────────────────────────────────────────────────────
+// NAVIGATION PAR ÉTAPE
+// ─────────────────────────────────────────────────────────────────────
+
+function updateConvEtapeHeader() {
+  const hdr = document.getElementById('conv-etape-header');
+  if (!hdr) return;
+  const meta = STEP_META[eleveEtapeAfficheeConversation] || {};
+  const isPast = eleveEtapeAfficheeConversation < getEtapeActiveEquipe();
+  hdr.textContent = `Étape ${eleveEtapeAfficheeConversation} — ${meta.name || ''}${isPast ? ' 📜 archive' : ''}`;
+  // Classe .viewing sur la sidebar
+  for (let i = 0; i <= 5; i++) {
+    const el = document.getElementById('step-' + i);
+    if (el) el.classList.toggle('viewing', i === eleveEtapeAfficheeConversation);
+  }
+}
+
+async function clickerEtapeSidebar(etape) {
+  const maxEtape = getEtapeActiveEquipe();
+  if (etape > maxEtape) return; // étape verrouillée
+
+  eleveEtapeAfficheeConversation = etape;
+  updateConvEtapeHeader();
+
+  // Input : lecture seule si on visionne une étape passée
+  const isPast = etape < maxEtape;
+  const inp = document.getElementById('msg-input');
+  const sendBtn = document.getElementById('btn-send');
+  const vitBtn = document.getElementById('btn-vitrine');
+  if (inp && sendBtn) {
+    const mentorLock = eleveCanalActif === 'mentor';
+    inp.disabled = isPast || mentorLock;
+    sendBtn.disabled = isPast || mentorLock;
+    inp.placeholder = isPast
+      ? '📜 Conversation archivée — lecture seule.'
+      : (mentorLock ? 'Canal Mentor en lecture seule.' : 'Tapez votre message...');
+  }
+  if (vitBtn) vitBtn.disabled = isPast;
+
+  renderEleveConversation();
+  scrollBot();
+
+  // Auto-démarrage : étape active sans aucun message → SPARK lance la première activité
+  if (!isPast && conversationHistory.length > 0) {
+    const etapeMsgs = eleveMessagesCache.filter(
+      m => Number(m.etape ?? 0) === etape && (m.role === 'user' || m.role === 'assistant')
+    );
+    if (etapeMsgs.length === 0) {
+      await demarrerEtape(etape);
+    }
+  }
+}
+
+async function demarrerEtape(etape) {
+  if (!currentEquipe) return;
+  const meta = STEP_META[etape] || {};
+  const trigger = `[Étape ${etape} — "${meta.name}" vient d'être débloquée. Lance immédiatement la première activité de cette étape de façon engageante, sans attendre de message de l'équipe.]`;
+  conversationHistory.push({role:'user',parts:[{text:trigger}]});
+  showTyping();
+  try {
+    const r = await callMistral(currentEquipe.id, etape);
+    hideTyping();
+    const rVisible = r.replace(/```[\s\S]*?```/gi, '').trim();
+    if (rVisible) {
+      const etapeTag = currentEquipe.etape_courante || 0;
+      eleveMessagesCache.push({role:'assistant',message:rVisible,pseudo:'SPARK ⚡',etape:etapeTag});
+      await saveMsg('assistant', rVisible, 'SPARK ⚡');
+      conversationHistory.push({role:'model',parts:[{text:r}]});
+      renderEleveConversation();
+      scrollBot();
+    } else {
+      conversationHistory.pop();
+    }
+  } catch(e) {
+    hideTyping();
+    conversationHistory.pop();
+    console.error('Erreur démarrage étape:', e);
+  }
+}
+
+async function demanderMiseAJourVitrine() {
+  if (!currentEquipe || eleveCanalActif !== 'spark') return;
+  const vitBtn = document.getElementById('btn-vitrine');
+  if (vitBtn) vitBtn.disabled = true;
+  showTyping();
+  try {
+    const r = await callMistral(currentEquipe.id, currentEquipe.etape_courante, {
+      forceHtml: true,
+      latestUserRequest: 'Génère le HTML complet et mis à jour de notre vitrine pour cette étape.',
+      strictHtmlOnly: true
+    });
+    hideTyping();
+    const rVisible = r.replace(/```[\s\S]*?```/gi, '').trim();
+    if (rVisible) {
+      const et = currentEquipe.etape_courante || 0;
+      eleveMessagesCache.push({role:'assistant',message:rVisible,pseudo:'SPARK ⚡',etape:et});
+      await saveMsg('assistant', rVisible, 'SPARK ⚡');
+      conversationHistory.push({role:'model',parts:[{text:r}]});
+      renderEleveConversation();
+      scrollBot();
+    }
+    const ok = await detecterCheckpoint(r, true);
+    if (!ok) showToast('SPARK n\'a pas généré de HTML valide. Réessaie.', 'error');
+  } catch(e) {
+    hideTyping();
+    showToast('Erreur lors de la mise à jour de la vitrine.', 'error');
+    console.error(e);
+  }
+  if (vitBtn) vitBtn.disabled = false;
 }
 
 async function sendMessage(){
   const inp=document.getElementById('msg-input');
   const txt=inp.value.trim();
   if(!txt||!currentEquipe||eleveCanalActif!=='spark') return;
+  // Lecture seule si on visionne une étape passée
+  if(eleveEtapeAfficheeConversation < getEtapeActiveEquipe()) return;
   inp.value=''; inp.style.height='auto';
   document.getElementById('btn-send').disabled=true;
-  
-  eleveMessagesCache.push({role:'user',message:txt,pseudo:'La Team'});
+
+  const etapeMsg = currentEquipe.etape_courante || 0;
+  eleveMessagesCache.push({role:'user',message:txt,pseudo:'La Team',etape:etapeMsg});
   renderEleveConversation();
   await saveMsg('user',txt,'La Team');
   conversationHistory.push({role:'user',parts:[{text:txt}]});
   scrollBot(); showTyping();
-  
+
   try{
-    const r=await callMistral(currentEquipe.id, currentEquipe.etape_courante); 
+    const r=await callMistral(currentEquipe.id, currentEquipe.etape_courante);
     hideTyping();
 
-    const htmlBlocks = [...r.matchAll(/```html\s*([\s\S]*?)```/gi)];
-    const hasHtmlBlock = htmlBlocks.length > 0;
-    const hasNonEmptyHtmlBlock = htmlBlocks.some(b => (b[1] || '').trim().length > 0);
-    const htmlBlockVideSeulement = hasHtmlBlock && !hasNonEmptyHtmlBlock;
-    
-    // On extrait le texte visible (sans les balises de code) pour le chat
-    // on supprime les blocs de code délimités par des ```` afin de ne
-    // conserver que le texte narratif dans le flux de conversation
+    // Texte narratif affiché dans le chat (sans les blocs de code)
     const rVisible = r.replace(/```[\s\S]*?```/gi, '').trim();
 
-    if (rVisible && !htmlBlockVideSeulement) {
-      eleveMessagesCache.push({role:'assistant',message:rVisible,pseudo:'SPARK ⚡'});
+    if(rVisible){
+      eleveMessagesCache.push({role:'assistant',message:rVisible,pseudo:'SPARK ⚡',etape:etapeMsg});
       renderEleveConversation();
       await saveMsg('assistant', rVisible, 'SPARK ⚡');
     }
     conversationHistory.push({role:'model',parts:[{text:r}]});
-    
-    // --- NOUVEAUTÉ : Mise à jour automatique ---
-    let vitrineMaj = await detecterCheckpoint(r);
 
-    if (!vitrineMaj) {
-      const fallbackImmediatOk = await appliquerFallbackVisuelLocal(txt);
-      if (fallbackImmediatOk) {
-        vitrineMaj = true;
-        ouvrirCarnet();
-        showToast('Mise à jour appliquée (mode secours).','success');
-      }
-    }
+    // Détection SPARK_CHECKPOINT uniquement (pas de maj vitrine auto)
+    await detecterCheckpoint(r, false);
 
-    if (!vitrineMaj) {
-      const rRetry = await callMistral(currentEquipe.id, currentEquipe.etape_courante, {
-        forceHtml: true,
-        latestUserRequest: txt,
-        strictHtmlOnly: true
-      });
-
-      const retryHtmlBlocks = [...rRetry.matchAll(/```html\s*([\s\S]*?)```/gi)];
-      const retryHasHtmlBlock = retryHtmlBlocks.length > 0;
-      const retryHasNonEmptyHtmlBlock = retryHtmlBlocks.some(b => (b[1] || '').trim().length > 0);
-      const retryHtmlBlockVideSeulement = retryHasHtmlBlock && !retryHasNonEmptyHtmlBlock;
-      const rRetryVisible = rRetry.replace(/```[\s\S]*?```/gi, '').trim();
-
-      if (rRetryVisible && !retryHtmlBlockVideSeulement) {
-        eleveMessagesCache.push({role:'assistant',message:rRetryVisible,pseudo:'SPARK ⚡'});
-        renderEleveConversation();
-        await saveMsg('assistant', rRetryVisible, 'SPARK ⚡');
-      }
-
-      conversationHistory.push({role:'model',parts:[{text:rRetry}]});
-      vitrineMaj = await detecterCheckpoint(rRetry);
-
-      if (!vitrineMaj) {
-        const fallbackOk = await appliquerFallbackVisuelLocal(txt);
-        if (fallbackOk) {
-          vitrineMaj = true;
-          ouvrirCarnet();
-          showToast('Mise à jour appliquée (mode secours).','success');
-        } else {
-          showToast('SPARK n\'a pas appliqué de modification HTML. Réessaie.','error');
-        }
-      }
-    }
-    
     scrollBot();
   } catch(e) {
     console.error(e);
@@ -2619,7 +2709,8 @@ async function saveMsg(role,message,pseudo){
   if(!currentEquipe) return;
   await sb.from('conversations').insert({
     equipe_id:currentEquipe.id,role,message,pseudo,
-    auteur_code:currentUser.code,statut:'visible'
+    auteur_code:currentUser.code,statut:'visible',
+    etape: currentEquipe.etape_courante || 0
   });
 }
 
@@ -2733,7 +2824,10 @@ function listenEleveConversations(){
           badge.style.display='inline-block';
         }
       }
-
+      // N'afficher que si le message est pour l'étape actuellement visible (ou mentor)
+      if(m.role !== 'mentor' && Number(m.etape ?? 0) !== eleveEtapeAfficheeConversation) {
+        return;
+      }
       renderEleveConversation();
       if(m.role==='mentor') showToast('Message de '+m.pseudo,'success');
     })
@@ -3444,9 +3538,25 @@ function afficherToastCarnet(etapeNom){
   },3000);
 }
 
-async function detecterCheckpoint(texte) {
-  if (!currentEquipe) return;
+async function detecterCheckpoint(texte, forceVitrine = false) {
+  if (!currentEquipe) return false;
   const etapeActive = getEtapeActiveEquipe();
+
+  // ── Détection SPARK_CHECKPOINT ──
+  const CHECKPOINT_MAP = {
+    'etape0-preparation': 1,
+    'jour1-questionner':  2,
+    'jour2-concevoir':    3,
+    'jour3-fabriquer':    4,
+    'jour4-diffuser':     5,
+    'jour5-convaincre':   5
+  };
+  const cpMatch = texte.match(/SPARK_CHECKPOINT:([a-z0-9\-]+)/i);
+  const nextEtape = cpMatch ? CHECKPOINT_MAP[cpMatch[1]] : undefined;
+  const checkpointValid = nextEtape !== undefined && nextEtape > etapeActive;
+
+  // On ne sauvegarde la vitrine que si checkpoint détecté OU bouton explicite
+  if (!forceVitrine && !checkpointValid) return false;
 
   let vitrineMaj = false;
   let referenceHtmlNettoye = '';
@@ -3498,8 +3608,6 @@ async function detecterCheckpoint(texte) {
     }
   }
 
-  if (blocs.length === 0) return false;
-
   for (const bloc of blocs) {
     let html = (bloc || '').trim();
     html = html.replace(/^```html\s*/i, '').replace(/```\s*$/i, '').trim();
@@ -3526,8 +3634,6 @@ async function detecterCheckpoint(texte) {
       vitrineMaj = true;
 
       await chargerCarnet();
-      updateSteps(etapeActive);
-      ouvrirCarnet();
       showToast("Vitrine mise à jour ! 🎨", "success");
 
     } catch (err) {
@@ -3535,22 +3641,9 @@ async function detecterCheckpoint(texte) {
     }
   }
 
-  // ── Détection SPARK_CHECKPOINT ──
-  const cpMatch = texte.match(/SPARK_CHECKPOINT:([a-z0-9\-]+)/i);
-  if (cpMatch) {
-    const CHECKPOINT_MAP = {
-      'etape0-preparation': 1,
-      'jour1-questionner':  2,
-      'jour2-concevoir':    3,
-      'jour3-fabriquer':    4,
-      'jour4-diffuser':     5,
-      'jour5-convaincre':   5
-    };
-    const nextEtape = CHECKPOINT_MAP[cpMatch[1]];
-    const currentEtape = Number(currentEquipe?.etape_courante ?? 0);
-    if (nextEtape !== undefined && nextEtape > currentEtape) {
-      await validerEtape(currentEtape, nextEtape);
-    }
+  // Valider l'étape si checkpoint valide
+  if (checkpointValid) {
+    await validerEtape(etapeActive, nextEtape);
   }
 
   return vitrineMaj;

@@ -1,0 +1,560 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SPARK — Animations déblocage étape</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'Inter',sans-serif;background:#0f172a;color:#fff;min-height:100vh;display:flex;flex-direction:column;align-items:center;padding:32px 16px;gap:48px;}
+
+h1{font-family:'Syne',sans-serif;font-size:1.1rem;letter-spacing:1px;color:rgba(255,255,255,.5);text-transform:uppercase;text-align:center;}
+
+.section-title{font-family:'Syne',sans-serif;font-size:.75rem;letter-spacing:2px;text-transform:uppercase;color:rgba(255,255,255,.3);text-align:center;margin-bottom:12px;}
+
+.proposals{display:flex;flex-wrap:wrap;gap:32px;justify-content:center;width:100%;max-width:1100px;}
+
+/* ── CARTE générique ── */
+.card{
+  background:#1e293b;border-radius:20px;
+  padding:24px 20px;
+  display:flex;flex-direction:column;align-items:center;gap:16px;
+  width:200px;flex-shrink:0;
+  border:1px solid rgba(255,255,255,.07);
+  position:relative;overflow:hidden;
+}
+.card-label{font-size:.62rem;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:rgba(255,255,255,.3);}
+.card-name{font-family:'Syne',sans-serif;font-size:.9rem;font-weight:800;color:#fff;text-align:center;}
+.btn{
+  margin-top:4px;padding:8px 18px;border-radius:20px;border:none;cursor:pointer;
+  font-family:'Syne',sans-serif;font-size:.65rem;font-weight:800;letter-spacing:.5px;
+  background:rgba(255,255,255,.1);color:#fff;
+  transition:background .15s;
+}
+.btn:hover{background:rgba(255,255,255,.18);}
+
+/* Sidebar mini partagée */
+.mini-sidebar{
+  display:flex;flex-direction:column;gap:6px;align-items:center;
+  background:#16243a;border-radius:14px;padding:10px 8px;
+}
+.orb{
+  width:48px;height:48px;border-radius:50%;
+  display:flex;align-items:center;justify-content:center;
+  font-size:1.3rem;position:relative;cursor:pointer;
+  background:#e0e0e0;opacity:.4;
+  flex-shrink:0;
+  transition:all .3s;
+}
+.orb.done{
+  background:linear-gradient(135deg,#22c55e,#16a34a);
+  opacity:1;
+  box-shadow:0 0 0 3px rgba(34,197,94,.3);
+}
+.orb.active{
+  background:linear-gradient(135deg,#f09433,#e6683c,#dc2743,#cc2366);
+  opacity:1;
+  box-shadow:0 0 0 3px rgba(220,39,67,.35);
+}
+.orb.active .ring{
+  position:absolute;inset:-4px;border-radius:50%;
+  border:2.5px solid rgba(240,148,51,.6);
+  animation:pulse-ring 1.8s ease-out infinite;
+}
+@keyframes pulse-ring{
+  0%{transform:scale(1);opacity:.7}
+  100%{transform:scale(1.4);opacity:0}
+}
+.orb-label{font-size:.48rem;font-weight:700;color:rgba(255,255,255,.4);letter-spacing:.5px;}
+
+/* ═══════════════════════════════════════════
+   PROP 1 — BURST CONFETTI
+═══════════════════════════════════════════ */
+.burst-wrap{position:relative;width:48px;height:48px;}
+.confetti-piece{
+  position:absolute;width:6px;height:6px;border-radius:2px;
+  top:50%;left:50%;
+  opacity:0;pointer-events:none;
+}
+.burst-wrap.fire .confetti-piece:nth-child(1){animation:burst1 .7s ease-out forwards;background:#f09433;animation-delay:0s;}
+.burst-wrap.fire .confetti-piece:nth-child(2){animation:burst2 .7s ease-out forwards;background:#fffc00;animation-delay:.05s;}
+.burst-wrap.fire .confetti-piece:nth-child(3){animation:burst3 .7s ease-out forwards;background:#22c55e;animation-delay:.08s;}
+.burst-wrap.fire .confetti-piece:nth-child(4){animation:burst4 .65s ease-out forwards;background:#38bdf8;animation-delay:.03s;}
+.burst-wrap.fire .confetti-piece:nth-child(5){animation:burst5 .75s ease-out forwards;background:#e879f9;animation-delay:.06s;}
+.burst-wrap.fire .confetti-piece:nth-child(6){animation:burst6 .68s ease-out forwards;background:#fb923c;animation-delay:.01s;}
+.burst-wrap.fire .confetti-piece:nth-child(7){animation:burst7 .72s ease-out forwards;background:#4ade80;animation-delay:.09s;}
+.burst-wrap.fire .confetti-piece:nth-child(8){animation:burst8 .66s ease-out forwards;background:#facc15;animation-delay:.04s;}
+@keyframes burst1{0%{transform:translate(-50%,-50%) scale(0);opacity:1}100%{transform:translate(calc(-50% + 28px),calc(-50% - 24px)) scale(1.2) rotate(45deg);opacity:0}}
+@keyframes burst2{0%{transform:translate(-50%,-50%) scale(0);opacity:1}100%{transform:translate(calc(-50% - 28px),calc(-50% - 26px)) scale(1.2) rotate(-30deg);opacity:0}}
+@keyframes burst3{0%{transform:translate(-50%,-50%) scale(0);opacity:1}100%{transform:translate(calc(-50% + 32px),calc(-50% + 10px)) scale(1) rotate(70deg);opacity:0}}
+@keyframes burst4{0%{transform:translate(-50%,-50%) scale(0);opacity:1}100%{transform:translate(calc(-50% - 30px),calc(-50% + 12px)) scale(1.3) rotate(-60deg);opacity:0}}
+@keyframes burst5{0%{transform:translate(-50%,-50%) scale(0);opacity:1}100%{transform:translate(calc(-50% + 10px),calc(-50% - 34px)) scale(1.1) rotate(20deg);opacity:0}}
+@keyframes burst6{0%{transform:translate(-50%,-50%) scale(0);opacity:1}100%{transform:translate(calc(-50% - 10px),calc(-50% + 34px)) scale(1) rotate(-80deg);opacity:0}}
+@keyframes burst7{0%{transform:translate(-50%,-50%) scale(0);opacity:1}100%{transform:translate(calc(-50% + 24px),calc(-50% + 28px)) scale(1.2) rotate(110deg);opacity:0}}
+@keyframes burst8{0%{transform:translate(-50%,-50%) scale(0);opacity:1}100%{transform:translate(calc(-50% - 26px),calc(-50% - 10px)) scale(.9) rotate(-20deg);opacity:0}}
+
+.burst-orb{
+  width:48px;height:48px;border-radius:50%;
+  display:flex;align-items:center;justify-content:center;
+  font-size:1.3rem;
+  background:#e0e0e0;opacity:.4;
+  transition:all .4s cubic-bezier(.34,1.56,.64,1);
+  position:relative;z-index:1;
+}
+.burst-wrap.fire .burst-orb{
+  background:linear-gradient(135deg,#22c55e,#16a34a);
+  opacity:1;
+  box-shadow:0 0 20px rgba(34,197,94,.6);
+  animation:orb-pop .4s cubic-bezier(.34,1.56,.64,1) forwards;
+}
+@keyframes orb-pop{
+  0%{transform:scale(1)}
+  40%{transform:scale(1.35)}
+  70%{transform:scale(.92)}
+  100%{transform:scale(1)}
+}
+.burst-wrap.fire .check-badge{
+  position:absolute;top:-6px;right:-6px;z-index:2;
+  width:18px;height:18px;border-radius:50%;
+  background:#22c55e;color:#fff;font-size:.55rem;font-weight:900;
+  display:flex;align-items:center;justify-content:center;
+  border:2px solid #1e293b;
+  animation:badge-in .3s .25s cubic-bezier(.34,1.56,.64,1) both;
+}
+@keyframes badge-in{from{transform:scale(0);opacity:0}to{transform:scale(1);opacity:1}}
+
+
+/* ═══════════════════════════════════════════
+   PROP 2 — LEVEL UP BANNER (style RPG)
+═══════════════════════════════════════════ */
+.levelup-banner{
+  position:fixed;top:0;left:50%;transform:translateX(-50%) translateY(-100%);
+  z-index:9999;
+  background:linear-gradient(135deg,#1e293b,#0f172a);
+  border:2px solid #f59e0b;
+  border-radius:0 0 20px 20px;
+  padding:14px 32px;
+  display:flex;align-items:center;gap:14px;
+  box-shadow:0 8px 32px rgba(245,158,11,.4);
+  transition:transform .5s cubic-bezier(.34,1.56,.64,1);
+  pointer-events:none;
+  min-width:300px;
+}
+.levelup-banner.show{transform:translateX(-50%) translateY(0);}
+.levelup-icon{font-size:2rem;animation:spin-once .6s ease-out .2s both;}
+@keyframes spin-once{from{transform:rotate(-180deg) scale(0)}to{transform:rotate(0deg) scale(1)}}
+.levelup-text{display:flex;flex-direction:column;gap:2px;}
+.levelup-title{font-family:'Syne',sans-serif;font-size:.62rem;font-weight:800;letter-spacing:2px;color:#f59e0b;text-transform:uppercase;}
+.levelup-sub{font-family:'Syne',sans-serif;font-size:1rem;font-weight:800;color:#fff;}
+.levelup-stars{display:flex;gap:3px;font-size:.9rem;animation:stars-in .4s .4s both;}
+@keyframes stars-in{from{opacity:0;transform:scale(0)}to{opacity:1;transform:scale(1)}}
+
+/* ═══════════════════════════════════════════
+   PROP 3 — RING GLOW PULSE (IG style)
+═══════════════════════════════════════════ */
+.ring-orb-wrap{position:relative;width:54px;height:54px;}
+.ring-orb{
+  width:54px;height:54px;border-radius:50%;
+  display:flex;align-items:center;justify-content:center;font-size:1.3rem;
+  position:relative;z-index:1;
+  background:#e0e0e0;opacity:.4;
+  transition:all .5s;
+}
+.ring-orb-wrap.glow .ring-orb{
+  opacity:1;
+  background:linear-gradient(135deg,#22c55e,#16a34a);
+}
+.ring-pulse{
+  position:absolute;inset:0;border-radius:50%;
+  background:rgba(34,197,94,.5);
+  opacity:0;z-index:0;
+}
+.ring-orb-wrap.glow .ring-pulse{animation:ripple1 1s ease-out forwards;}
+.ring-orb-wrap.glow .ring-pulse:nth-child(2){animation:ripple1 1s .2s ease-out forwards;}
+.ring-orb-wrap.glow .ring-pulse:nth-child(3){animation:ripple1 1s .4s ease-out forwards;}
+@keyframes ripple1{
+  0%{transform:scale(1);opacity:.7}
+  100%{transform:scale(2.2);opacity:0}
+}
+.ring-orb-wrap.glow .ring-orb::after{
+  content:'✓';
+  position:absolute;inset:0;border-radius:50%;
+  background:rgba(22,163,74,.92);
+  display:flex;align-items:center;justify-content:center;
+  font-size:1.2rem;font-weight:900;color:#fff;
+  animation:check-reveal .3s .35s cubic-bezier(.34,1.56,.64,1) both;
+}
+@keyframes check-reveal{from{transform:scale(0) rotate(-30deg);opacity:0}to{transform:scale(1) rotate(0deg);opacity:1}}
+
+/* ═══════════════════════════════════════════
+   PROP 4 — SHAKE + GOLDEN FLASH (arcade)
+═══════════════════════════════════════════ */
+.arcade-orb{
+  width:48px;height:48px;border-radius:12px;
+  display:flex;align-items:center;justify-content:center;font-size:1.3rem;
+  background:#e0e0e0;opacity:.4;
+  position:relative;
+  transition:all .3s;
+}
+.arcade-orb.flash{
+  opacity:1;
+  background:linear-gradient(135deg,#fbbf24,#f59e0b);
+  animation:arcade-shake .5s cubic-bezier(.36,.07,.19,.97) both;
+  box-shadow:0 0 0 4px rgba(251,191,36,.4), 0 0 30px rgba(251,191,36,.6);
+}
+@keyframes arcade-shake{
+  10%,90%{transform:translate(-2px,0) rotate(-2deg)}
+  20%,80%{transform:translate(3px,0) rotate(2deg)}
+  30%,50%,70%{transform:translate(-3px,0) rotate(-1deg)}
+  40%,60%{transform:translate(3px,0) rotate(1deg)}
+  100%{transform:translate(0,0) rotate(0)}
+}
+.arcade-orb.flash::before{
+  content:'+1 ÉTAPE';
+  position:absolute;top:-28px;left:50%;transform:translateX(-50%);
+  font-family:'Syne',sans-serif;font-size:.55rem;font-weight:900;
+  color:#fbbf24;letter-spacing:1px;white-space:nowrap;
+  animation:float-up .8s ease-out forwards;
+  text-shadow:0 0 10px rgba(251,191,36,.8);
+}
+@keyframes float-up{
+  0%{transform:translateX(-50%) translateY(0);opacity:1}
+  100%{transform:translateX(-50%) translateY(-20px);opacity:0}
+}
+.star-trail{
+  position:absolute;pointer-events:none;
+}
+.star-trail span{
+  position:absolute;font-size:.7rem;opacity:0;
+}
+.arcade-orb.flash .star-trail span:nth-child(1){animation:star1 .6s .1s ease-out forwards;}
+.arcade-orb.flash .star-trail span:nth-child(2){animation:star2 .6s .15s ease-out forwards;}
+.arcade-orb.flash .star-trail span:nth-child(3){animation:star3 .6s .05s ease-out forwards;}
+@keyframes star1{0%{opacity:1;transform:translate(0,0)}100%{opacity:0;transform:translate(24px,-20px)}}
+@keyframes star2{0%{opacity:1;transform:translate(0,0)}100%{opacity:0;transform:translate(-22px,-18px)}}
+@keyframes star3{0%{opacity:1;transform:translate(0,0)}100%{opacity:0;transform:translate(10px,-28px)}}
+
+/* ═══════════════════════════════════════════
+   PROP 5 — PROGRESS BEAM (style Duolingo)
+═══════════════════════════════════════════ */
+.duo-sidebar{
+  display:flex;flex-direction:column;gap:0;align-items:center;
+  background:#16243a;border-radius:14px;padding:10px 8px;
+  position:relative;width:64px;
+}
+.duo-connector{
+  width:3px;height:14px;background:#2a3a50;flex-shrink:0;
+}
+.duo-connector.lit{background:linear-gradient(180deg,#22c55e,#16a34a);animation:beam-fill .6s ease-out forwards;}
+@keyframes beam-fill{from{background:linear-gradient(180deg,#22c55e 0%,#2a3a50 0%);}to{background:linear-gradient(180deg,#22c55e,#16a34a);}}
+.duo-orb{
+  width:44px;height:44px;border-radius:50%;
+  display:flex;align-items:center;justify-content:center;
+  font-size:1.15rem;flex-shrink:0;
+  background:#e0e0e0;opacity:.35;
+  transition:all .5s cubic-bezier(.34,1.56,.64,1);
+  position:relative;
+}
+.duo-orb.done{background:linear-gradient(135deg,#22c55e,#16a34a);opacity:1;box-shadow:0 0 14px rgba(34,197,94,.5);}
+.duo-orb.active{background:linear-gradient(135deg,#f09433,#cc2366);opacity:1;box-shadow:0 0 14px rgba(220,39,67,.4);}
+.duo-orb.unlocking{
+  animation:duo-unlock .6s cubic-bezier(.34,1.56,.64,1) forwards;
+}
+@keyframes duo-unlock{
+  0%{transform:scale(1)}
+  30%{transform:scale(0.7);filter:brightness(.5)}
+  60%{transform:scale(1.25);filter:brightness(1.5)}
+  80%{transform:scale(.95)}
+  100%{transform:scale(1);filter:brightness(1)}
+}
+.duo-orb.unlocking::after{
+  content:'🔓';font-size:.9rem;
+  position:absolute;
+  animation:lock-open .5s ease-out forwards;
+}
+@keyframes lock-open{
+  0%{opacity:1;transform:scale(1.5) rotate(-15deg)}
+  100%{opacity:0;transform:scale(0) rotate(20deg)}
+}
+
+/* Full-screen overlay LEVEL UP */
+.overlay-levelup{
+  display:none;
+  position:fixed;inset:0;z-index:9998;
+  background:rgba(0,0,0,.75);
+  align-items:center;justify-content:center;
+  flex-direction:column;gap:16px;
+  animation:fadein .2s;
+}
+.overlay-levelup.show{display:flex;}
+@keyframes fadein{from{opacity:0}to{opacity:1}}
+.olu-card{
+  background:linear-gradient(135deg,#1e293b,#0d1b2a);
+  border:2px solid #f59e0b;
+  border-radius:24px;padding:32px 40px;
+  display:flex;flex-direction:column;align-items:center;gap:12px;
+  animation:card-in .5s cubic-bezier(.34,1.56,.64,1);
+  position:relative;overflow:hidden;
+  max-width:320px;width:90%;
+}
+@keyframes card-in{from{transform:scale(.6) rotate(-5deg);opacity:0}to{transform:scale(1) rotate(0deg);opacity:1}}
+.olu-glow{
+  position:absolute;inset:0;
+  background:radial-gradient(circle at 50% 30%, rgba(245,158,11,.15), transparent 70%);
+  pointer-events:none;
+}
+.olu-emoji{font-size:3.5rem;animation:bounce-in .6s .2s cubic-bezier(.34,1.56,.64,1) both;}
+@keyframes bounce-in{from{transform:scale(0) translateY(20px);opacity:0}to{transform:scale(1) translateY(0);opacity:1}}
+.olu-title{font-family:'Syne',sans-serif;font-size:.65rem;font-weight:800;letter-spacing:3px;color:#f59e0b;text-transform:uppercase;}
+.olu-step{font-family:'Syne',sans-serif;font-size:1.4rem;font-weight:800;color:#fff;text-align:center;}
+.olu-desc{font-size:.72rem;color:rgba(255,255,255,.5);text-align:center;}
+.olu-stars{font-size:1.4rem;letter-spacing:4px;animation:stars-in .4s .5s both;}
+.olu-close{
+  margin-top:4px;padding:10px 28px;border-radius:20px;border:none;cursor:pointer;
+  font-family:'Syne',sans-serif;font-size:.75rem;font-weight:800;
+  background:linear-gradient(135deg,#22c55e,#16a34a);color:#fff;
+  box-shadow:0 4px 16px rgba(34,197,94,.4);
+  transition:transform .15s;
+}
+.olu-close:hover{transform:scale(1.05);}
+
+/* ═══════════════════════════════════════════
+   LAYOUT
+═══════════════════════════════════════════ */
+.divider{width:100%;max-width:1100px;border:none;border-top:1px solid rgba(255,255,255,.07);}
+.full-row{width:100%;max-width:1100px;display:flex;flex-direction:column;align-items:center;gap:12px;}
+</style>
+</head>
+<body>
+
+<!-- Level-up banner fixe en haut (prop 2) -->
+<div class="levelup-banner" id="lvl-banner">
+  <div class="levelup-icon">⚡</div>
+  <div class="levelup-text">
+    <div class="levelup-title">Étape validée !</div>
+    <div class="levelup-sub">Jour 1 — Se questionner</div>
+  </div>
+  <div class="levelup-stars">⭐⭐⭐</div>
+</div>
+
+<!-- Overlay full-screen (prop 2 full) -->
+<div class="overlay-levelup" id="overlay-lvl" onclick="closeOverlay()">
+  <div class="olu-card" onclick="event.stopPropagation()">
+    <div class="olu-glow"></div>
+    <div class="olu-emoji">🏆</div>
+    <div class="olu-title">Étape débloquée !</div>
+    <div class="olu-step" id="olu-step-name">Jour 1 — Se questionner</div>
+    <div class="olu-desc">Votre équipe a validé toutes les actions de l'étape 0. La suivante est débloquée !</div>
+    <div class="olu-stars">⭐⭐⭐</div>
+    <button class="olu-close" onclick="closeOverlay()">On continue ! 🚀</button>
+  </div>
+</div>
+
+<h1>💥 Animations — Déblocage d'étape</h1>
+
+<div class="proposals">
+
+  <!-- PROP 1 — BURST CONFETTI -->
+  <div class="card">
+    <div class="card-label">Prop 1</div>
+    <div class="card-name">Burst Confetti</div>
+    <div class="burst-wrap" id="burst1">
+      <div class="burst-orb" id="burst1-orb">🌱</div>
+      <div class="check-badge">✓</div>
+      <div class="confetti-piece"></div>
+      <div class="confetti-piece"></div>
+      <div class="confetti-piece"></div>
+      <div class="confetti-piece"></div>
+      <div class="confetti-piece"></div>
+      <div class="confetti-piece"></div>
+      <div class="confetti-piece"></div>
+      <div class="confetti-piece"></div>
+    </div>
+    <div class="orb-label">ÉTAPE 0</div>
+    <button class="btn" onclick="fireBurst()">▶ Rejouer</button>
+  </div>
+
+  <!-- PROP 3 — RING GLOW RIPPLE -->
+  <div class="card">
+    <div class="card-label">Prop 3</div>
+    <div class="card-name">Ring Ripple</div>
+    <div class="ring-orb-wrap" id="ring1">
+      <div class="ring-pulse"></div>
+      <div class="ring-pulse"></div>
+      <div class="ring-pulse"></div>
+      <div class="ring-orb" id="ring1-orb">🌱</div>
+    </div>
+    <div class="orb-label">ÉTAPE 0</div>
+    <button class="btn" onclick="fireRing()">▶ Rejouer</button>
+  </div>
+
+  <!-- PROP 4 — ARCADE SHAKE -->
+  <div class="card">
+    <div class="card-label">Prop 4</div>
+    <div class="card-name">Arcade Flash</div>
+    <div class="arcade-orb" id="arcade1">
+      🌱
+      <div class="star-trail">
+        <span>⭐</span><span>✨</span><span>⭐</span>
+      </div>
+    </div>
+    <div class="orb-label">ÉTAPE 0</div>
+    <button class="btn" onclick="fireArcade()">▶ Rejouer</button>
+  </div>
+
+  <!-- PROP 5 — DUOLINGO UNLOCK -->
+  <div class="card" style="width:220px;">
+    <div class="card-label">Prop 5</div>
+    <div class="card-name">Beam Unlock</div>
+    <div class="duo-sidebar" id="duo-sb">
+      <div class="duo-orb done">🌱</div>
+      <div class="duo-connector" id="duo-c1"></div>
+      <div class="duo-orb" id="duo-orb1">🔍</div>
+      <div class="duo-connector" id="duo-c2"></div>
+      <div class="duo-orb" style="opacity:.25;background:#e0e0e0;">✏️</div>
+    </div>
+    <button class="btn" onclick="fireDuo()">▶ Rejouer</button>
+  </div>
+
+  <!-- PROP 2 — LEVEL UP BANNER -->
+  <div class="card" style="width:220px;">
+    <div class="card-label">Prop 2</div>
+    <div class="card-name">Banner + Overlay</div>
+    <div style="font-size:2rem;">🏆</div>
+    <div style="font-size:.7rem;color:rgba(255,255,255,.4);text-align:center;line-height:1.5;">Bannière slide du haut<br>+ carte plein écran</div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;justify-content:center;">
+      <button class="btn" onclick="fireBanner()">📢 Banner</button>
+      <button class="btn" onclick="fireOverlay()">🏆 Overlay</button>
+    </div>
+  </div>
+
+</div>
+
+<hr class="divider">
+
+<!-- COMBINAISON RECOMMANDÉE -->
+<div class="full-row">
+  <div class="section-title">✨ Combinaison recommandée — Burst + Overlay</div>
+  <div class="card" style="width:280px;">
+    <div class="card-name">Burst → Beam → Overlay</div>
+    <div style="display:flex;gap:12px;align-items:center;">
+      <div class="mini-sidebar">
+        <div class="orb done">🌱</div>
+        <div class="orb active" id="combo-orb1" style="opacity:.4;background:#e0e0e0;">🔍</div>
+        <div class="orb" style="opacity:.25;">✏️</div>
+      </div>
+      <div style="font-size:.65rem;color:rgba(255,255,255,.4);line-height:2;">
+        1. Burst confetti<br>
+        2. ✓ badge + glow<br>
+        3. Beam vers suivant<br>
+        4. Overlay "Level up"
+      </div>
+    </div>
+    <button class="btn" onclick="fireCombo()">▶ Lancer la combo</button>
+  </div>
+</div>
+
+<script>
+/* ── PROP 1 : Burst ── */
+function fireBurst(){
+  const w=document.getElementById('burst1');
+  w.classList.remove('fire');
+  void w.offsetWidth;
+  w.classList.add('fire');
+  setTimeout(()=>w.classList.remove('fire'),1200);
+}
+
+/* ── PROP 3 : Ring ── */
+function fireRing(){
+  const w=document.getElementById('ring1');
+  w.classList.remove('glow');
+  void w.offsetWidth;
+  w.classList.add('glow');
+  setTimeout(()=>w.classList.remove('glow'),1500);
+}
+
+/* ── PROP 4 : Arcade ── */
+function fireArcade(){
+  const o=document.getElementById('arcade1');
+  o.classList.remove('flash');
+  void o.offsetWidth;
+  o.classList.add('flash');
+  setTimeout(()=>o.classList.remove('flash'),1200);
+}
+
+/* ── PROP 5 : Duo beam ── */
+function fireDuo(){
+  const orb=document.getElementById('duo-orb1');
+  const c1=document.getElementById('duo-c1');
+  orb.classList.remove('done','unlocking');
+  c1.classList.remove('lit');
+  void orb.offsetWidth;
+  // Phase 1 : beam allumé
+  setTimeout(()=>c1.classList.add('lit'),100);
+  // Phase 2 : orb unlock
+  setTimeout(()=>{
+    orb.classList.add('unlocking');
+    setTimeout(()=>{
+      orb.classList.remove('unlocking');
+      orb.classList.add('done');
+      orb.style.background='linear-gradient(135deg,#22c55e,#16a34a)';
+      orb.style.opacity='1';
+    },600);
+  },500);
+}
+
+/* ── PROP 2 : Banner ── */
+function fireBanner(){
+  const b=document.getElementById('lvl-banner');
+  b.classList.add('show');
+  setTimeout(()=>b.classList.remove('show'),2800);
+}
+function fireOverlay(){
+  document.getElementById('overlay-lvl').classList.add('show');
+}
+function closeOverlay(){
+  document.getElementById('overlay-lvl').classList.remove('show');
+}
+
+/* ── COMBO ── */
+function fireCombo(){
+  const orb=document.getElementById('combo-orb1');
+  // Reset
+  orb.style.opacity='.4';
+  orb.style.background='#e0e0e0';
+  orb.style.boxShadow='none';
+
+  // Step 1 : burst (sur l'étape 0 — simulé)
+  setTimeout(()=>{
+    // Highlight done step
+    document.querySelector('.mini-sidebar .orb.done').style.animation='orb-pop .4s cubic-bezier(.34,1.56,.64,1)';
+  },0);
+
+  // Step 2 : beam + unlock next
+  setTimeout(()=>{
+    orb.style.transition='all .5s cubic-bezier(.34,1.56,.64,1)';
+    orb.style.background='linear-gradient(135deg,#f09433,#cc2366)';
+    orb.style.opacity='1';
+    orb.style.boxShadow='0 0 16px rgba(220,39,67,.5)';
+    orb.style.transform='scale(1.15)';
+    setTimeout(()=>orb.style.transform='scale(1)',300);
+  },600);
+
+  // Step 3: overlay
+  setTimeout(()=>{
+    document.getElementById('olu-step-name').textContent='Jour 1 — Se questionner 🔍';
+    fireOverlay();
+  },1200);
+}
+
+// Auto-play on load
+window.addEventListener('load',()=>{
+  setTimeout(fireBurst,400);
+  setTimeout(fireRing,600);
+  setTimeout(fireArcade,800);
+  setTimeout(fireDuo,1000);
+});
+</script>
+</body>
+</html>
