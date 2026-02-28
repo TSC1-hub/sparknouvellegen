@@ -907,6 +907,153 @@ body::before{background:radial-gradient(ellipse 60% 50% at 85% 5%,rgba(62,212,24
 .drawer-tab.active{background:var(--fac-l);border-bottom-color:var(--fac);color:#1890b0;}
 .vitrine-pill{border:1.5px solid var(--border);color:var(--mid);}
 .vitrine-pill.active{background:var(--fac);border-color:var(--fac);box-shadow:none;}
+
+/* ═══════════════════════════════════════════
+   RESPONSIVE MOBILE — max-width: 768px
+   ═══════════════════════════════════════════ */
+@media (max-width: 768px) {
+
+  /* ── LOGIN ── */
+  #s-login .lpi-wm,
+  #s-login .lpi-em { display: none; }
+  #s-login .lpi-nw { width: 160px; top: -40px; left: -40px; }
+  #s-login .lpi-ne { width: 140px; top: -30px; right: -35px; }
+  #s-login .lpi-sw { width: 130px; bottom: -35px; left: -30px; }
+  #s-login .lpi-se { width: 150px; bottom: -40px; right: -35px; }
+  #s-login .ch { padding: 18px 18px 14px; }
+  #s-login .ch-title { font-size: 1.55rem; }
+  #s-login .cb { padding: 14px 16px 12px; gap: 10px; }
+
+  /* ── APP HEADER ── */
+  .app-header { padding: 0 10px; height: 46px; }
+  .h-pill { display: none !important; }
+  .h-logo { font-size: .88rem !important; }
+  .btn-logout { padding: 3px 9px; font-size: .6rem; margin-left: 6px; }
+  .btn-carnet { padding: 4px 10px; font-size: .62rem; }
+
+  /* ── VUE ÉLÈVE — sidebar horizontale ── */
+  .eleve-workspace { flex-direction: column; }
+  .steps-sidebar {
+    width: 100% !important;
+    flex-direction: row !important;
+    height: auto !important;
+    overflow-x: auto;
+    overflow-y: hidden;
+    flex-shrink: 0;
+    padding: 4px 6px;
+    border-right: none !important;
+    border-bottom: 1px solid rgba(0,212,160,.2);
+    gap: 0;
+    -webkit-overflow-scrolling: touch;
+  }
+  .steps-sidebar::-webkit-scrollbar { display: none; }
+  .ss-title { display: none; }
+  .step-item {
+    flex-direction: column;
+    align-items: center;
+    padding: 5px 10px;
+    border-left: none !important;
+    border-bottom: 3px solid transparent;
+    min-width: 64px;
+    text-align: center;
+    flex-shrink: 0;
+  }
+  .step-item.done  { border-bottom-color: var(--leaf) !important; }
+  .step-item.active{ border-bottom-color: var(--sun)  !important; background: rgba(240,192,64,.1); }
+  .step-orb { width: 24px; height: 24px; font-size: .75rem; }
+  .step-info { display: none; }
+  .spark-id { display: none; }
+  .chat-zone { padding: 8px 10px; gap: 8px; }
+  .msg-bubble { font-size: .79rem; }
+  .btn-send { padding: 9px 12px; font-size: .7rem; }
+
+  /* ── VUE MENTOR — sidebar horizontale ── */
+  .mentor-workspace { flex-direction: column; }
+  .mentor-sidebar {
+    width: 100% !important;
+    flex-direction: row !important;
+    height: auto !important;
+    overflow-x: auto;
+    overflow-y: hidden;
+    border-right: none !important;
+    border-bottom: 1px solid rgba(123,94,167,.2);
+    padding: 4px 6px;
+    gap: 0;
+    -webkit-overflow-scrolling: touch;
+  }
+  .mentor-sidebar::-webkit-scrollbar { display: none; }
+  .ms-title { display: none; }
+  .ms-team {
+    flex-direction: column;
+    align-items: center;
+    min-width: 80px;
+    border-left: none !important;
+    border-bottom: 3px solid transparent;
+    padding: 5px 8px;
+    text-align: center;
+  }
+  .ms-team.sel { border-bottom-color: var(--mentor) !important; border-left: none !important; }
+  .ms-team-name { font-size: .68rem; }
+  .ms-team-day  { display: none; }
+  .ms-identity  { display: none; }
+  .mentor-float-btns { top: auto; bottom: 12px; right: 10px; transform: none; flex-direction: row; }
+  .mentor-float-btn { padding: 8px 11px; font-size: .7rem; }
+  .mentor-panel { width: 100% !important; }
+
+  /* ── VUE FAC — sidebar horizontale ── */
+  .fac-layout { flex-direction: column; }
+  .fac-sidebar {
+    width: 100% !important;
+    flex-direction: row !important;
+    height: auto !important;
+    border-right: none !important;
+    border-bottom: 1px solid rgba(62,212,245,.2);
+    padding: 6px 10px;
+    gap: 6px;
+    align-items: center;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+  .fac-sidebar::-webkit-scrollbar { display: none; }
+  .fs-title { display: none; }
+  .fs-nav {
+    border-left: none !important;
+    padding: 5px 12px;
+    border-radius: 20px;
+    white-space: nowrap;
+    font-size: .67rem;
+  }
+  .fs-identity { display: none; }
+  .fac-main { padding: 10px; }
+  .fac-shell { gap: 10px; }
+  .teams-grid { grid-template-columns: 1fr !important; }
+
+  /* ── FAC DRAWER — colonne pleine largeur ── */
+  .fac-layout.drawer-open .fac-main { flex-direction: column; overflow-y: auto; }
+  .teams-col { width: 100% !important; border-right: none; border-bottom: 1px solid rgba(29,111,164,.12); max-height: 220px; }
+  .conv-drawer { min-height: 0; }
+
+  /* ── CARNET ── */
+  .carnet-drawer { width: 100% !important; max-width: 100% !important; }
+
+  /* ── MODALE ── */
+  .modal-card { width: calc(100vw - 28px) !important; padding: 20px 16px; }
+
+  /* ── FAC PAGE HEAD ── */
+  .fac-page-title { font-size: .95rem; }
+  .fac-page-sub { font-size: .67rem; }
+
+  /* ── BG SHAPES (autres vues) ── */
+  .page-bg-shape { width: 200px; opacity: .07; }
+}
+
+/* Petits téléphones < 400px */
+@media (max-width: 400px) {
+  .step-item { min-width: 54px; padding: 4px 7px; }
+  .ms-team   { min-width: 68px; }
+  .h-logo    { font-size: .78rem !important; letter-spacing: .5px; }
+  #s-login .ch-title { font-size: 1.3rem; }
+}
 </style>
 </head>
 <body>
