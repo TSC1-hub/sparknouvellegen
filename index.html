@@ -2585,6 +2585,15 @@ async function callMistral(equipeId, etapeSlug, options = {}) {
     carnetPhysique = vitrineEtapeActive?.html_section || '';
   }
   if (!carnetPhysique.trim()) carnetPhysique = "Le carnet est encore vide.";
+  const regleHtmlGlobale = `
+⛔ RÈGLE ABSOLUE — VALABLE SUR TOUTES LES ÉTAPES :
+1. N'utilise JAMAIS les marqueurs SPARK_HTML_START / SPARK_HTML_END tant que tu n'es pas à la dernière action de l'étape (celle qui génère la section vitrine finale).
+2. N'émets JAMAIS un marqueur SPARK_CHECKPOINT avant cette même dernière action.
+3. Pendant toute la phase de collecte d'informations (questions, confirmations, règles, infos groupe, DA…), mémorise les données silencieusement. Ne reformate RIEN en HTML.
+4. Si tu sens l'envie de générer du HTML avant la validation finale → Résiste. Continue au prochain sous-objectif.
+5. UN SEUL bloc SPARK_HTML_START…SPARK_HTML_END par étape, généré une seule fois, jamais avant la validation finale.
+`;
+
   const consigneSortie = `
 RÈGLE DE SORTIE OBLIGATOIRE :
 - Si l'élève demande un changement visuel/fonctionnel de la vitrine (même petit, ex: "mets en bleu"), renvoie la version COMPLÈTE et à jour du HTML.
@@ -2621,7 +2630,7 @@ MODE STRICT HTML UNIQUEMENT :
     etape_slug: String(etapeActive), 
     system_instruction: { 
       parts: [{ 
-        text: masterPrompt + `\n\nCONTEXTE ACTUEL DU PROJET (CODE HTML) :\n${carnetPhysique}\n\nConsigne : Aide l'élève en te basant sur ce qui est déjà écrit dans le carnet ci-dessus.\n${consigneSortie}${consigneRelance}${consigneStrict}` 
+        text: masterPrompt + regleHtmlGlobale + `\n\nCONTEXTE ACTUEL DU PROJET (CODE HTML) :\n${carnetPhysique}\n\nConsigne : Aide l'élève en te basant sur ce qui est déjà écrit dans le carnet ci-dessus.\n${consigneSortie}${consigneRelance}${consigneStrict}` 
       }] 
     },
     contents: strictHtmlOnly
