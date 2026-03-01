@@ -3778,17 +3778,33 @@ function listenVitrine(){
     }).subscribe();
 }
 function confirmerSuppressionConv(eqId) {
-  if (!confirm('Supprimer définitivement la conversation ET le code (vitrines) de cette équipe ?\nCette action est irréversible.')) return;
+  if (!confirm(
+    '⚠️ SUPPRESSION COMPLÈTE — cette action est irréversible.\n\n' +
+    'Seront supprimés :\n' +
+    '  • Tous les messages de la conversation SPARK\n' +
+    '  • Toutes les vitrines HTML (toutes les étapes)\n' +
+    '  • Tous les messages mentor en attente\n' +
+    '  • La progression de l\'équipe (retour à l\'étape 0)\n\n' +
+    'Confirmer ?'
+  )) return;
   supprimerConversationEquipe(eqId);
 }
 
+// ── RÈGLE DE LIEN : la suppression d'une conversation entraîne la suppression
+//    de TOUTES les données liées à l'équipe (vitrines, messages mentors, étape).
 async function supprimerConversationEquipe(eqId) {
   if (!eqId) return;
-  await sb.from('conversations').delete().eq('equipe_id', eqId);
-  await sb.from('vitrines').delete().eq('equipe_id', eqId);
+  await Promise.all([
+    sb.from('conversations').delete().eq('equipe_id', eqId),
+    sb.from('vitrines').delete().eq('equipe_id', eqId),
+    sb.from('messages_mentors').delete().eq('equipe_id', eqId),
+  ]);
   await sb.from('equipes').update({ etape_courante: 0 }).eq('id', eqId);
+  // Nettoyer l'état mémoire du drawer FAC
+  facDrawerVitrines = [];
+  facDrawerEquipeId = null;
   closeConvDrawer();
-  showToast('Conversation et vitrines supprimées', 'success');
+  showToast('Conversation, vitrines et messages supprimés', 'success');
   await renderFacEquipes();
 }
 
