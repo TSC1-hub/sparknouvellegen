@@ -343,6 +343,9 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
 .msg.spark-msg .msg-bubble{background:white;border:1px solid var(--border);color:var(--text);border-bottom-left-radius:4px;box-shadow:0 2px 8px var(--shadow);}
 .msg.eleve-msg .msg-bubble{background:linear-gradient(135deg,var(--terra),#c4504a);color:white;border-bottom-right-radius:4px;}
 .msg.mentor-msg .msg-bubble{background:linear-gradient(135deg,#f3eeff,#ebe0fa);border:1px solid var(--mentor-b);color:#3d2a5a;border-bottom-left-radius:4px;}
+.msg-notice{margin:10px 0;padding:10px 14px;background:#fffbea;border:1.5px solid #f5c842;border-radius:12px;font-size:.8rem;color:#7a5c00;line-height:1.55;display:flex;gap:10px;align-items:flex-start;}
+.msg-notice .mn-icon{font-size:1.1rem;flex-shrink:0;margin-top:1px;}
+.msg-notice strong{display:block;margin-bottom:3px;font-size:.82rem;}
 .mentor-tag{font-size:.57rem;color:var(--mentor);opacity:.6;padding:0 4px;font-style:italic;margin-top:2px;}
 .mentor-chip{align-self:center;background:var(--mentor-l);border:1px solid var(--mentor-b);
   border-radius:20px;padding:4px 14px;font-size:.63rem;font-weight:600;color:var(--mentor);
@@ -2091,6 +2094,7 @@ function doLogout() {
   eleveEtapeEdition = null;
   selectedEquipeId = null;
   masterPrompt = '';
+  noticeContexteAffichee = false;
   eleveCanalActif = 'spark';
   eleveMentorUnread = 0;
   const chat = document.getElementById('chat-messages');
@@ -2438,6 +2442,9 @@ async function sendMessage(){
     // Détection SPARK_CHECKPOINT uniquement (pas de maj vitrine auto)
     await detecterCheckpoint(r, false);
 
+    // Avertir si la fenêtre de contexte approche de la limite (25 sur 30)
+    if(conversationHistory.length >= 25) afficherNoticeContexteLong();
+
     scrollBot();
   } catch(e) {
     console.error(e);
@@ -2764,6 +2771,19 @@ function renderMsg(role,text,pseudo){
     d.innerHTML=`<div class="msg-av">🎓</div><div class="msg-col"><div class="msg-who">${pseudo||'Mentor'}</div><div class="msg-bubble">${t}</div><div class="mentor-tag">🔒 Validé par votre facilitateur</div></div>`;
   }
   c.appendChild(d);
+}
+
+let noticeContexteAffichee = false;
+function afficherNoticeContexteLong(){
+  if(noticeContexteAffichee) return;
+  noticeContexteAffichee = true;
+  const c = document.getElementById('chat-messages');
+  if(!c) return;
+  const d = document.createElement('div');
+  d.className = 'msg-notice';
+  d.innerHTML = `<span class="mn-icon">💬</span><div><strong>La conversation est longue !</strong>Si SPARK oublie votre nom, vos règles ou d'autres infos, copiez-collez ce rappel dans le chat :<br><em>"Rappel équipe : notre groupe s'appelle [NomGroupe], collège [NomCollège], nos règles sont [règle1, règle2...], notre ambiance est [Nature/Techno/...]."</em></div>`;
+  c.appendChild(d);
+  scrollBot();
 }
 
 function formatTxt(t){
