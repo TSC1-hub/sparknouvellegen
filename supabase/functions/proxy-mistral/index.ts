@@ -11,6 +11,10 @@ const RATE_LIMITS: Record<string, { limit: number; windowMs: number }> = {
   mistral_chat: { limit: 60, windowMs: 60_000 },
   vitrine_upsert: { limit: 120, windowMs: 60_000 },
   vitrine_update: { limit: 120, windowMs: 60_000 },
+  utilisateur_login: { limit: 10, windowMs: 60_000 },
+  equipe_reset: { limit: 10, windowMs: 60_000 },
+  message_mentor_approuver: { limit: 60, windowMs: 60_000 },
+  message_mentor_refuser: { limit: 60, windowMs: 60_000 },
 };
 
 const rateLimitBuckets = new Map<string, { count: number; resetAt: number }>();
@@ -18,6 +22,7 @@ const rateLimitBuckets = new Map<string, { count: number; resetAt: number }>();
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+  "Access-Control-Allow-Methods": "POST, OPTIONS",
 };
 
 function logEvent(level: "info" | "error", event: string, meta: Record<string, unknown> = {}) {
@@ -394,6 +399,147 @@ serve(async (req: Request) => {
       });
 
       return new Response(JSON.stringify({ ok: true, data: updateData }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    // ── utilisateur_login ─────────────────────────────────────────────────
+    if (body?.action === "utilisateur_login") {
+      const actorCodeLogin = String(body?.actor_code || "").trim().toUpperCase();
+      if (!actorCodeLogin) throw new Error("actor_code requis.");
+
+      const utilisateur = await getUtilisateurParCode(actorCodeLogin);
+      if (!utilisateur) throw new Error("Utilisateur non autorisé.");
+
+      verifierBindingActeur(utilisateur, authContext, reqId, "utilisateur_login", actorCodeLogin);
+
+      const updateData: Record<string, unknown> = {
+        derniere_connexion: new Date().toISOString(),
+      };
+      if (body?.pseudo) updateData.pseudo = String(body.pseudo).slice(0, 64);
+      if (body?.avatar) updateData.avatar = String(body.avatar).slice(0, 8);
+
+      await restQuery(
+        `/rest/v1/utilisateurs?code=eq.${encodeURIComponent(actorCodeLogin)}`,
+        { method: "PATCH", headers: { "Prefer": "return=minimal" }, body: JSON.stringify(updateData) }
+      );
+
+      logEvent("info", "utilisateur.login.ok", { reqId, actorCode: actorCodeLogin, durationMs: Date.now() - t0 });
+      return new Response(JSON.stringify({ ok: true }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    // ── equipe_reset ──────────────────────────────────────────────────────
+    if (body?.action === "equipe_reset") {
+      const actorCodeReset = String(body?.actor_code || "").trim().toUpperCase();
+      const equipeIdReset = body?.equipe_id;
+      if (!actorCodeReset || !equipeIdReset) throw new Error("actor_code et equipe_id requis.");
+
+      const utilisateurReset = await getUtilisateurParCode(actorCodeReset);
+      if (!utilisateurReset) throw new Error("Utilisateur non autorisé.");
+      const roleReset = utilisateurReset?.roles?.nom || "";
+      if (!["facilitateur", "facilitateur_general", "admin"].includes(roleReset)) {
+        throw new Error("Seul un facilitateur peut réinitialiser une équipe.");
+      }
+
+      await Promise.all([
+        restQuery(
+          `/rest/v1/conversations?equipe_id=eq.${encodeURIComponent(String(equipeIdReset))}`,
+          { method: "DELETE", headers: { "Prefer": "return=minimal" } }
+        ),
+        restQuery(
+          `/rest/v1/messages_mentors?equipe_id=eq.${encodeURIComponent(String(equipeIdReset))}`,
+          { method: "DELETE", headers: { "Prefer": "return=minimal" } }
+        ),
+        restQuery(
+          `/rest/v1/vitrines?equipe_id=eq.${encodeURIComponent(String(equipeIdReset))}`,
+          { method: "DELETE", headers: { "Prefer": "return=minimal" } }
+        ),
+      ]);
+
+      await restQuery(
+        `/rest/v1/equipes?id=eq.${encodeURIComponent(String(equipeIdReset))}`,
+        { method: "PATCH", headers: { "Prefer": "return=minimal" }, body: JSON.stringify({ etape_courante: 0 }) }
+      );
+
+      logEvent("info", "equipe.reset.ok", { reqId, actorCode: actorCodeReset, equipeId: equipeIdReset, durationMs: Date.now() - t0 });
+      return new Response(JSON.stringify({ ok: true }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    // ── message_mentor_approuver ──────────────────────────────────────────
+    if (body?.action === "message_mentor_approuver") {
+      const actorCodeApprove = String(body?.actor_code || "").trim().toUpperCase();
+      const messageId = body?.message_id;
+      const equipeIdApprove = body?.equipe_id;
+      const pseudo = String(body?.pseudo || "Mentor").slice(0, 64);
+      const message = String(body?.message || "");
+
+      if (!actorCodeApprove || !messageId || !equipeIdApprove || !message) {
+        throw new Error("Payload message_mentor_approuver invalide.");
+      }
+
+      const utilisateurApprove = await getUtilisateurParCode(actorCodeApprove);
+      if (!utilisateurApprove) throw new Error("Utilisateur non autorisé.");
+      const roleApprove = utilisateurApprove?.roles?.nom || "";
+      if (!["facilitateur", "facilitateur_general", "admin"].includes(roleApprove)) {
+        throw new Error("Seul un facilitateur peut approuver un message.");
+      }
+
+      await Promise.all([
+        restQuery(
+          `/rest/v1/messages_mentors?id=eq.${encodeURIComponent(String(messageId))}`,
+          {
+            method: "PATCH",
+            headers: { "Prefer": "return=minimal" },
+            body: JSON.stringify({ statut: "valide", "validé_par": utilisateurApprove.id }),
+          }
+        ),
+        restQuery(
+          `/rest/v1/conversations`,
+          {
+            method: "POST",
+            headers: { "Prefer": "return=minimal" },
+            body: JSON.stringify([{
+              equipe_id: equipeIdApprove,
+              role: "mentor",
+              message,
+              pseudo,
+              auteur_code: actorCodeApprove,
+              statut: "visible",
+            }]),
+          }
+        ),
+      ]);
+
+      logEvent("info", "message_mentor.approuver.ok", { reqId, actorCode: actorCodeApprove, messageId, durationMs: Date.now() - t0 });
+      return new Response(JSON.stringify({ ok: true }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    // ── message_mentor_refuser ────────────────────────────────────────────
+    if (body?.action === "message_mentor_refuser") {
+      const actorCodeRefuse = String(body?.actor_code || "").trim().toUpperCase();
+      const messageIdRefuse = body?.message_id;
+      if (!actorCodeRefuse || !messageIdRefuse) throw new Error("Payload message_mentor_refuser invalide.");
+
+      const utilisateurRefuse = await getUtilisateurParCode(actorCodeRefuse);
+      if (!utilisateurRefuse) throw new Error("Utilisateur non autorisé.");
+      const roleRefuse = utilisateurRefuse?.roles?.nom || "";
+      if (!["facilitateur", "facilitateur_general", "admin"].includes(roleRefuse)) {
+        throw new Error("Seul un facilitateur peut refuser un message.");
+      }
+
+      await restQuery(
+        `/rest/v1/messages_mentors?id=eq.${encodeURIComponent(String(messageIdRefuse))}`,
+        { method: "PATCH", headers: { "Prefer": "return=minimal" }, body: JSON.stringify({ statut: "refuse" }) }
+      );
+
+      logEvent("info", "message_mentor.refuser.ok", { reqId, actorCode: actorCodeRefuse, messageId: messageIdRefuse, durationMs: Date.now() - t0 });
+      return new Response(JSON.stringify({ ok: true }), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
