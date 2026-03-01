@@ -1581,6 +1581,7 @@ let eleveVitrinesData = [];
 let eleveEtapeAffichee = null;
 let eleveEtapeEdition = null;
 let eleveEtapeAfficheeConversation = 0; // étape dont la conversation est actuellement visible
+let pendingStepOverlayArgs = null; // overlay différé jusqu'à la fermeture du carnet
 let facDrawerEquipeId = null;
 let facDrawerVitrines = [];
 let facDrawerConvMessages = [];
@@ -2172,7 +2173,11 @@ async function validerEtape(fromEtape, toEtape) {
     .update({ etape_courante: toEtape })
     .eq('id', currentEquipe.id);
   if (error) console.error('Erreur maj etape_courante:', error);
-  setTimeout(() => showStepOverlay(fromEtape, toEtape), 1650);
+  // Ouvrir le carnet d'abord ; l'overlay se déclenchera à la fermeture du carnet
+  setTimeout(() => {
+    pendingStepOverlayArgs = [fromEtape, toEtape];
+    ouvrirCarnet();
+  }, 1650);
 }
 
 function showStepOverlay(fromEtape, toEtape) {
@@ -2196,13 +2201,11 @@ function showStepOverlay(fromEtape, toEtape) {
 function closeStepOverlay() {
   const ov = document.getElementById('step-unlock-overlay');
   if (ov) ov.classList.remove('show');
-  // Auto-basculer vers la nouvelle étape débloquée
+  // Basculer vers la nouvelle étape débloquée
   const newEtape = getEtapeActiveEquipe();
   if (newEtape !== eleveEtapeAfficheeConversation) {
     clickerEtapeSidebar(newEtape);
   }
-  // Ouvrir le carnet pour voir la vitrine générée
-  setTimeout(() => ouvrirCarnet(), 500);
 }
 
 async function loadConversation(){
@@ -2416,8 +2419,12 @@ async function sendMessage(){
     const r=await callMistral(currentEquipe.id, currentEquipe.etape_courante);
     hideTyping();
 
-    // Texte narratif affiché dans le chat (sans les blocs de code)
-    const rVisible = r.replace(/```[\s\S]*?```/gi, '').trim();
+    // Texte narratif affiché dans le chat (sans les blocs HTML vitrine ni les marqueurs internes)
+    const rVisible = r
+      .replace(/SPARK_HTML_START[\s\S]*?SPARK_HTML_END/gi, '')
+      .replace(/```[\s\S]*?```/gi, '')
+      .replace(/SPARK_CHECKPOINT:[a-z0-9\-]+/gi, '')
+      .trim();
 
     if(rVisible){
       eleveMessagesCache.push({role:'assistant',message:rVisible,pseudo:'SPARK ⚡',etape:etapeMsg});
@@ -3405,6 +3412,12 @@ function fermerCarnet(){
   document.getElementById('carnet-drawer').classList.remove('open');
   document.getElementById('carnet-overlay').classList.remove('open');
   document.querySelector('.eleve-workspace')?.classList.remove('drawer-open');
+  // Si un overlay était en attente (après validation d'étape), le lancer maintenant
+  if(pendingStepOverlayArgs){
+    const [from, to] = pendingStepOverlayArgs;
+    pendingStepOverlayArgs = null;
+    setTimeout(() => showStepOverlay(from, to), 200);
+  }
 }
 async function envoyerPromptVitrine(){
   if(!currentEquipe) return;
