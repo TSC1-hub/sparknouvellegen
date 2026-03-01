@@ -1322,31 +1322,44 @@ body::before{background:radial-gradient(ellipse 60% 50% at 85% 5%,rgba(62,212,24
 
 /* Bilan éco dans l'overlay de fin d'étape */
 .olu-eco{
-  width:100%;background:linear-gradient(135deg,#f0fdf4,#ecfdf5);
-  border:1px solid rgba(34,197,94,.22);border-radius:12px;
-  padding:10px 13px;display:flex;flex-direction:column;gap:6px;
+  width:100%;background:rgba(255,255,255,.03);
+  border:1px solid rgba(255,255,255,.07);border-radius:14px;
+  padding:12px 14px;display:flex;flex-direction:column;gap:9px;margin-top:4px;
 }
-.olu-eco-title{
-  font-size:.55rem;font-weight:800;letter-spacing:1.8px;
-  text-transform:uppercase;color:#16a34a;
+.olu-eco-ttl{
+  font-size:.65rem;font-weight:700;color:rgba(255,255,255,.45);
+  text-transform:uppercase;letter-spacing:1.2px;text-align:center;
 }
-.olu-eco-metrics{
-  display:flex;gap:8px;justify-content:space-between;
+.olu-eco-m-trio{
+  display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;
 }
-.olu-eco-m{
-  display:flex;flex-direction:column;align-items:center;gap:2px;
-  flex:1;
+.olu-eco-m-col{
+  display:flex;flex-direction:column;align-items:center;gap:3px;
+  padding:8px 6px;background:rgba(255,255,255,.04);
+  border:1px solid rgba(255,255,255,.07);border-radius:10px;
 }
-.olu-eco-m-ico{font-size:.85rem;}
-.olu-eco-m-val{
-  font-size:.7rem;font-weight:800;color:#1a1a2e;
+.olu-eco-m-ico{font-size:1rem;}
+.olu-eco-m-val{font-size:.72rem;font-weight:700;color:#fff;}
+.olu-eco-m-lbl{font-size:.52rem;color:rgba(255,255,255,.3);letter-spacing:.4px;}
+.olu-eco-m-badge{
+  font-size:.52rem;font-weight:700;padding:1px 7px;border-radius:20px;white-space:nowrap;
 }
-.olu-eco-m-lbl{
-  font-size:.48rem;color:#6b7280;text-transform:uppercase;letter-spacing:.5px;
+.olu-eco-m-bottom{display:flex;align-items:center;gap:8px;margin-top:2px;}
+.olu-eco-bar-track{
+  flex:1;height:4px;background:rgba(255,255,255,.06);border-radius:3px;overflow:hidden;
 }
+.olu-eco-bar-fill{
+  height:100%;border-radius:3px;background:var(--bar-col,#22c55e);transition:width .6s ease;
+}
+.olu-eco-m-ref{font-size:.57rem;color:rgba(255,255,255,.25);white-space:nowrap;}
 .olu-eco-equiv{
-  font-size:.56rem;color:#374151;text-align:center;line-height:1.5;
-  background:rgba(255,255,255,.6);border-radius:7px;padding:4px 7px;
+  font-size:.62rem;color:rgba(255,255,255,.3);text-align:center;
+  line-height:1.5;font-style:italic;
+}
+.olu-eco-pedagogy{
+  font-size:.68rem;color:rgba(255,255,255,.55);text-align:center;
+  line-height:1.4;padding:5px 8px;
+  background:rgba(255,255,255,.03);border-radius:8px;border:1px solid rgba(255,255,255,.06);
 }
 </style>
 </head>
@@ -2263,6 +2276,7 @@ async function initEleve(){
   eleveCanalActif='spark';
   eleveMentorUnread=0;
   eleveMessagesCache=[];
+  eleveEtapeAfficheeConversation = eq?.etape_courante || 0; // ← sync avant switchEleveCanal
   document.getElementById('eleve-pill').textContent=eq?`${eq.code_equipe} · ${eq.nom||'Équipe'}`:currentUser.code;
   updateSteps(eq?.etape_courante||0);
   go('eleve');
@@ -2325,10 +2339,22 @@ function animerDeblocage(fromEtape, toEtape) {
 async function validerEtape(fromEtape, toEtape) {
   animerDeblocage(fromEtape, toEtape);
   currentEquipe.etape_courante = toEtape;
+  await ensureEdgeSession(); // garantit une session anon valide avant l'écriture
   const { error } = await sb.from('equipes')
     .update({ etape_courante: toEtape })
     .eq('id', currentEquipe.id);
-  if (error) console.error('Erreur maj etape_courante:', error);
+  if (error) {
+    console.error('Erreur maj etape_courante:', error);
+    // Retry une fois
+    await ensureEdgeSession();
+    const { error: error2 } = await sb.from('equipes')
+      .update({ etape_courante: toEtape })
+      .eq('id', currentEquipe.id);
+    if (error2) {
+      console.error('Retry etape_courante échoué:', error2);
+      showToast("⚠️ La progression n'a pas pu être sauvegardée. Reconnectez-vous si le problème persiste.", 'error');
+    }
+  }
   // Ouvrir le carnet d'abord ; l'overlay se déclenchera à la fermeture du carnet
   setTimeout(() => {
     pendingStepOverlayArgs = [fromEtape, toEtape];
@@ -4347,26 +4373,77 @@ function _ecoOutsideClick(e){
   }
 }
 
-function showEcoBilanInOverlay(stepId){
-  const data  = JSON.parse(localStorage.getItem(ECO_KEY)||'{}');
-  const step  = (data.byStep||{})[stepId] || { wh:0, ml:0, co2:0 };
+// ── ECO OVERLAY HELPERS ──
+const ECO_LEVEL_LABELS = { low: 'Faible', mid: 'Modéré', high: 'Élevé' };
+const ECO_LEVEL_COLORS = { low: '#22c55e', mid: '#f5a623', high: '#f06050' };
+
+function ecoLevel(wh) {
+  if (wh < 0.3) return 'low';
+  if (wh < 1.5) return 'mid';
+  return 'high';
+}
+
+function ecoEquivPedago(wh) {
+  const ledSec = Math.round(wh / (4 / 3600));
+  if (ledSec < 2)  return "💡 Moins d'une seconde d'ampoule LED allumée.";
+  if (ledSec < 90) return `💡 Comme avoir une ampoule LED allumée ${ledSec} seconde${ledSec > 1 ? 's' : ''}.`;
+  const ledMin = Math.round(ledSec / 60);
+  if (ledMin < 120) return `💡 Comme avoir une ampoule LED allumée ${ledMin} minute${ledMin > 1 ? 's' : ''}.`;
+  const ledH = (ledSec / 3600).toFixed(1);
+  return `💡 Comme avoir une ampoule LED allumée ${ledH} heure${parseFloat(ledH) > 1 ? 's' : ''}.`;
+}
+
+function ecoEquivCo2(gCo2) {
+  const cm = Math.round(gCo2 / 0.00023);
+  if (cm < 100)  return `≈ ${cm} cm en voiture thermique`;
+  if (cm < 1000) return `≈ ${(cm/100).toFixed(1)} m en voiture thermique`;
+  return `≈ ${(cm/100000).toFixed(2)} km en voiture thermique`;
+}
+
+function showEcoBilanInOverlay(stepId) {
+  const data  = JSON.parse(localStorage.getItem(ECO_KEY) || '{}');
+  const step  = (data.byStep || {})[stepId] || { wh: 0, ml: 0, co2: 0 };
   const ecoEl = document.getElementById('olu-eco');
   if (!ecoEl) return;
 
-  if (step.wh < 0.0001 && step.ml < 0.001){
+  if (step.wh < 0.0001 && step.ml < 0.001) {
     ecoEl.style.display = 'none';
     return;
   }
 
-  const ledSec  = Math.round(step.wh / (0.07 / 3600));   // 0.07 W → Wh/s
-  const glasses = (step.ml / 250).toFixed(2);
-  const mVoiture= Math.round(step.co2 / 0.00023);
+  const wh  = step.wh  || 0;
+  const ml  = step.ml  || 0;
+  const co2 = step.co2 || 0;
+  const lvl      = ecoLevel(wh);
+  const lvlLabel = ECO_LEVEL_LABELS[lvl];
+  const lvlColor = ECO_LEVEL_COLORS[lvl];
 
-  const s = (id, txt) => { const el = document.getElementById(id); if(el) el.textContent = txt; };
-  s('olu-eco-wh',  step.wh.toFixed(3)  + ' Wh');
-  s('olu-eco-ml',  step.ml.toFixed(1)  + ' ml');
-  s('olu-eco-co2', step.co2.toFixed(4) + ' gCO₂');
-  s('olu-eco-equiv', `≈ ${ledSec} sec de LED · ${glasses} verre d'eau · ${mVoiture} cm en voiture`);
+  const s = (id, txt) => { const el = document.getElementById(id); if (el) el.textContent = txt; };
+  s('olu-eco-wh',  wh  < 0.1  ? wh.toFixed(3)  + ' Wh'   : wh.toFixed(2)  + ' Wh');
+  s('olu-eco-ml',  ml  < 1    ? ml.toFixed(2)  + ' ml'   : ml.toFixed(1)  + ' ml');
+  s('olu-eco-co2', co2 < 0.01 ? co2.toFixed(4) + ' gCO₂' : co2.toFixed(3) + ' gCO₂');
+
+  ['olu-eco-badge-wh', 'olu-eco-badge-ml', 'olu-eco-badge-co2'].forEach(id => {
+    const el = document.getElementById(id);
+    if (!el) return;
+    el.textContent        = lvlLabel;
+    el.style.background   = lvlColor + '22';
+    el.style.border       = '1px solid ' + lvlColor + '55';
+    el.style.color        = lvlColor;
+  });
+
+  const sessionCo2 = data.sessionCo2 || 0;
+  const barPct     = sessionCo2 > 0 ? Math.min(100, (co2 / sessionCo2) * 100) : 2;
+  const barEl = document.getElementById('olu-eco-bar');
+  if (barEl) {
+    barEl.style.setProperty('--bar-col', lvlColor);
+    barEl.style.width = Math.max(barPct, 0.5) + '%';
+  }
+  const refEl = document.getElementById('olu-eco-ref');
+  if (refEl) refEl.textContent = sessionCo2 > 0 ? `/ ${sessionCo2.toFixed(3)} gCO₂ session` : '';
+
+  s('olu-eco-equiv',    ecoEquivCo2(co2));
+  s('olu-eco-pedagogy', ecoEquivPedago(wh));
   ecoEl.style.display = '';
 }
 
@@ -4389,13 +4466,35 @@ function showToast(msg,type='success'){
     <div class="olu-title" id="olu-title">...</div>
     <div class="olu-desc" id="olu-desc">...</div>
     <div class="olu-eco" id="olu-eco" style="display:none">
-      <div class="olu-eco-title">⚡ Votre impact pour cette étape</div>
-      <div class="olu-eco-metrics">
-        <div class="olu-eco-m"><span class="olu-eco-m-ico">⚡</span><span class="olu-eco-m-val" id="olu-eco-wh">—</span><span class="olu-eco-m-lbl">Énergie</span></div>
-        <div class="olu-eco-m"><span class="olu-eco-m-ico">💧</span><span class="olu-eco-m-val" id="olu-eco-ml">—</span><span class="olu-eco-m-lbl">Eau</span></div>
-        <div class="olu-eco-m"><span class="olu-eco-m-ico">🌿</span><span class="olu-eco-m-val" id="olu-eco-co2">—</span><span class="olu-eco-m-lbl">CO₂</span></div>
+      <div class="olu-eco-ttl">Votre impact pour cette étape</div>
+      <div class="olu-eco-m-trio">
+        <div class="olu-eco-m-col">
+          <span class="olu-eco-m-ico">⚡</span>
+          <span class="olu-eco-m-val" id="olu-eco-wh">—</span>
+          <span class="olu-eco-m-lbl">Énergie</span>
+          <span class="olu-eco-m-badge" id="olu-eco-badge-wh"></span>
+        </div>
+        <div class="olu-eco-m-col">
+          <span class="olu-eco-m-ico">💧</span>
+          <span class="olu-eco-m-val" id="olu-eco-ml">—</span>
+          <span class="olu-eco-m-lbl">Eau</span>
+          <span class="olu-eco-m-badge" id="olu-eco-badge-ml"></span>
+        </div>
+        <div class="olu-eco-m-col">
+          <span class="olu-eco-m-ico">💨</span>
+          <span class="olu-eco-m-val" id="olu-eco-co2">—</span>
+          <span class="olu-eco-m-lbl">Gaz</span>
+          <span class="olu-eco-m-badge" id="olu-eco-badge-co2"></span>
+        </div>
+      </div>
+      <div class="olu-eco-m-bottom">
+        <div class="olu-eco-bar-track">
+          <div class="olu-eco-bar-fill" id="olu-eco-bar"></div>
+        </div>
+        <span class="olu-eco-m-ref" id="olu-eco-ref"></span>
       </div>
       <div class="olu-eco-equiv" id="olu-eco-equiv"></div>
+      <div class="olu-eco-pedagogy" id="olu-eco-pedagogy"></div>
     </div>
     <div class="olu-progress">
       <div class="olu-pip" id="olu-pip-0"></div>
