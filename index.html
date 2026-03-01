@@ -1585,6 +1585,7 @@ let eleveEtapeAfficheeConversation = 0; // étape dont la conversation est actue
 let pendingStepOverlayArgs = null; // overlay différé jusqu'à la fermeture du carnet
 let facDrawerEquipeId = null;
 let facDrawerVitrines = [];
+let facDrawerEtapeActive = 0; // étape_courante de l'équipe en cours dans le drawer FAC
 let facDrawerConvMessages = [];
 let facDrawerCanalActif = 'spark';
 let facMentorMessagesChannel = null;
@@ -3343,12 +3344,15 @@ function renderFacConversationCanal(){
 }
 
 async function loadDrawerVitrine(eqId, etapeSelectionnee = 0){
-  const{data:vitrines}=await sb.from('vitrines')
-    .select('*').eq('equipe_id',eqId).order('etape',{ascending:true});
+  const [{data:vitrines}, {data:eqRow}] = await Promise.all([
+    sb.from('vitrines').select('*').eq('equipe_id',eqId).order('etape',{ascending:true}),
+    sb.from('equipes').select('etape_courante').eq('id',eqId).maybeSingle()
+  ]);
   const c=document.getElementById('drawer-content');
   if(!c) return;
 
   facDrawerEquipeId = eqId;
+  facDrawerEtapeActive = Number(eqRow?.etape_courante ?? 0);
   const etapesFixes=[0,1,2,3,4,5];
   const byEtape = new Map((vitrines||[]).map(v=>[Number(v.etape), v]));
   facDrawerVitrines = etapesFixes.map(etape=>{
@@ -3388,23 +3392,39 @@ function showVitrineEtape(etape, vitrinesData){
   split.appendChild(iframe);
   const codeWrap=document.createElement('div');
   codeWrap.style.cssText='flex:1;display:flex;flex-direction:column;overflow:hidden;';
+
+  // ── Verrouillage : étape non commencée (pas encore atteinte par l'équipe) ──
+  const etapeVerrouillee = Number(etape) > facDrawerEtapeActive && !v.html_section;
+
   const code=document.createElement('textarea');
   code.className='vitrine-code';
   code.id='fac-code-edit-'+etape;
   code.value=v.html_section||'';
-  code.style.cssText='flex:1;resize:none;outline:none;border:none;';
   code.spellcheck=false;
+  if(etapeVerrouillee){
+    code.readOnly = true;
+    code.style.cssText='flex:1;resize:none;outline:none;border:none;opacity:.45;cursor:not-allowed;background:#1a1a2e;';
+    code.placeholder = '🔒 Cette étape n\'a pas encore été commencée par l\'équipe.';
+  } else {
+    code.style.cssText='flex:1;resize:none;outline:none;border:none;';
+  }
   const saveBtn=document.createElement('button');
-  saveBtn.textContent='💾 Sauvegarder';
-  saveBtn.style.cssText='padding:7px 18px;background:#7ab648;border:none;color:white;font-family:\'DM Sans\',sans-serif;font-size:.75rem;font-weight:600;cursor:pointer;flex-shrink:0;';
-  saveBtn.onclick=()=>sauvegarderVitrineEtape(v.id, etape, facDrawerEquipeId);
-  // Live preview : mise à jour iframe à la frappe
-  code.addEventListener('input', () => {
-    const d = iframe.contentDocument || iframe.contentWindow.document;
-    d.open();
-    d.write(code.value || '<html><body></body></html>');
-    d.close();
-  });
+  if(etapeVerrouillee){
+    saveBtn.textContent='🔒 Étape non commencée';
+    saveBtn.disabled = true;
+    saveBtn.style.cssText='padding:7px 18px;background:#9ca3af;border:none;color:white;font-family:\'DM Sans\',sans-serif;font-size:.75rem;font-weight:600;cursor:not-allowed;flex-shrink:0;opacity:.6;';
+  } else {
+    saveBtn.textContent='💾 Sauvegarder';
+    saveBtn.style.cssText='padding:7px 18px;background:#7ab648;border:none;color:white;font-family:\'DM Sans\',sans-serif;font-size:.75rem;font-weight:600;cursor:pointer;flex-shrink:0;';
+    saveBtn.onclick=()=>sauvegarderVitrineEtape(v.id, etape, facDrawerEquipeId);
+    // Live preview : mise à jour iframe à la frappe
+    code.addEventListener('input', () => {
+      const d = iframe.contentDocument || iframe.contentWindow.document;
+      d.open();
+      d.write(code.value || '<html><body></body></html>');
+      d.close();
+    });
+  }
   codeWrap.appendChild(code);
   codeWrap.appendChild(saveBtn);
   split.appendChild(codeWrap);
@@ -3493,6 +3513,11 @@ async function sauvegarderCarnet(){
   if(!currentEquipe) return;
   const etapeActive = getEtapeActiveEquipe();
   const etapeEdition = Math.max(0, Math.min(etapeActive, Number(eleveEtapeEdition ?? etapeActive)));
+  // Garde : impossible d'enregistrer sur une étape non commencée
+  if(etapeEdition > etapeActive){
+    showToast('Étape non commencée — sauvegarde impossible', 'error');
+    return;
+  }
   const html = document.getElementById('carnet-code-edit').value;
   const htmlNettoye = normaliserBlocVitrine(html);
   const { data: vitrineEtapeActive } = await sb.from('vitrines')
@@ -3544,6 +3569,12 @@ function choisirCarnetEtapeEdition(etape){
   const editNote = document.getElementById('carnet-edit-note');
   if(editNote) editNote.textContent = `Les changements seront enregistrés sur ${cible===0?'Étape 0':'Jour '+cible}/5.`;
 
+  // ── Déverrouillage textarea (les pills d'édition sont toujours ≤ étapeActive) ──
+  const editZone = document.getElementById('carnet-code-edit');
+  if(editZone){ editZone.readOnly=false; editZone.style.opacity=''; editZone.style.cursor=''; editZone.style.background=''; }
+  const saveCarnetBtnEdit = document.querySelector('.carnet-code-footer button');
+  if(saveCarnetBtnEdit){ saveCarnetBtnEdit.disabled=false; saveCarnetBtnEdit.style.opacity=''; saveCarnetBtnEdit.style.cursor=''; saveCarnetBtnEdit.textContent='💾 Sauvegarder'; }
+
   // ── Sync colonne visuel (gauche) ──
   eleveEtapeAffichee = cible;
   document.querySelectorAll('.carnet-pill').forEach(p=>p.classList.remove('active'));
@@ -3573,16 +3604,33 @@ function afficherVitrineTeamEtape(etape){
   if(activePill) activePill.classList.add('active');
 
   // ── Sync colonne code (droite) ──
-  eleveEtapeEdition = eleveEtapeAffichee;
+  const _etapeActiveSync = getEtapeActiveEquipe();
+  const _verrouillee = Number(etape) > _etapeActiveSync;
+  eleveEtapeEdition = _verrouillee ? _etapeActiveSync : eleveEtapeAffichee;
   document.querySelectorAll('.carnet-edit-pill').forEach(p=>p.classList.remove('active'));
-  const editPill = document.getElementById('carnet-edit-pill-'+eleveEtapeAffichee);
+  const editPill = document.getElementById('carnet-edit-pill-'+(_verrouillee ? _etapeActiveSync : eleveEtapeAffichee));
   if(editPill) editPill.classList.add('active');
-  const sectionSync = eleveVitrinesData.find(v=>Number(v.etape)===eleveEtapeAffichee);
+  const sectionSync = eleveVitrinesData.find(v=>Number(v.etape)===(_verrouillee ? _etapeActiveSync : eleveEtapeAffichee));
   const htmlSync = normaliserBlocVitrine(sectionSync?.html_section || '');
   const editSync = document.getElementById('carnet-code-edit');
-  if(editSync) editSync.value = htmlSync;
+  if(editSync){
+    editSync.value = htmlSync;
+    editSync.readOnly = _verrouillee;
+    editSync.style.opacity = _verrouillee ? '0.45' : '';
+    editSync.style.cursor = _verrouillee ? 'not-allowed' : '';
+    editSync.style.background = _verrouillee ? '#161626' : '';
+  }
+  const saveCarnetBtn = document.querySelector('.carnet-code-footer button');
+  if(saveCarnetBtn){
+    saveCarnetBtn.disabled = _verrouillee;
+    saveCarnetBtn.style.opacity = _verrouillee ? '0.4' : '';
+    saveCarnetBtn.style.cursor = _verrouillee ? 'not-allowed' : '';
+    saveCarnetBtn.textContent = _verrouillee ? '🔒 Étape non commencée' : '💾 Sauvegarder';
+  }
   const editNoteSync = document.getElementById('carnet-edit-note');
-  if(editNoteSync) editNoteSync.textContent = `Les changements seront enregistrés sur ${eleveEtapeAffichee===0?'Étape 0':'Jour '+eleveEtapeAffichee}/5.`;
+  if(editNoteSync) editNoteSync.textContent = _verrouillee
+    ? `🔒 Étape ${etape} non commencée — édition impossible.`
+    : `Les changements seront enregistrés sur ${eleveEtapeAffichee===0?'Étape 0':'Jour '+eleveEtapeAffichee}/5.`;
 
   const vitrineEtape = eleveVitrinesData.find(v=>Number(v.etape)===Number(etape));
   if(!vitrineEtape){
