@@ -3447,10 +3447,11 @@ function fermerCarnet(){
   document.getElementById('carnet-overlay').classList.remove('open');
   document.querySelector('.eleve-workspace')?.classList.remove('drawer-open');
   // Si un overlay était en attente (après validation d'étape), le lancer maintenant
+  // 2s de délai pour laisser voir l'animation de déverrouillage sur la barre gauche
   if(pendingStepOverlayArgs){
     const [from, to] = pendingStepOverlayArgs;
     pendingStepOverlayArgs = null;
-    setTimeout(() => showStepOverlay(from, to), 200);
+    setTimeout(() => showStepOverlay(from, to), 2000);
   }
 }
 async function envoyerPromptVitrine(){
@@ -3974,9 +3975,8 @@ function openReset(id){resetEquipeId=id;document.getElementById('modal-reset').c
 function closeReset(){document.getElementById('modal-reset').classList.remove('open');resetEquipeId=null;}
 async function confirmReset(){
   if(!resetEquipeId) return;
-  await sb.from('conversations').delete().eq('equipe_id',resetEquipeId);
-  await sb.from('vitrines').delete().eq('equipe_id',resetEquipeId);
-  await sb.from('equipes').update({etape_courante:0}).eq('id',resetEquipeId);
+  const { error } = await sb.rpc('reset_equipe', { p_equipe_id: resetEquipeId });
+  if (error) { showToast('Erreur reset : ' + error.message, 'error'); return; }
   closeReset(); showToast('Projet réinitialisé','success');
   await renderFacEquipes();
 }
