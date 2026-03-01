@@ -1531,7 +1531,7 @@ body::before{background:radial-gradient(ellipse 60% 50% at 85% 5%,rgba(62,212,24
       <div class="carnet-mini-chat">
         <div class="carnet-mini-msgs" id="carnet-mini-msgs"><span style="color:var(--light);font-style:italic;">Décris ce que tu veux modifier dans ta vitrine et SPARK mettra à jour le code.</span></div>
         <div class="carnet-mini-input-row">
-          <textarea class="carnet-mini-input" id="carnet-mini-input" placeholder="Ex : Ajoute une section avec notre problématique..." rows="2" onkeydown="if(event.ctrlKey&&event.key==='Enter'){envoyerPromptVitrine();}"></textarea>
+          <textarea class="carnet-mini-input" id="carnet-mini-input" placeholder="Ex : Ajoute une section avec notre problématique… (Entrée pour envoyer, Maj+Entrée pour un saut de ligne)" rows="2" onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();envoyerPromptVitrine();}"></textarea>
           <button class="carnet-mini-send" id="carnet-mini-send" onclick="envoyerPromptVitrine()">Envoyer ✨</button>
         </div>
       </div>
