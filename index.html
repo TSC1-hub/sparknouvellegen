@@ -2029,15 +2029,19 @@ async function doLogin() {
     await ensureEdgeSession();
     await bindAuthUserToMetierUser(user.id);
 
-    // Mise à jour de la dernière connexion
-    await sb.from('utilisateurs').update({ derniere_connexion: new Date().toISOString() }).eq('id', user.id);
-
-    // Si c'est un mentor, on enregistre son pseudo et avatar choisis
+    // Mise à jour connexion via Edge (derniere_connexion + pseudo/avatar pour mentor)
+    const loginPayload = { action: 'utilisateur_login', actor_code: user.code };
     if (activeRole === 'mentor') {
       const pseudo = document.getElementById('pseudo-input').value.trim() || 'Mentor';
-      await sb.from('utilisateurs').update({ pseudo: pseudo, avatar: selAv }).eq('id', user.id);
+      loginPayload.pseudo = pseudo;
+      loginPayload.avatar = selAv;
       currentUser.pseudo = pseudo;
       currentUser.avatar = selAv;
+    }
+    try {
+      await invokeProxyMistral(loginPayload);
+    } catch (edgeErr) {
+      console.warn('Mise à jour derniere_connexion non critique :', edgeErr?.message || edgeErr);
     }
 
     // Récupération du prompt maître
@@ -3864,32 +3868,21 @@ function confirmerSuppressionConv(eqId) {
 async function supprimerConversationEquipe(eqId) {
   if (!eqId) return;
 
-  // conversations et messages_mentors : pas de RLS DELETE, suppression directe OK
-  await Promise.all([
-    sb.from('conversations').delete().eq('equipe_id', eqId),
-    sb.from('messages_mentors').delete().eq('equipe_id', eqId),
-  ]);
-
-  // vitrines : protégées par RLS (SELECT only) → passage obligatoire par l'Edge Function
+  // Toutes les opérations passent par l'Edge Function (service_role)
   try {
-    const resp = await fetch(EDGE_URL, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}` },
-      body: JSON.stringify({
-        action: 'vitrine_delete_equipe',
-        equipe_id: eqId,
-        actor_code: actorCode || null,
-      }),
-    });
-    const result = await resp.json();
-    if (!result.ok) throw new Error(result.error || 'Erreur suppression vitrines');
+    const actorCode = currentUser?.code || null;
+    const [resetResult, vitrinesResult] = await Promise.all([
+      invokeProxyMistral({ action: 'equipe_reset', equipe_id: eqId, actor_code: actorCode }),
+      invokeProxyMistral({ action: 'vitrine_delete_equipe', equipe_id: eqId, actor_code: actorCode }),
+    ]);
+    if (resetResult?.error) throw new Error(resetResult.error);
+    if (!vitrinesResult?.ok) throw new Error(vitrinesResult?.error || 'Erreur suppression vitrines');
   } catch (err) {
-    console.error('[supprimerConversationEquipe] vitrines:', err);
-    showToast('Erreur suppression vitrines : ' + (err.message || err), 'error');
+    console.error('[supprimerConversationEquipe]', err);
+    showToast('Erreur reset équipe : ' + (err.message || err), 'error');
     return;
   }
 
-  await sb.from('equipes').update({ etape_courante: 0 }).eq('id', eqId);
   // Nettoyer l'état mémoire du drawer FAC
   facDrawerVitrines = [];
   facDrawerEquipeId = null;
@@ -3961,8 +3954,15 @@ async function renderFacValidation(){
 }
 
 async function approveMsg(id,eqId,pseudo,message){
-  await sb.from('messages_mentors').update({statut:'valide','validé_par':currentUser.id}).eq('id',id);
-  await sb.from('conversations').insert({equipe_id:eqId,role:'mentor',message,pseudo,auteur_code:currentUser.code,statut:'visible'});
+  const result = await invokeProxyMistral({
+    action: 'message_mentor_approuver',
+    actor_code: currentUser.code,
+    message_id: id,
+    equipe_id: eqId,
+    pseudo,
+    message,
+  });
+  if (result?.error) { showToast('Erreur : ' + result.error, 'error'); return; }
   const c=document.getElementById('vc-'+id);
   if(c){c.classList.add('approved');c.querySelector('.vcard-actions').innerHTML='<div class="approved-lbl">✓ Approuvé et envoyé</div>';}
   showToast('Message approuvé et envoyé','success');
@@ -3970,7 +3970,12 @@ async function approveMsg(id,eqId,pseudo,message){
 }
 
 async function rejectMsg(id){
-  await sb.from('messages_mentors').update({statut:'refuse'}).eq('id',id);
+  const result = await invokeProxyMistral({
+    action: 'message_mentor_refuser',
+    actor_code: currentUser.code,
+    message_id: id,
+  });
+  if (result?.error) { showToast('Erreur : ' + result.error, 'error'); return; }
   const c=document.getElementById('vc-'+id);
   if(c){c.classList.add('rejected');c.querySelector('.vcard-actions').innerHTML='<div class="rejected-lbl">✕ Refusé</div>';}
   showToast('Message refusé','error');
