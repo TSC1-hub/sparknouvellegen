@@ -1237,6 +1237,117 @@ body::before{background:radial-gradient(ellipse 60% 50% at 85% 5%,rgba(62,212,24
   .h-logo    { font-size: .78rem !important; letter-spacing: .5px; }
   #s-login .ch-title { font-size: 1.3rem; }
 }
+
+/* ══ ÉCO-INDICATEUR ══ */
+.eco-chip{
+  display:inline-flex;align-items:center;gap:4px;
+  padding:3px 9px 3px 6px;border-radius:20px;
+  border:1.5px solid rgba(34,197,94,.35);
+  background:rgba(34,197,94,.08);
+  font-size:.6rem;font-weight:700;letter-spacing:.3px;
+  cursor:pointer;transition:background .2s,border-color .2s;
+  white-space:nowrap;position:relative;
+  color:inherit;
+}
+.eco-chip:hover{background:rgba(34,197,94,.15);}
+.eco-chip.level-mid{border-color:rgba(249,115,22,.4);background:rgba(249,115,22,.08);}
+.eco-chip.level-mid:hover{background:rgba(249,115,22,.15);}
+.eco-chip.level-high{border-color:rgba(239,68,68,.4);background:rgba(239,68,68,.08);}
+.eco-chip.level-high:hover{background:rgba(239,68,68,.15);}
+.eco-dot{
+  width:6px;height:6px;border-radius:50%;
+  background:#22c55e;flex-shrink:0;
+  transition:background .4s;
+}
+.eco-chip.level-mid .eco-dot{background:#f97316;}
+.eco-chip.level-high .eco-dot{background:#ef4444;}
+@keyframes eco-flash{
+  0%{transform:scale(1);opacity:1;}
+  30%{transform:scale(1.18);opacity:.7;}
+  100%{transform:scale(1);opacity:1;}
+}
+.eco-chip.flash{animation:eco-flash .25s ease-out;}
+.eco-wrap{position:relative;display:inline-flex;align-items:center;}
+.eco-tooltip{
+  display:none;position:absolute;
+  top:calc(100% + 8px);right:0;
+  background:#fff;border:1px solid #e5e7eb;border-radius:14px;
+  box-shadow:0 8px 24px rgba(0,0,0,.12);
+  padding:14px 16px;width:240px;z-index:9000;
+  animation:eco-tdrop .18s ease-out;
+}
+@keyframes eco-tdrop{
+  from{opacity:0;transform:translateY(-6px);}
+  to{opacity:1;transform:translateY(0);}
+}
+.eco-tooltip.open{display:block;}
+.eco-tt-title{
+  font-size:.6rem;font-weight:800;letter-spacing:1.5px;text-transform:uppercase;
+  color:#6b7280;margin-bottom:10px;
+}
+.eco-tt-row{
+  display:flex;align-items:center;gap:8px;margin-bottom:8px;
+}
+.eco-tt-ico{font-size:.9rem;flex-shrink:0;width:18px;text-align:center;}
+.eco-tt-label{font-size:.62rem;color:#374151;flex:1;}
+.eco-tt-val{font-size:.65rem;font-weight:700;color:#111;white-space:nowrap;}
+.eco-bar-track{
+  height:4px;border-radius:3px;background:#f3f4f6;
+  flex:1;overflow:hidden;
+}
+.eco-bar-fill{
+  height:100%;border-radius:3px;
+  background:var(--eco-bar-color,#22c55e);
+  transition:width .4s ease;
+}
+.eco-scope-btns{
+  display:flex;gap:4px;margin:10px 0 8px;
+}
+.eco-scope-btn{
+  flex:1;padding:3px 0;border-radius:8px;
+  font-size:.55rem;font-weight:700;letter-spacing:.5px;
+  border:1.5px solid #e5e7eb;background:#f9fafb;
+  cursor:pointer;transition:all .15s;
+  color:#6b7280;
+}
+.eco-scope-btn.active{
+  background:#f0fdf4;border-color:#22c55e;color:#16a34a;
+}
+.eco-tt-tip{
+  font-size:.58rem;color:#6b7280;
+  background:#f9fafb;border-radius:8px;
+  padding:7px 9px;line-height:1.5;margin-top:4px;
+  border-left:3px solid #22c55e;
+}
+
+/* Bilan éco dans l'overlay de fin d'étape */
+.olu-eco{
+  width:100%;background:linear-gradient(135deg,#f0fdf4,#ecfdf5);
+  border:1px solid rgba(34,197,94,.22);border-radius:12px;
+  padding:10px 13px;display:flex;flex-direction:column;gap:6px;
+}
+.olu-eco-title{
+  font-size:.55rem;font-weight:800;letter-spacing:1.8px;
+  text-transform:uppercase;color:#16a34a;
+}
+.olu-eco-metrics{
+  display:flex;gap:8px;justify-content:space-between;
+}
+.olu-eco-m{
+  display:flex;flex-direction:column;align-items:center;gap:2px;
+  flex:1;
+}
+.olu-eco-m-ico{font-size:.85rem;}
+.olu-eco-m-val{
+  font-size:.7rem;font-weight:800;color:#1a1a2e;
+}
+.olu-eco-m-lbl{
+  font-size:.48rem;color:#6b7280;text-transform:uppercase;letter-spacing:.5px;
+}
+.olu-eco-equiv{
+  font-size:.56rem;color:#374151;text-align:center;line-height:1.5;
+  background:rgba(255,255,255,.6);border-radius:7px;padding:4px 7px;
+}
 </style>
 </head>
 <body>
@@ -1388,6 +1499,41 @@ body::before{background:radial-gradient(ellipse 60% 50% at 85% 5%,rgba(62,212,24
       <div class="eleve-chat-tabs">
         <button id="btn-eleve-canal-spark" class="eleve-chat-tab active" onclick="switchEleveCanal('spark')">💬 Conversation SPARK</button>
         <button id="btn-eleve-canal-mentor" class="eleve-chat-tab mentor" onclick="switchEleveCanal('mentor')">🎓 Canal Mentor <span id="eleve-mentor-badge" class="eleve-chat-badge">0</span></button>
+        <div class="eco-wrap" id="ecoWrap">
+          <button class="eco-chip level-low" id="ecoChip" onclick="toggleEcoTooltip()" title="Impact IA de votre session">
+            <span class="eco-dot"></span>
+            <span>⚡</span><span id="ecoWh">0.00 Wh</span>
+            <span style="opacity:.35;margin:0 1px">·</span>
+            <span>💧</span><span id="ecoMl">0.0 ml</span>
+          </button>
+          <div class="eco-tooltip" id="ecoTooltip">
+            <div class="eco-tt-title">Impact IA · SPARK ⚡</div>
+            <div class="eco-scope-btns">
+              <button class="eco-scope-btn" id="eco-scope-msg" onclick="setEcoScope('msg')">Ce message</button>
+              <button class="eco-scope-btn active" id="eco-scope-session" onclick="setEcoScope('session')">Session</button>
+              <button class="eco-scope-btn" id="eco-scope-total" onclick="setEcoScope('total')">Programme</button>
+            </div>
+            <div class="eco-tt-row">
+              <span class="eco-tt-ico">⚡</span>
+              <span class="eco-tt-label">Énergie</span>
+              <div class="eco-bar-track"><div class="eco-bar-fill" id="eco-bar-wh" style="--eco-bar-color:#f97316;width:0%"></div></div>
+              <span class="eco-tt-val" id="eco-val-wh">0.00 Wh</span>
+            </div>
+            <div class="eco-tt-row">
+              <span class="eco-tt-ico">💧</span>
+              <span class="eco-tt-label">Eau</span>
+              <div class="eco-bar-track"><div class="eco-bar-fill" id="eco-bar-ml" style="--eco-bar-color:#3b82f6;width:0%"></div></div>
+              <span class="eco-tt-val" id="eco-val-ml">0.0 ml</span>
+            </div>
+            <div class="eco-tt-row">
+              <span class="eco-tt-ico">🌿</span>
+              <span class="eco-tt-label">CO₂</span>
+              <div class="eco-bar-track"><div class="eco-bar-fill" id="eco-bar-co2" style="--eco-bar-color:#22c55e;width:0%"></div></div>
+              <span class="eco-tt-val" id="eco-val-co2">0.000 gCO₂</span>
+            </div>
+            <div class="eco-tt-tip" id="eco-tip">Les messages courts consomment 3× moins. Continuez comme ça !</div>
+          </div>
+        </div>
         <button class="btn-carnet eleve-chat-carnet" id="btn-carnet" onclick="ouvrirCarnet()">📓 Carnet <span class="notif-dot" id="notif-dot" style="display:none;">●</span></button>
       </div>
       <div class="messages" id="chat-messages"></div>
@@ -2199,6 +2345,8 @@ function showStepOverlay(fromEtape, toEtape) {
   if (iconEl)  iconEl.textContent  = s.icon || '🔍';
   if (titleEl) titleEl.textContent = (toEtape < 5 ? 'Jour ' + toEtape + ' — ' : '') + (s.name || '');
   if (descEl)  descEl.textContent  = 'Votre équipe a complété "' + (sFrom.name || '') + '" ✓ La prochaine étape est débloquée !';
+  // Afficher le bilan éco de l'étape terminée dans l'overlay
+  showEcoBilanInOverlay('etape' + fromEtape);
   for (let i = 0; i <= 5; i++) {
     const pip = document.getElementById('olu-pip-' + i);
     if (!pip) continue;
@@ -2440,6 +2588,8 @@ async function sendMessage(){
       eleveMessagesCache.push({role:'assistant',message:rVisible,pseudo:'SPARK ⚡',etape:etapeMsg});
       renderEleveConversation();
       await saveMsg('assistant', rVisible, 'SPARK ⚡');
+      // Éco-tracking : calcul local après chaque réponse SPARK
+      trackSparkResponse(rVisible, 'etape' + etapeMsg);
     }
     conversationHistory.push({role:'model',parts:[{text:r}]});
 
@@ -4022,6 +4172,7 @@ function go(id){
 
 window.addEventListener('load', async ()=>{
   document.body.classList.add('ready');
+  initEcoData(); // reset session + init localStorage éco
   await injectMockupShapes();
   
   // Écouteur pour la modification manuelle dans le carnet
@@ -4047,6 +4198,178 @@ window.addEventListener('load', async ()=>{
   }
 });
 
+// ── ÉCO-INDICATEUR ─────────────────────────────────────────────────────────
+const ECO_KEY = 'spark_eco_data';
+let ecoScope = 'session';   // 'msg' | 'session' | 'total'
+let ecoLastMsg = { tokens:0, wh:0, ml:0, co2:0 };
+
+function initEcoData(){
+  const raw = localStorage.getItem(ECO_KEY);
+  const data = raw ? JSON.parse(raw) : {};
+  // Reset session à chaque rechargement de page
+  data.sessionTokens = 0; data.sessionWh = 0;
+  data.sessionMl = 0;     data.sessionCo2 = 0;
+  if (!data.byStep)      data.byStep = {};
+  if (!data.totalTokens) data.totalTokens = 0;
+  if (!data.totalWh)     data.totalWh = 0;
+  if (!data.totalMl)     data.totalMl = 0;
+  if (!data.totalCo2)    data.totalCo2 = 0;
+  localStorage.setItem(ECO_KEY, JSON.stringify(data));
+  updateEcoChip();
+}
+
+function trackSparkResponse(responseText, stepId){
+  const tokens = Math.ceil((responseText||'').length / 4);
+  const wh  = parseFloat((tokens * 0.001  ).toFixed(4));
+  const ml  = parseFloat((tokens * 0.018  ).toFixed(3));
+  const co2 = parseFloat((tokens * 0.0006 ).toFixed(4));
+
+  ecoLastMsg = { tokens, wh, ml, co2 };
+
+  const data = JSON.parse(localStorage.getItem(ECO_KEY) || '{}');
+  if (!data.byStep) data.byStep = {};
+  if (!data.byStep[stepId]) data.byStep[stepId] = { tokens:0, wh:0, ml:0, co2:0 };
+
+  data.totalTokens   = (data.totalTokens   || 0) + tokens;
+  data.totalWh       = (data.totalWh       || 0) + wh;
+  data.totalMl       = (data.totalMl       || 0) + ml;
+  data.totalCo2      = (data.totalCo2      || 0) + co2;
+  data.sessionTokens = (data.sessionTokens || 0) + tokens;
+  data.sessionWh     = (data.sessionWh     || 0) + wh;
+  data.sessionMl     = (data.sessionMl     || 0) + ml;
+  data.sessionCo2    = (data.sessionCo2    || 0) + co2;
+
+  data.byStep[stepId].tokens += tokens;
+  data.byStep[stepId].wh     += wh;
+  data.byStep[stepId].ml     += ml;
+  data.byStep[stepId].co2    += co2;
+  data.lastUpdated = new Date().toISOString();
+  localStorage.setItem(ECO_KEY, JSON.stringify(data));
+  updateEcoChip();
+}
+
+function updateEcoChip(){
+  const chip = document.getElementById('ecoChip');
+  if (!chip) return;
+  const data = JSON.parse(localStorage.getItem(ECO_KEY) || '{}');
+  const wh  = data.sessionWh  || 0;
+  const ml  = data.sessionMl  || 0;
+
+  document.getElementById('ecoWh').textContent = wh < 0.01  ? '0.00 Wh' : wh.toFixed(2)  + ' Wh';
+  document.getElementById('ecoMl').textContent = ml < 0.1   ? '0.0 ml'  : ml.toFixed(1)  + ' ml';
+
+  // Couleur selon palier session
+  chip.classList.remove('level-low','level-mid','level-high');
+  if      (wh > 1.5) chip.classList.add('level-high');
+  else if (wh > 0.3) chip.classList.add('level-mid');
+  else               chip.classList.add('level-low');
+
+  // Flash animation
+  chip.classList.remove('flash');
+  void chip.offsetWidth;
+  chip.classList.add('flash');
+
+  // Mettre à jour le tooltip si ouvert
+  if (document.getElementById('ecoTooltip')?.classList.contains('open')){
+    _refreshEcoTooltipValues(data);
+  }
+}
+
+function _getEcoValues(data){
+  if (ecoScope === 'msg')     return { wh: ecoLastMsg.wh,    ml: ecoLastMsg.ml,    co2: ecoLastMsg.co2 };
+  if (ecoScope === 'total')   return { wh: data.totalWh||0,  ml: data.totalMl||0,  co2: data.totalCo2||0 };
+  return                             { wh: data.sessionWh||0, ml: data.sessionMl||0, co2: data.sessionCo2||0 };
+}
+
+function _getEcoTip(wh){
+  if (ecoScope === 'msg'){
+    return wh < 0.05
+      ? 'Super ! Les messages courts consomment 3× moins. Continuez comme ça.'
+      : 'Cette réponse était longue. Essayez de regrouper vos questions en une seule.';
+  }
+  if (ecoScope === 'total'){
+    const d  = JSON.parse(localStorage.getItem(ECO_KEY)||'{}');
+    const cm = Math.round((d.totalCo2||0) / 0.00023);
+    return `Sur tout le programme, votre team a généré l'équivalent de ${cm} cm en voiture thermique.`;
+  }
+  return wh > 1.5
+    ? 'Vous avez beaucoup échangé cette session. Pensez à préparer vos questions à l'avance.'
+    : 'Votre session consomme l'équivalent de quelques secondes de LED. Bien joué !';
+}
+
+function _refreshEcoTooltipValues(data){
+  const v = _getEcoValues(data);
+  // Plafonds pour les barres (session : 3 Wh max)
+  const maxWh = ecoScope === 'msg' ? 0.3 : ecoScope === 'total' ? 10 : 3;
+  const setPct = (id, val, max) => {
+    const el = document.getElementById(id);
+    if (el) el.style.width = Math.min(100, (val/max)*100).toFixed(1) + '%';
+  };
+  setPct('eco-bar-wh',  v.wh,  maxWh);
+  setPct('eco-bar-ml',  v.ml,  maxWh * 18);
+  setPct('eco-bar-co2', v.co2, maxWh * 0.6);
+  const s = (id, txt) => { const el = document.getElementById(id); if(el) el.textContent = txt; };
+  s('eco-val-wh',  v.wh.toFixed(3)  + ' Wh');
+  s('eco-val-ml',  v.ml.toFixed(2)  + ' ml');
+  s('eco-val-co2', v.co2.toFixed(4) + ' gCO₂');
+  s('eco-tip', _getEcoTip(v.wh));
+}
+
+function setEcoScope(scope){
+  ecoScope = scope;
+  ['msg','session','total'].forEach(s => {
+    const btn = document.getElementById('eco-scope-' + s);
+    if (btn) btn.classList.toggle('active', s === scope);
+  });
+  const data = JSON.parse(localStorage.getItem(ECO_KEY)||'{}');
+  _refreshEcoTooltipValues(data);
+}
+
+function toggleEcoTooltip(){
+  const tt = document.getElementById('ecoTooltip');
+  if (!tt) return;
+  const willOpen = !tt.classList.contains('open');
+  tt.classList.toggle('open', willOpen);
+  if (willOpen){
+    const data = JSON.parse(localStorage.getItem(ECO_KEY)||'{}');
+    _refreshEcoTooltipValues(data);
+    // Fermer au clic extérieur
+    setTimeout(() => document.addEventListener('click', _ecoOutsideClick, { once: true }), 0);
+  }
+}
+function _ecoOutsideClick(e){
+  const wrap = document.getElementById('ecoWrap');
+  if (wrap && !wrap.contains(e.target)){
+    document.getElementById('ecoTooltip')?.classList.remove('open');
+  } else {
+    // Re-écouter si clic dans le wrap
+    setTimeout(() => document.addEventListener('click', _ecoOutsideClick, { once: true }), 0);
+  }
+}
+
+function showEcoBilanInOverlay(stepId){
+  const data  = JSON.parse(localStorage.getItem(ECO_KEY)||'{}');
+  const step  = (data.byStep||{})[stepId] || { wh:0, ml:0, co2:0 };
+  const ecoEl = document.getElementById('olu-eco');
+  if (!ecoEl) return;
+
+  if (step.wh < 0.0001 && step.ml < 0.001){
+    ecoEl.style.display = 'none';
+    return;
+  }
+
+  const ledSec  = Math.round(step.wh / (0.07 / 3600));   // 0.07 W → Wh/s
+  const glasses = (step.ml / 250).toFixed(2);
+  const mVoiture= Math.round(step.co2 / 0.00023);
+
+  const s = (id, txt) => { const el = document.getElementById(id); if(el) el.textContent = txt; };
+  s('olu-eco-wh',  step.wh.toFixed(3)  + ' Wh');
+  s('olu-eco-ml',  step.ml.toFixed(1)  + ' ml');
+  s('olu-eco-co2', step.co2.toFixed(4) + ' gCO₂');
+  s('olu-eco-equiv', `≈ ${ledSec} sec de LED · ${glasses} verre d'eau · ${mVoiture} cm en voiture`);
+  ecoEl.style.display = '';
+}
+
 // ── TOAST ──
 let tTimer=null;
 function showToast(msg,type='success'){
@@ -4065,6 +4388,15 @@ function showToast(msg,type='success'){
     <div class="olu-tag">Étape débloquée !</div>
     <div class="olu-title" id="olu-title">...</div>
     <div class="olu-desc" id="olu-desc">...</div>
+    <div class="olu-eco" id="olu-eco" style="display:none">
+      <div class="olu-eco-title">⚡ Votre impact pour cette étape</div>
+      <div class="olu-eco-metrics">
+        <div class="olu-eco-m"><span class="olu-eco-m-ico">⚡</span><span class="olu-eco-m-val" id="olu-eco-wh">—</span><span class="olu-eco-m-lbl">Énergie</span></div>
+        <div class="olu-eco-m"><span class="olu-eco-m-ico">💧</span><span class="olu-eco-m-val" id="olu-eco-ml">—</span><span class="olu-eco-m-lbl">Eau</span></div>
+        <div class="olu-eco-m"><span class="olu-eco-m-ico">🌿</span><span class="olu-eco-m-val" id="olu-eco-co2">—</span><span class="olu-eco-m-lbl">CO₂</span></div>
+      </div>
+      <div class="olu-eco-equiv" id="olu-eco-equiv"></div>
+    </div>
     <div class="olu-progress">
       <div class="olu-pip" id="olu-pip-0"></div>
       <div class="olu-pip" id="olu-pip-1"></div>
