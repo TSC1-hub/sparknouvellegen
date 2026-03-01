@@ -2680,35 +2680,20 @@ async function getEdgeAuthHeaders(){
 
 async function invokeProxyMistral(payload){
   const authHeaders = await getEdgeAuthHeaders();
-  let { data, error } = await sb.functions.invoke('proxy-mistral', {
-    body: payload,
-    headers: authHeaders
+  const resp = await fetch(EDGE_URL, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'apikey': SUPABASE_KEY,
+      ...authHeaders
+    },
+    body: JSON.stringify(payload)
   });
 
-  if (error) {
-    const resp = await fetch(EDGE_URL, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'apikey': SUPABASE_KEY,
-        ...authHeaders
-      },
-      body: JSON.stringify(payload)
-    });
-
-    const raw = await resp.json().catch(() => ({}));
-    if (!resp.ok) {
-      const details = raw?.error || raw?.message || `Erreur Edge Function: ${resp.status}`;
-      throw new Error(details);
-    }
-
-    data = raw;
-    error = null;
-  }
-
-  if (error) {
-    console.error('Erreur Edge Function:', error);
-    throw new Error(error.message || 'Erreur Edge Function');
+  const data = await resp.json().catch(() => ({}));
+  if (!resp.ok) {
+    const details = data?.error || data?.message || `Erreur Edge Function: ${resp.status}`;
+    throw new Error(details);
   }
 
   return data;
