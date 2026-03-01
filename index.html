@@ -573,9 +573,9 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
   backdrop-filter:blur(2px);z-index:40;opacity:0;pointer-events:none;transition:opacity .35s;}
 .carnet-overlay.open{opacity:1;pointer-events:auto;}
 
-.carnet-drawer{position:fixed;top:0;right:0;bottom:0;width:600px;max-width:92vw;
+.carnet-drawer{position:fixed;top:0;left:96px;right:0;bottom:0;
   background:var(--warm);z-index:50;display:flex;flex-direction:column;
-  transform:translateX(100%);transition:transform .4s cubic-bezier(.25,.46,.45,.94);
+  transform:translateX(100vw);transition:transform .4s cubic-bezier(.25,.46,.45,.94);
   box-shadow:-8px 0 40px rgba(26,46,23,.2);}
 .carnet-drawer.open{transform:translateX(0);}
 
@@ -588,15 +588,10 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
   font-family:'DM Sans',sans-serif;font-size:.8rem;transition:all .2s;}
 .btn-carnet-close:hover{background:rgba(245,240,232,.2);color:white;}
 
-.carnet-tabs{display:flex;background:white;border-bottom:1px solid var(--border);flex-shrink:0;}
-.carnet-tab{flex:1;padding:10px;font-size:.75rem;font-weight:500;text-align:center;
-  cursor:pointer;border:none;background:transparent;color:var(--light);
-  border-bottom:2px solid transparent;transition:all .2s;font-family:'DM Sans',sans-serif;}
-.carnet-tab.active{color:var(--moss);border-bottom-color:var(--moss);font-weight:600;}
-
-.carnet-content{flex:1;overflow:hidden;display:flex;flex-direction:column;}
-.carnet-panel{display:none;flex:1;overflow:hidden;flex-direction:column;}
-.carnet-panel.active{display:flex;}
+/* ── Carnet split layout ── */
+.carnet-split{flex:1;display:flex;overflow:hidden;}
+.carnet-col-preview{flex:1;display:flex;flex-direction:column;overflow:hidden;border-right:1px solid var(--border);}
+.carnet-col-code{flex:1;display:flex;flex-direction:column;overflow:hidden;background:#1e1e2e;}
 
 .carnet-etapes{display:flex;gap:6px;padding:10px 16px;flex-shrink:0;border-bottom:1px solid rgba(0,0,0,.07);flex-wrap:wrap;background:#f8fafc;}
 .carnet-pill{padding:4px 12px;border-radius:20px;font-size:.67rem;font-weight:600;cursor:pointer;background:white;border:1px solid rgba(61,92,58,.2);color:var(--mid);transition:all .2s;}
@@ -604,16 +599,28 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
 .carnet-pill.active{background:var(--moss);color:white;border-color:var(--moss);}
 .carnet-etapes-lbl{margin-left:auto;font-size:.62rem;color:var(--light);display:flex;align-items:center;gap:5px;}
 
-.carnet-edit-etapes{display:flex;gap:6px;flex-wrap:wrap;margin:10px 16px 0;}
+.carnet-edit-etapes{display:flex;gap:6px;flex-wrap:wrap;padding:10px 16px;border-bottom:1px solid rgba(255,255,255,.08);flex-shrink:0;}
 .carnet-edit-pill{padding:4px 11px;border-radius:20px;font-size:.65rem;font-weight:700;cursor:pointer;background:#273341;border:1px solid rgba(255,255,255,.16);color:#aeb9c7;transition:all .2s;}
 .carnet-edit-pill:hover{border-color:rgba(122,182,72,.45);color:#d4e2cf;}
 .carnet-edit-pill.active{background:rgba(122,182,72,.2);border-color:rgba(122,182,72,.45);color:#d9f0c8;}
 .carnet-edit-lbl{margin-left:auto;font-size:.62rem;color:#8ea1b8;display:flex;align-items:center;gap:5px;}
 
-.carnet-iframe, #vitrine-rendu {flex:1;border:none;}
+.carnet-iframe,#vitrine-rendu{flex:1;border:none;}
 .carnet-code{flex:1;overflow-y:auto;padding:16px;background:#1e1e2e;
   font-family:monospace;font-size:.72rem;color:#cdd6f4;white-space:pre-wrap;
   word-break:break-all;line-height:1.6;}
+.carnet-code-footer{padding:8px 16px;background:#1e1e2e;border-top:1px solid rgba(255,255,255,.08);flex-shrink:0;display:flex;align-items:center;justify-content:space-between;gap:8px;}
+.carnet-edit-note{font-size:.62rem;color:#9ca3af;}
+
+/* ── Mini-chat vitrine ── */
+.carnet-mini-chat{flex-shrink:0;background:#f8fafc;border-top:1px solid var(--border);display:flex;flex-direction:column;max-height:190px;min-height:120px;}
+.carnet-mini-msgs{flex:1;overflow-y:auto;padding:7px 12px;font-size:.71rem;color:var(--mid);min-height:36px;}
+.carnet-mini-input-row{display:flex;gap:6px;padding:7px 10px;border-top:1px solid var(--border);background:white;flex-shrink:0;align-items:flex-end;}
+.carnet-mini-input{flex:1;border:1px solid var(--border);border-radius:8px;padding:6px 10px;font-size:.73rem;resize:none;font-family:'DM Sans',sans-serif;outline:none;line-height:1.4;}
+.carnet-mini-input:focus{border-color:var(--moss);}
+.carnet-mini-send{padding:6px 14px;background:var(--moss);color:white;border:none;border-radius:8px;cursor:pointer;font-size:.73rem;font-weight:600;font-family:'DM Sans',sans-serif;white-space:nowrap;transition:background .2s;flex-shrink:0;}
+.carnet-mini-send:hover{background:var(--sage);}
+.carnet-mini-send:disabled{opacity:.4;cursor:not-allowed;}
 
 .carnet-toast{position:fixed;bottom:20px;right:24px;background:var(--moss);color:white;
   padding:10px 16px;border-radius:12px;font-size:.8rem;font-weight:500;
@@ -1064,9 +1071,9 @@ body::before{background:radial-gradient(ellipse 60% 50% at 85% 5%,rgba(62,212,24
 .carnet-hdr-sub{font-style:normal;color:var(--light);}
 .btn-carnet-close{background:#fff;border:1.5px solid var(--border);color:var(--mid);}
 .btn-carnet-close:hover{color:var(--text);border-color:var(--mid);}
-.carnet-tabs{border-bottom:1.5px solid var(--border);}
-.carnet-tab{font-family:'Syne',sans-serif;font-size:.7rem;font-weight:700;}
-.carnet-tab.active{color:var(--moss);border-bottom-color:var(--moss);}
+.carnet-col-preview{border-right:1.5px solid var(--border);}
+.carnet-mini-chat{background:#fff;border-top:1.5px solid var(--border);}
+.carnet-mini-input{border:1.5px solid var(--border);font-family:'Syne',sans-serif;}
 .carnet-etapes{background:#fff;border-bottom:1.5px solid var(--border);}
 .carnet-pill{border:1.5px solid var(--border);font-family:'Syne',sans-serif;font-size:.62rem;}
 .carnet-pill.done{background:rgba(0,212,160,.08);border-color:rgba(0,212,160,.25);color:#009978;}
@@ -1203,7 +1210,10 @@ body::before{background:radial-gradient(ellipse 60% 50% at 85% 5%,rgba(62,212,24
   .conv-drawer { min-height: 0; }
 
   /* ── CARNET ── */
-  .carnet-drawer { width: 100% !important; max-width: 100% !important; }
+  .carnet-drawer { left: 0 !important; }
+  .carnet-split { flex-direction: column; }
+  .carnet-col-preview { flex: none; height: 55%; border-right: none; border-bottom: 1px solid var(--border); }
+  .carnet-col-code { flex: none; height: 45%; }
 
   /* ── MODALE ── */
   .modal-card { width: calc(100vw - 28px) !important; padding: 20px 16px; }
@@ -1379,9 +1389,6 @@ body::before{background:radial-gradient(ellipse 60% 50% at 85% 5%,rgba(62,212,24
       <div class="messages" id="chat-messages"></div>
       <div class="input-zone">
         <div class="conv-etape-header" id="conv-etape-header">Étape 0 — Découvrir</div>
-        <div style="display:flex;justify-content:flex-end;padding:0 2px 4px 2px;">
-          <button class="btn-vitrine" id="btn-vitrine" onclick="demanderMiseAJourVitrine()" title="Demander à SPARK de générer le HTML pour votre vitrine">🎨 Mettre à jour la vitrine</button>
-        </div>
         <div class="input-row">
           <textarea class="msg-input" id="msg-input" placeholder="Tapez votre message..." onkeydown="handleKey(event)" rows="1"></textarea>
           <button class="btn-send" id="btn-send" onclick="sendMessage()">Envoyer 🌱</button>
@@ -1516,22 +1523,25 @@ body::before{background:radial-gradient(ellipse 60% 50% at 85% 5%,rgba(62,212,24
     </div>
     <button class="btn-carnet-close" onclick="fermerCarnet()">✕ Fermer</button>
   </div>
-  <div class="carnet-tabs">
-    <button class="carnet-tab active" onclick="switchCarnetTab('vitrine',this)">🎨 Vitrine</button>
-    <button class="carnet-tab" onclick="switchCarnetTab('code',this)">💻 Code</button>
-  </div>
-  <div class="carnet-content">
-    <div class="carnet-panel active" id="carnet-panel-vitrine">
+  <div class="carnet-split">
+    <!-- Colonne gauche : aperçu + mini-chat -->
+    <div class="carnet-col-preview">
       <div class="carnet-etapes" id="carnet-etapes"></div>
-      <!-- zone de rendu de la vitrine – l'ID est utilisé par renderVitrine() -->
       <iframe class="carnet-iframe" id="vitrine-rendu"></iframe>
+      <div class="carnet-mini-chat">
+        <div class="carnet-mini-msgs" id="carnet-mini-msgs"><span style="color:var(--light);font-style:italic;">Décris ce que tu veux modifier dans ta vitrine et SPARK mettra à jour le code.</span></div>
+        <div class="carnet-mini-input-row">
+          <textarea class="carnet-mini-input" id="carnet-mini-input" placeholder="Ex : Ajoute une section avec notre problématique..." rows="2" onkeydown="if(event.ctrlKey&&event.key==='Enter'){envoyerPromptVitrine();}"></textarea>
+          <button class="carnet-mini-send" id="carnet-mini-send" onclick="envoyerPromptVitrine()">Envoyer ✨</button>
+        </div>
+      </div>
     </div>
-    <div class="carnet-panel" id="carnet-panel-code">
-      <div id="carnet-lock-badge" style="margin:10px 16px 0;padding:7px 10px;border-radius:10px;background:rgba(122,182,72,.12);border:1px solid rgba(122,182,72,.3);font-size:.67rem;color:var(--sage);font-weight:600;">✍️ Édition verrouillée — Jour 0/5</div>
+    <!-- Colonne droite : éditeur code + sauvegarde -->
+    <div class="carnet-col-code">
       <div id="carnet-edit-etapes" class="carnet-edit-etapes"></div>
-      <textarea class="carnet-code" id="carnet-code-edit" spellcheck="false" style="flex:1;resize:none;outline:none;border:none;"></textarea>
-      <div style="padding:8px 16px;background:#1e1e2e;border-top:1px solid rgba(255,255,255,.08);flex-shrink:0;">
-        <div id="carnet-edit-note" style="margin-bottom:8px;font-size:.62rem;color:#9ca3af;">Les changements s'appliquent à l'étape sélectionnée (jusqu'au jour actif).</div>
+      <textarea class="carnet-code" id="carnet-code-edit" spellcheck="false" style="resize:none;outline:none;border:none;"></textarea>
+      <div class="carnet-code-footer">
+        <div id="carnet-edit-note" class="carnet-edit-note">Étape sélectionnée (jusqu'au jour actif).</div>
         <button onclick="sauvegarderCarnet()" style="padding:7px 18px;background:#7ab648;border:none;border-radius:8px;color:white;font-family:'DM Sans',sans-serif;font-size:.75rem;font-weight:600;cursor:pointer;">💾 Sauvegarder</button>
       </div>
     </div>
@@ -2191,6 +2201,8 @@ function closeStepOverlay() {
   if (newEtape !== eleveEtapeAfficheeConversation) {
     clickerEtapeSidebar(newEtape);
   }
+  // Ouvrir le carnet pour voir la vitrine générée
+  setTimeout(() => ouvrirCarnet(), 500);
 }
 
 async function loadConversation(){
@@ -3394,6 +3406,62 @@ function fermerCarnet(){
   document.getElementById('carnet-overlay').classList.remove('open');
   document.querySelector('.eleve-workspace')?.classList.remove('drawer-open');
 }
+async function envoyerPromptVitrine(){
+  if(!currentEquipe) return;
+  const input = document.getElementById('carnet-mini-input');
+  const sendBtn = document.getElementById('carnet-mini-send');
+  const msgsEl = document.getElementById('carnet-mini-msgs');
+  const prompt = (input?.value || '').trim();
+  if(!prompt) return;
+
+  const addMsg = (who, txt, color) => {
+    if(!msgsEl) return;
+    const d = document.createElement('div');
+    d.style.cssText = `margin-bottom:5px;color:${color};`;
+    d.innerHTML = `<b>${who} :</b> ${txt}`;
+    msgsEl.appendChild(d);
+    msgsEl.scrollTop = msgsEl.scrollHeight;
+  };
+
+  addMsg('Toi', prompt.replace(/</g,'&lt;'), 'var(--moss)');
+  input.value = '';
+  if(input) input.disabled = true;
+  if(sendBtn) sendBtn.disabled = true;
+
+  try {
+    const currentHtml = document.getElementById('carnet-code-edit')?.value || '';
+    const r = await callMistral(currentEquipe.id, currentEquipe.etape_courante, {
+      forceHtml: true,
+      latestUserRequest: prompt + (currentHtml ? '\n\nVoici le HTML actuel de la vitrine :\n' + currentHtml : ''),
+      strictHtmlOnly: true
+    });
+
+    // Extraire le HTML de la réponse (marqueurs ou fenced code block)
+    const blocs = [];
+    const rxMark = /SPARK_HTML_START([\s\S]*?)SPARK_HTML_END/gi;
+    const rxFence = /```html\s*([\s\S]*?)```/gi;
+    let matchR;
+    while((matchR = rxMark.exec(r)) !== null) blocs.push(matchR[1]);
+    if(!blocs.length) while((matchR = rxFence.exec(r)) !== null) blocs.push(matchR[1]);
+
+    const newHtml = blocs.length > 0 ? normaliserBlocVitrine(blocs[blocs.length - 1]) : '';
+    if(newHtml){
+      const edit = document.getElementById('carnet-code-edit');
+      if(edit) edit.value = newHtml;
+      renderVitrine(newHtml);
+      addMsg('SPARK ⚡', 'Vitrine mise à jour ! Sauvegarde quand tu es prêt·e 💾', 'var(--sage)');
+    } else {
+      addMsg('SPARK ⚡', 'Je n\'ai pas pu générer de HTML valide. Essaie une demande plus précise.', '#e57373');
+    }
+  } catch(e){
+    addMsg('Erreur', (e.message || 'Appel SPARK échoué.').replace(/</g,'&lt;'), '#e57373');
+  }
+
+  if(input) input.disabled = false;
+  if(sendBtn) sendBtn.disabled = false;
+  input?.focus();
+}
+
 async function sauvegarderCarnet(){
   if(!currentEquipe) return;
   const etapeActive = getEtapeActiveEquipe();
@@ -3510,17 +3578,19 @@ async function chargerCarnet(){
     eleveEtapeEdition = etapeActive;
   }
 
-  if(!vitrines||vitrines.length===0){
-    afficherVitrineTeamEtape(etapeCible);
-    choisirCarnetEtapeEdition(eleveEtapeEdition);
-    return;
-  }
-
   afficherVitrineTeamEtape(etapeCible);
   choisirCarnetEtapeEdition(eleveEtapeEdition);
+
   // Sous-titre
   document.getElementById('carnet-sub').textContent=
     `${currentEquipe.nom||currentEquipe.code_equipe} — Jour ${etapeActive}/5`;
+
+  // Live preview : synchroniser l'iframe gauche avec les frappes dans le code
+  const codeEdit = document.getElementById('carnet-code-edit');
+  if(codeEdit && !codeEdit._livePreviewBound){
+    codeEdit._livePreviewBound = true;
+    codeEdit.addEventListener('input', () => renderVitrine(codeEdit.value));
+  }
 }
 
 function afficherToastCarnet(etapeNom){
