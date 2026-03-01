@@ -47,15 +47,15 @@ body{background:#0f172a;font-family:'Syne',sans-serif;padding:40px 20px;min-heig
 .olu-a-title{font-size:1.5rem;font-weight:800;color:#1a1a2e;text-align:center;line-height:1.2;}
 .olu-a-desc{font-size:.8rem;color:#666;text-align:center;line-height:1.6;}
 .olu-a-eco{width:100%;background:linear-gradient(135deg,#f0fdf4,#ecfdf5);
-  border:1px solid rgba(34,197,94,.2);border-radius:12px;padding:14px 16px;}
-.olu-a-eco-ttl{font-size:.64rem;font-weight:800;letter-spacing:1.8px;text-transform:uppercase;color:#16a34a;margin-bottom:12px;}
-.olu-a-eco-hero{display:flex;align-items:center;gap:14px;}
-.olu-a-eco-hero-ico{font-size:2.4rem;flex-shrink:0;}
-.olu-a-eco-hero-main{display:flex;flex-direction:column;gap:2px;}
-.olu-a-eco-hero-val{font-size:1.4rem;font-weight:800;color:#1a1a2e;line-height:1;}
-.olu-a-eco-hero-lbl{font-size:.62rem;color:#6b7280;text-transform:uppercase;letter-spacing:.5px;}
-.olu-a-eco-equiv{font-size:.64rem;color:#374151;text-align:left;
-  background:rgba(255,255,255,.6);border-radius:7px;padding:7px 10px;margin-top:10px;
+  border:1px solid rgba(34,197,94,.2);border-radius:12px;padding:12px 14px;}
+.olu-a-eco-ttl{font-size:.64rem;font-weight:800;letter-spacing:1.8px;text-transform:uppercase;color:#16a34a;margin-bottom:10px;}
+.olu-a-eco-row{display:flex;gap:8px;justify-content:space-around;}
+.olu-a-eco-m{display:flex;flex-direction:column;align-items:center;gap:3px;}
+.olu-a-eco-m-ico{font-size:1.2rem;}
+.olu-a-eco-m-val{font-size:.82rem;font-weight:800;color:#1a1a2e;}
+.olu-a-eco-m-lbl{font-size:.56rem;color:#6b7280;text-transform:uppercase;letter-spacing:.5px;}
+.olu-a-eco-equiv{font-size:.64rem;color:#374151;text-align:center;
+  background:rgba(255,255,255,.6);border-radius:7px;padding:6px 10px;margin-top:10px;
   border-left:3px solid rgba(34,197,94,.4);}
 .olu-a-progress{display:flex;gap:5px;}
 .olu-a-pip{width:24px;height:4px;border-radius:3px;background:#e5e7eb;}
@@ -93,18 +93,19 @@ body{background:#0f172a;font-family:'Syne',sans-serif;padding:40px 20px;min-heig
   background:#4ade80;box-shadow:0 0 6px #4ade80;}
 .olu-b-eco-row{display:flex;flex-direction:column;gap:7px;}
 .olu-b-eco-m{
-  background:rgba(0,0,0,.22);border-radius:12px;padding:16px 18px;
-  width:100%;box-sizing:border-box;overflow:hidden;}
-.olu-b-eco-m-hero{display:flex;align-items:center;gap:14px;margin-bottom:12px;}
-.olu-b-eco-m-ico{font-size:2.2rem;flex-shrink:0;}
-.olu-b-eco-m-main{display:flex;flex-direction:column;gap:3px;flex:1;}
+  background:rgba(0,0,0,.22);border-radius:12px;padding:12px 16px;
+  width:100%;box-sizing:border-box;}
+.olu-b-eco-m-hero{display:flex;align-items:center;gap:10px;margin-bottom:10px;}
+.olu-b-eco-m-trio{display:flex;justify-content:space-around;margin-bottom:10px;}
+.olu-b-eco-m-col{display:flex;flex-direction:column;align-items:center;gap:3px;}
+.olu-b-eco-m-ico{font-size:1.3rem;}
 .olu-b-eco-m-val{
-  font-size:1.5rem;font-weight:800;color:#f0fdf4;line-height:1;}
+  font-size:.88rem;font-weight:800;color:#f0fdf4;white-space:nowrap;}
 .olu-b-eco-m-lbl{
-  font-size:.7rem;color:#9ca3af;text-transform:uppercase;letter-spacing:.5px;}
+  font-size:.56rem;color:#9ca3af;text-transform:uppercase;letter-spacing:.4px;}
 .olu-b-eco-m-badge{
   font-size:.6rem;font-weight:800;letter-spacing:.5px;text-transform:uppercase;
-  padding:4px 11px;border-radius:20px;flex-shrink:0;white-space:nowrap;align-self:flex-start;}
+  padding:4px 11px;border-radius:20px;flex-shrink:0;white-space:nowrap;}
 .olu-b-eco-m-badge.low{background:rgba(34,197,94,.15);color:#4ade80;}
 .olu-b-eco-m-badge.mid{background:rgba(249,115,22,.15);color:#fb923c;}
 .olu-b-eco-m-badge.high{background:rgba(239,68,68,.15);color:#f87171;}
@@ -153,11 +154,11 @@ body{background:#0f172a;font-family:'Syne',sans-serif;padding:40px 20px;min-heig
 .olu-c-body{padding:18px 22px;display:flex;flex-direction:column;gap:14px;}
 .olu-c-eco{display:flex;gap:10px;}
 .olu-c-eco-m{flex:1;background:#f0fdf4;border:1px solid rgba(34,197,94,.2);
-  border-radius:12px;padding:16px 18px;display:flex;align-items:center;gap:16px;}
-.olu-c-eco-m-ico{font-size:2.4rem;flex-shrink:0;}
-.olu-c-eco-m-body{display:flex;flex-direction:column;gap:3px;}
-.olu-c-eco-m-val{font-size:1.4rem;font-weight:800;color:#111;line-height:1;}
-.olu-c-eco-m-lbl{font-size:.62rem;color:#6b7280;text-transform:uppercase;letter-spacing:.6px;}
+  border-radius:12px;padding:12px 14px;display:flex;justify-content:space-around;align-items:center;gap:8px;}
+.olu-c-eco-m-col{display:flex;flex-direction:column;align-items:center;gap:3px;}
+.olu-c-eco-m-ico{font-size:1.3rem;}
+.olu-c-eco-m-val{font-size:.82rem;font-weight:800;color:#111;white-space:nowrap;}
+.olu-c-eco-m-lbl{font-size:.54rem;color:#6b7280;text-transform:uppercase;letter-spacing:.5px;}
 .olu-c-eco-equiv{font-size:.72rem;color:#6b7280;background:#f9fafb;
   border-radius:8px;padding:9px 12px;text-align:center;line-height:1.6;
   border-left:3px solid #22c55e;}
@@ -185,14 +186,11 @@ body{background:#0f172a;font-family:'Syne',sans-serif;padding:40px 20px;min-heig
   display:flex;flex-direction:column;align-items:center;gap:10px;}
 .olu-d-band-tag{font-size:.64rem;font-weight:800;letter-spacing:2.5px;
   text-transform:uppercase;color:rgba(134,239,172,.6);}
-.olu-d-band-metrics{display:flex;gap:6px;width:100%;}
-.olu-d-band-m{flex:1;background:rgba(255,255,255,.06);border-radius:12px;
-  padding:14px 16px;display:flex;align-items:center;gap:14px;
-  border:1px solid rgba(255,255,255,.1);}
-.olu-d-band-m-ico{font-size:2rem;flex-shrink:0;}
-.olu-d-band-m-body{display:flex;flex-direction:column;gap:3px;}
-.olu-d-band-m-val{font-size:1.3rem;font-weight:800;color:#fff;line-height:1;}
-.olu-d-band-m-lbl{font-size:.56rem;color:rgba(255,255,255,.45);text-transform:uppercase;letter-spacing:.5px;}
+.olu-d-band-metrics{display:flex;gap:8px;width:100%;justify-content:space-around;}
+.olu-d-band-m{display:flex;flex-direction:column;align-items:center;gap:4px;}
+.olu-d-band-m-ico{font-size:1.3rem;}
+.olu-d-band-m-val{font-size:.82rem;font-weight:800;color:#fff;white-space:nowrap;}
+.olu-d-band-m-lbl{font-size:.5rem;color:rgba(255,255,255,.4);text-transform:uppercase;letter-spacing:.5px;}
 .olu-d-band-equiv{font-size:.68rem;color:rgba(134,239,172,.55);text-align:center;line-height:1.5;}
 .olu-d-body{padding:24px 26px;display:flex;flex-direction:column;align-items:center;gap:14px;}
 .olu-d-icon{font-size:3.2rem;}
@@ -245,12 +243,10 @@ body{background:#0f172a;font-family:'Syne',sans-serif;padding:40px 20px;min-heig
       <div class="olu-a-desc">Votre équipe a complété "Découvrir" ✓<br>La prochaine étape est débloquée !</div>
       <div class="olu-a-eco">
         <div class="olu-a-eco-ttl">💨 Votre impact pour cette étape</div>
-        <div class="olu-a-eco-hero">
-          <span class="olu-a-eco-hero-ico">💨</span>
-          <div class="olu-a-eco-hero-main">
-            <span class="olu-a-eco-hero-val">0.025 gCO₂</span>
-            <span class="olu-a-eco-hero-lbl">Gaz à effet de serre</span>
-          </div>
+        <div class="olu-a-eco-row">
+          <div class="olu-a-eco-m"><span class="olu-a-eco-m-ico">⚡</span><span class="olu-a-eco-m-val">0.042 Wh</span></div>
+          <div class="olu-a-eco-m"><span class="olu-a-eco-m-ico">💧</span><span class="olu-a-eco-m-val">0.8 ml</span></div>
+          <div class="olu-a-eco-m"><span class="olu-a-eco-m-ico">💨</span><span class="olu-a-eco-m-val">0.025 gCO₂</span><span class="olu-a-eco-m-lbl">Gaz</span></div>
         </div>
         <div class="olu-a-eco-equiv">≈ 109 cm en voiture thermique — soit l’équivalent de quelques secondes au ralenti</div>
       </div>
@@ -279,15 +275,12 @@ body{background:#0f172a;font-family:'Syne',sans-serif;padding:40px 20px;min-heig
         <div class="olu-b-eco-ttl">Votre impact pour cette étape</div>
         <div class="olu-b-eco-row">
 
-          <!-- CO₂ : 0.025 g sur ~1.8 g max session = 1.4% → très faible -->
+          <!-- 3 métriques compactes -->
           <div class="olu-b-eco-m">
-            <div class="olu-b-eco-m-hero">
-              <span class="olu-b-eco-m-ico">💨</span>
-              <div class="olu-b-eco-m-main">
-                <span class="olu-b-eco-m-val">0.025 gCO₂</span>
-                <span class="olu-b-eco-m-lbl">Gaz à effet de serre</span>
-              </div>
-              <span class="olu-b-eco-m-badge low">Faible</span>
+            <div class="olu-b-eco-m-trio">
+              <div class="olu-b-eco-m-col"><span class="olu-b-eco-m-ico">⚡</span><span class="olu-b-eco-m-val">0.042 Wh</span></div>
+              <div class="olu-b-eco-m-col"><span class="olu-b-eco-m-ico">💧</span><span class="olu-b-eco-m-val">0.8 ml</span></div>
+              <div class="olu-b-eco-m-col"><span class="olu-b-eco-m-ico">💨</span><span class="olu-b-eco-m-val">0.025 gCO₂</span><span class="olu-b-eco-m-lbl">Gaz</span></div>
             </div>
             <div class="olu-b-eco-m-bottom">
               <div class="olu-b-eco-bar-track">
@@ -327,11 +320,9 @@ body{background:#0f172a;font-family:'Syne',sans-serif;padding:40px 20px;min-heig
       <div class="olu-c-body">
         <div class="olu-c-eco">
           <div class="olu-c-eco-m">
-            <span class="olu-c-eco-m-ico">💨</span>
-            <div class="olu-c-eco-m-body">
-              <span class="olu-c-eco-m-val">0.025 gCO₂</span>
-              <span class="olu-c-eco-m-lbl">Gaz à effet de serre</span>
-            </div>
+            <div class="olu-c-eco-m-col"><span class="olu-c-eco-m-ico">⚡</span><span class="olu-c-eco-m-val">0.042 Wh</span></div>
+            <div class="olu-c-eco-m-col"><span class="olu-c-eco-m-ico">💧</span><span class="olu-c-eco-m-val">0.8 ml</span></div>
+            <div class="olu-c-eco-m-col"><span class="olu-c-eco-m-ico">💨</span><span class="olu-c-eco-m-val">0.025 gCO₂</span><span class="olu-c-eco-m-lbl">Gaz</span></div>
           </div>
         </div>
         <div class="olu-c-eco-equiv">≈ 109 cm en voiture thermique — soit l’équivalent de quelques secondes au ralenti</div>
@@ -357,13 +348,9 @@ body{background:#0f172a;font-family:'Syne',sans-serif;padding:40px 20px;min-heig
       <div class="olu-d-band">
         <div class="olu-d-band-tag">⚡ Impact IA — Étape Découvrir</div>
         <div class="olu-d-band-metrics">
-          <div class="olu-d-band-m">
-            <span class="olu-d-band-m-ico">💨</span>
-            <div class="olu-d-band-m-body">
-              <span class="olu-d-band-m-val">0.025 gCO₂</span>
-              <span class="olu-d-band-m-lbl">Gaz à effet de serre</span>
-            </div>
-          </div>
+          <div class="olu-d-band-m"><span class="olu-d-band-m-ico">⚡</span><span class="olu-d-band-m-val">0.042 Wh</span></div>
+          <div class="olu-d-band-m"><span class="olu-d-band-m-ico">💧</span><span class="olu-d-band-m-val">0.8 ml</span></div>
+          <div class="olu-d-band-m"><span class="olu-d-band-m-ico">💨</span><span class="olu-d-band-m-val">0.025 gCO₂</span><span class="olu-d-band-m-lbl">Gaz</span></div>
         </div>
         <div class="olu-d-band-equiv">≈ 109 cm en voiture thermique — soit l’équivalent de quelques secondes au ralenti</div>
       </div>
