@@ -3196,6 +3196,7 @@ function listenFacMentorMessages(){
     })
     .on('postgres_changes',{event:'UPDATE',schema:'public',table:'messages_mentors'}, async ()=>{
       await checkPending();
+      if(document.getElementById('validation-list')) await renderFacValidation();
     })
     .subscribe();
 }
@@ -3939,31 +3940,41 @@ async function renderFacValidation(){
 }
 
 async function approveMsg(id,eqId,pseudo,message){
-  const result = await invokeProxyMistral({
-    action: 'message_mentor_approuver',
-    actor_code: currentUser.code,
-    message_id: id,
-    equipe_id: eqId,
-    pseudo,
-    message,
-  });
-  if (result?.error) { showToast('Erreur : ' + result.error, 'error'); return; }
   const c=document.getElementById('vc-'+id);
-  if(c){c.classList.add('approved');c.querySelector('.vcard-actions').innerHTML='<div class="approved-lbl">✓ Approuvé et envoyé</div>';}
-  showToast('Message approuvé et envoyé','success');
+  if(c){c.querySelector('.vcard-actions').innerHTML='<div class="approved-lbl">⏳ Envoi en cours…</div>';}
+  try {
+    await invokeProxyMistral({
+      action: 'message_mentor_approuver',
+      actor_code: currentUser.code,
+      message_id: id,
+      equipe_id: eqId,
+      pseudo,
+      message,
+    });
+    if(c){c.classList.add('approved');setTimeout(()=>c.remove(),1200);}
+    showToast('Message approuvé et envoyé','success');
+  } catch(err) {
+    if(c){c.querySelector('.vcard-actions').innerHTML=`<button class="btn-approve" onclick="approveMsg(${id},${eqId},'${pseudo.replace(/'/g,"\\'").replace(/`/g,"'")}','${message.replace(/'/g,"\\'").replace(/`/g,"'")}')"}>✓ Approuver</button><button class="btn-reject" onclick="rejectMsg(${id})">✕ Refuser</button>`;}
+    showToast('Erreur approbation : '+(err?.message||err),'error');
+  }
   await checkPending();
 }
 
 async function rejectMsg(id){
-  const result = await invokeProxyMistral({
-    action: 'message_mentor_refuser',
-    actor_code: currentUser.code,
-    message_id: id,
-  });
-  if (result?.error) { showToast('Erreur : ' + result.error, 'error'); return; }
   const c=document.getElementById('vc-'+id);
-  if(c){c.classList.add('rejected');c.querySelector('.vcard-actions').innerHTML='<div class="rejected-lbl">✕ Refusé</div>';}
-  showToast('Message refusé','error');
+  if(c){c.querySelector('.vcard-actions').innerHTML='<div class="rejected-lbl">⏳ Refus en cours…</div>';}
+  try {
+    await invokeProxyMistral({
+      action: 'message_mentor_refuser',
+      actor_code: currentUser.code,
+      message_id: id,
+    });
+    if(c){c.classList.add('rejected');setTimeout(()=>c.remove(),1200);}
+    showToast('Message refusé','success');
+  } catch(err) {
+    if(c){c.querySelector('.vcard-actions').innerHTML=`<button class="btn-approve" onclick="approveMsg(${id},0,'','')"}>✓ Approuver</button><button class="btn-reject" onclick="rejectMsg(${id})">✕ Refuser</button>`;}
+    showToast('Erreur refus : '+(err?.message||err),'error');
+  }
   await checkPending();
 }
 
