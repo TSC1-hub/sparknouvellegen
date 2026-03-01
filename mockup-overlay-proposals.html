@@ -48,12 +48,17 @@ body{background:#0f172a;font-family:'Syne',sans-serif;padding:40px 20px;min-heig
 .olu-a-desc{font-size:.8rem;color:#666;text-align:center;line-height:1.6;}
 .olu-a-eco{width:100%;background:linear-gradient(135deg,#f0fdf4,#ecfdf5);
   border:1px solid rgba(34,197,94,.2);border-radius:12px;padding:12px 14px;}
-.olu-a-eco-ttl{font-size:.64rem;font-weight:800;letter-spacing:1.8px;text-transform:uppercase;color:#16a34a;margin-bottom:10px;}
+.olu-a-eco-ttl{font-size:.64rem;font-weight:800;letter-spacing:1.8px;text-transform:uppercase;color:#16a34a;margin-bottom:10px;text-align:center;}
 .olu-a-eco-row{display:flex;flex-direction:column;gap:5px;}
 .olu-a-eco-m{display:flex;align-items:center;gap:10px;}
 .olu-a-eco-m-ico{font-size:1.1rem;width:22px;text-align:center;flex-shrink:0;}
 .olu-a-eco-m-val{font-size:.82rem;font-weight:800;color:#1a1a2e;flex-shrink:0;}
 .olu-a-eco-m-lbl{font-size:.56rem;color:#6b7280;text-transform:uppercase;letter-spacing:.5px;}
+.olu-a-eco-m-badge{font-size:.52rem;font-weight:800;letter-spacing:.5px;text-transform:uppercase;
+  padding:2px 8px;border-radius:20px;margin-left:auto;white-space:nowrap;}
+.olu-a-eco-m-badge.low{background:rgba(34,197,94,.12);color:#16a34a;}
+.olu-a-eco-m-badge.mid{background:rgba(249,115,22,.12);color:#ea580c;}
+.olu-a-eco-m-badge.high{background:rgba(239,68,68,.12);color:#dc2626;}
 .olu-a-eco-equiv{font-size:.64rem;color:#374151;text-align:center;
   background:rgba(255,255,255,.6);border-radius:7px;padding:6px 10px;margin-top:10px;
   border-left:3px solid rgba(34,197,94,.4);}
@@ -88,7 +93,7 @@ body{background:#0f172a;font-family:'Syne',sans-serif;padding:40px 20px;min-heig
 .olu-b-eco{width:100%;background:rgba(34,197,94,.07);
   border:1px solid rgba(34,197,94,.18);border-radius:14px;padding:12px 14px;}
 .olu-b-eco-ttl{font-size:.66rem;font-weight:800;letter-spacing:2px;text-transform:uppercase;
-  color:#4ade80;margin-bottom:12px;display:flex;align-items:center;gap:6px;}
+  color:#4ade80;margin-bottom:12px;display:flex;align-items:center;justify-content:center;gap:6px;}
 .olu-b-eco-ttl::before{content:'';display:inline-block;width:5px;height:5px;border-radius:50%;
   background:#4ade80;box-shadow:0 0 6px #4ade80;}
 .olu-b-eco-row{display:flex;flex-direction:column;gap:7px;}
@@ -104,8 +109,8 @@ body{background:#0f172a;font-family:'Syne',sans-serif;padding:40px 20px;min-heig
 .olu-b-eco-m-lbl{
   font-size:.56rem;color:#9ca3af;text-transform:uppercase;letter-spacing:.4px;}
 .olu-b-eco-m-badge{
-  font-size:.6rem;font-weight:800;letter-spacing:.5px;text-transform:uppercase;
-  padding:4px 11px;border-radius:20px;flex-shrink:0;white-space:nowrap;}
+  font-size:.52rem;font-weight:800;letter-spacing:.5px;text-transform:uppercase;
+  padding:2px 8px;border-radius:20px;flex-shrink:0;white-space:nowrap;margin-left:auto;}
 .olu-b-eco-m-badge.low{background:rgba(34,197,94,.15);color:#4ade80;}
 .olu-b-eco-m-badge.mid{background:rgba(249,115,22,.15);color:#fb923c;}
 .olu-b-eco-m-badge.high{background:rgba(239,68,68,.15);color:#f87171;}
@@ -159,6 +164,11 @@ body{background:#0f172a;font-family:'Syne',sans-serif;padding:40px 20px;min-heig
 .olu-c-eco-m-ico{font-size:1.1rem;width:22px;text-align:center;flex-shrink:0;}
 .olu-c-eco-m-val{font-size:.82rem;font-weight:800;color:#111;flex-shrink:0;}
 .olu-c-eco-m-lbl{font-size:.54rem;color:#6b7280;text-transform:uppercase;letter-spacing:.5px;}
+.olu-c-eco-m-badge{font-size:.52rem;font-weight:800;letter-spacing:.5px;text-transform:uppercase;
+  padding:2px 8px;border-radius:20px;margin-left:auto;white-space:nowrap;}
+.olu-c-eco-m-badge.low{background:rgba(34,197,94,.12);color:#16a34a;}
+.olu-c-eco-m-badge.mid{background:rgba(249,115,22,.12);color:#ea580c;}
+.olu-c-eco-m-badge.high{background:rgba(239,68,68,.12);color:#dc2626;}
 .olu-c-eco-equiv{font-size:.72rem;color:#6b7280;background:#f9fafb;
   border-radius:8px;padding:9px 12px;text-align:center;line-height:1.6;
   border-left:3px solid #22c55e;}
@@ -185,12 +195,17 @@ body{background:#0f172a;font-family:'Syne',sans-serif;padding:40px 20px;min-heig
   padding:20px 24px 18px;
   display:flex;flex-direction:column;align-items:center;gap:10px;}
 .olu-d-band-tag{font-size:.64rem;font-weight:800;letter-spacing:2.5px;
-  text-transform:uppercase;color:rgba(134,239,172,.6);}
+  text-transform:uppercase;color:rgba(134,239,172,.6);text-align:center;}
 .olu-d-band-metrics{display:flex;flex-direction:column;gap:5px;width:100%;}
 .olu-d-band-m{display:flex;align-items:center;gap:10px;}
 .olu-d-band-m-ico{font-size:1.1rem;width:22px;text-align:center;flex-shrink:0;}
 .olu-d-band-m-val{font-size:.82rem;font-weight:800;color:#fff;flex-shrink:0;}
 .olu-d-band-m-lbl{font-size:.5rem;color:rgba(255,255,255,.4);text-transform:uppercase;letter-spacing:.5px;}
+.olu-d-band-m-badge{font-size:.52rem;font-weight:800;letter-spacing:.5px;text-transform:uppercase;
+  padding:2px 8px;border-radius:20px;margin-left:auto;white-space:nowrap;}
+.olu-d-band-m-badge.low{background:rgba(134,239,172,.15);color:#86efac;}
+.olu-d-band-m-badge.mid{background:rgba(249,115,22,.2);color:#fb923c;}
+.olu-d-band-m-badge.high{background:rgba(239,68,68,.2);color:#f87171;}
 .olu-d-band-equiv{font-size:.68rem;color:rgba(134,239,172,.55);text-align:center;line-height:1.5;}
 .olu-d-body{padding:24px 26px;display:flex;flex-direction:column;align-items:center;gap:14px;}
 .olu-d-icon{font-size:3.2rem;}
@@ -246,7 +261,7 @@ body{background:#0f172a;font-family:'Syne',sans-serif;padding:40px 20px;min-heig
         <div class="olu-a-eco-row">
           <div class="olu-a-eco-m"><span class="olu-a-eco-m-ico">⚡</span><span class="olu-a-eco-m-val">0.042 Wh</span></div>
           <div class="olu-a-eco-m"><span class="olu-a-eco-m-ico">💧</span><span class="olu-a-eco-m-val">0.8 ml</span></div>
-          <div class="olu-a-eco-m"><span class="olu-a-eco-m-ico">💨</span><span class="olu-a-eco-m-val">0.025 gCO₂</span><span class="olu-a-eco-m-lbl">Gaz</span></div>
+          <div class="olu-a-eco-m"><span class="olu-a-eco-m-ico">💨</span><span class="olu-a-eco-m-val">0.025 gCO₂</span><span class="olu-a-eco-m-lbl">Gaz</span><span class="olu-a-eco-m-badge low">Faible</span></div>
         </div>
         <div class="olu-a-eco-equiv">≈ 109 cm en voiture thermique — soit l’équivalent de quelques secondes au ralenti</div>
       </div>
@@ -280,7 +295,7 @@ body{background:#0f172a;font-family:'Syne',sans-serif;padding:40px 20px;min-heig
             <div class="olu-b-eco-m-trio">
               <div class="olu-b-eco-m-col"><span class="olu-b-eco-m-ico">⚡</span><span class="olu-b-eco-m-val">0.042 Wh</span></div>
               <div class="olu-b-eco-m-col"><span class="olu-b-eco-m-ico">💧</span><span class="olu-b-eco-m-val">0.8 ml</span></div>
-              <div class="olu-b-eco-m-col"><span class="olu-b-eco-m-ico">💨</span><span class="olu-b-eco-m-val">0.025 gCO₂</span><span class="olu-b-eco-m-lbl">Gaz</span></div>
+              <div class="olu-b-eco-m-col"><span class="olu-b-eco-m-ico">💨</span><span class="olu-b-eco-m-val">0.025 gCO₂</span><span class="olu-b-eco-m-lbl">Gaz</span><span class="olu-b-eco-m-badge low">Faible</span></div>
             </div>
             <div class="olu-b-eco-m-bottom">
               <div class="olu-b-eco-bar-track">
@@ -322,7 +337,7 @@ body{background:#0f172a;font-family:'Syne',sans-serif;padding:40px 20px;min-heig
           <div class="olu-c-eco-m">
             <div class="olu-c-eco-m-col"><span class="olu-c-eco-m-ico">⚡</span><span class="olu-c-eco-m-val">0.042 Wh</span></div>
             <div class="olu-c-eco-m-col"><span class="olu-c-eco-m-ico">💧</span><span class="olu-c-eco-m-val">0.8 ml</span></div>
-            <div class="olu-c-eco-m-col"><span class="olu-c-eco-m-ico">💨</span><span class="olu-c-eco-m-val">0.025 gCO₂</span><span class="olu-c-eco-m-lbl">Gaz</span></div>
+            <div class="olu-c-eco-m-col"><span class="olu-c-eco-m-ico">💨</span><span class="olu-c-eco-m-val">0.025 gCO₂</span><span class="olu-c-eco-m-lbl">Gaz</span><span class="olu-c-eco-m-badge low">Faible</span></div>
           </div>
         </div>
         <div class="olu-c-eco-equiv">≈ 109 cm en voiture thermique — soit l’équivalent de quelques secondes au ralenti</div>
@@ -350,7 +365,7 @@ body{background:#0f172a;font-family:'Syne',sans-serif;padding:40px 20px;min-heig
         <div class="olu-d-band-metrics">
           <div class="olu-d-band-m"><span class="olu-d-band-m-ico">⚡</span><span class="olu-d-band-m-val">0.042 Wh</span></div>
           <div class="olu-d-band-m"><span class="olu-d-band-m-ico">💧</span><span class="olu-d-band-m-val">0.8 ml</span></div>
-          <div class="olu-d-band-m"><span class="olu-d-band-m-ico">💨</span><span class="olu-d-band-m-val">0.025 gCO₂</span><span class="olu-d-band-m-lbl">Gaz</span></div>
+          <div class="olu-d-band-m"><span class="olu-d-band-m-ico">💨</span><span class="olu-d-band-m-val">0.025 gCO₂</span><span class="olu-d-band-m-lbl">Gaz</span><span class="olu-d-band-m-badge low">Faible</span></div>
         </div>
         <div class="olu-d-band-equiv">≈ 109 cm en voiture thermique — soit l’équivalent de quelques secondes au ralenti</div>
       </div>
