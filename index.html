@@ -2638,7 +2638,7 @@ MODE STRICT HTML UNIQUEMENT :
     },
     contents: strictHtmlOnly
       ? [{ role: 'user', parts: [{ text: `Applique cette demande à la vitrine et renvoie le HTML final uniquement : ${latestUserRequest || 'mise à jour demandée'}` }] }]
-      : conversationHistory.slice(-10),
+      : conversationHistory.slice(-30),
     generationConfig: strictHtmlOnly
       ? { temperature: 0.2, maxOutputTokens: 8192 }
       : { temperature: 0.9, maxOutputTokens: 8192 }

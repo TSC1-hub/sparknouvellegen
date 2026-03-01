@@ -417,8 +417,8 @@ serve(async (req: Request) => {
       });
     });
 
-    if (messages.length > 15) {
-      messages = [messages[0], ...messages.slice(-14)];
+    if (messages.length > 32) {
+      messages = [messages[0], ...messages.slice(-31)];
     }
 
     const mistralBody = {
