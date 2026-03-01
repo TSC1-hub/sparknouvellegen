@@ -316,6 +316,43 @@ serve(async (req: Request) => {
       });
     }
 
+    if (body?.action === "vitrine_delete_equipe") {
+      if (!SUPABASE_URL || !SUPABASE_SERVICE_ROLE_KEY) {
+        throw new Error("Secrets Supabase manquants pour vitrine_delete_equipe.");
+      }
+
+      const equipeId = body?.equipe_id;
+      const actorCodeDel = String(body?.actor_code || "").trim().toUpperCase();
+
+      if (!equipeId) {
+        throw new Error("equipe_id requis pour vitrine_delete_equipe.");
+      }
+
+      // Vérifier que l'acteur est FAC ou admin
+      const utilisateurDel = await getUtilisateurParCode(actorCodeDel);
+      if (!utilisateurDel) throw new Error("Utilisateur non autorisé.");
+      const roleNomDel = utilisateurDel?.roles?.nom || "";
+      if (!["facilitateur", "facilitateur_general", "admin"].includes(roleNomDel)) {
+        throw new Error("Seul un facilitateur peut supprimer les vitrines d'une équipe.");
+      }
+
+      await restQuery(
+        `/rest/v1/vitrines?equipe_id=eq.${encodeURIComponent(String(equipeId))}`,
+        { method: "DELETE", headers: { "Prefer": "return=minimal" } }
+      );
+
+      logEvent("info", "vitrine.delete_equipe.ok", {
+        reqId,
+        actorCode: actorCodeDel,
+        equipeId,
+        durationMs: Date.now() - t0,
+      });
+
+      return new Response(JSON.stringify({ ok: true }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
     if (body?.action === "vitrine_update") {
       if (!SUPABASE_URL || !SUPABASE_SERVICE_ROLE_KEY) {
         throw new Error("Secrets Supabase manquants pour vitrine_update.");

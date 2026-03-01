@@ -3842,11 +3842,32 @@ function confirmerSuppressionConv(eqId) {
 //    de TOUTES les données liées à l'équipe (vitrines, messages mentors, étape).
 async function supprimerConversationEquipe(eqId) {
   if (!eqId) return;
+
+  // conversations et messages_mentors : pas de RLS DELETE, suppression directe OK
   await Promise.all([
     sb.from('conversations').delete().eq('equipe_id', eqId),
-    sb.from('vitrines').delete().eq('equipe_id', eqId),
     sb.from('messages_mentors').delete().eq('equipe_id', eqId),
   ]);
+
+  // vitrines : protégées par RLS (SELECT only) → passage obligatoire par l'Edge Function
+  try {
+    const resp = await fetch(EDGE_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}` },
+      body: JSON.stringify({
+        action: 'vitrine_delete_equipe',
+        equipe_id: eqId,
+        actor_code: actorCode || null,
+      }),
+    });
+    const result = await resp.json();
+    if (!result.ok) throw new Error(result.error || 'Erreur suppression vitrines');
+  } catch (err) {
+    console.error('[supprimerConversationEquipe] vitrines:', err);
+    showToast('Erreur suppression vitrines : ' + (err.message || err), 'error');
+    return;
+  }
+
   await sb.from('equipes').update({ etape_courante: 0 }).eq('id', eqId);
   // Nettoyer l'état mémoire du drawer FAC
   facDrawerVitrines = [];
