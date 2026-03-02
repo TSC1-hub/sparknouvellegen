@@ -1,399 +1,414 @@
-<!DOCTYPE html>
+Put your HTML text <!DOCTYPE html>
 <html lang="fr">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>SPARK — Proposals Overlay Fin d'Étape</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Syne:wght@400;700;800&family=Fraunces:wght@700;900&display=swap">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Scene B — patch</title>
 <style>
-*{box-sizing:border-box;margin:0;padding:0;}
-body{background:#0f172a;font-family:'Syne',sans-serif;padding:40px 20px;min-height:100vh;}
+/* ── reset minimal ── */
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+body { font-family: 'Segoe UI', system-ui, sans-serif; background: #070d12; display: flex; align-items: center; justify-content: center; min-height: 100vh; }
 
-/* ─── NAV SELECTOR ─── */
-.selector{display:flex;gap:12px;justify-content:center;flex-wrap:wrap;margin-bottom:48px;}
-.sel-btn{padding:8px 20px;border-radius:999px;border:1.5px solid rgba(255,255,255,.12);
-  background:rgba(255,255,255,.05);color:rgba(255,255,255,.5);font-family:'Syne',sans-serif;
-  font-size:.7rem;font-weight:700;letter-spacing:1px;cursor:pointer;transition:all .2s;}
-.sel-btn.active,.sel-btn:hover{border-color:rgba(34,197,94,.6);background:rgba(34,197,94,.1);color:#fff;}
+/* ── backdrop ── */
+.backdrop { display: flex; align-items: center; justify-content: center; width: 100%; padding: 32px 16px; }
 
-/* ─── SCENE ─── */
-.scene{display:none;flex-direction:column;align-items:center;gap:12px;}
-.scene.show{display:flex;}
-.scene-label{font-size:.58rem;font-weight:800;letter-spacing:2.5px;text-transform:uppercase;
-  color:rgba(255,255,255,.25);margin-bottom:8px;}
+/* ── card ── */
+.olu-b {
+  position: relative;
+  width: min(400px, 100%);
+  background: #0e1a22;
+  border: 1px solid rgba(34,197,94,.18);
+  border-radius: 24px;
+  padding: 28px 24px 24px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  overflow: hidden;
+  box-shadow: 0 0 60px rgba(34,197,94,.06), 0 8px 32px rgba(0,0,0,.4);
+}
 
-/* backdrop simulé */
-.backdrop{width:100%;max-width:480px;min-height:520px;background:#1e293b;border-radius:24px;
-  display:flex;align-items:center;justify-content:center;padding:30px;position:relative;overflow:hidden;}
-.backdrop::before{content:'';position:absolute;inset:0;
-  background:repeating-linear-gradient(45deg,rgba(255,255,255,.02) 0,rgba(255,255,255,.02) 1px,transparent 1px,transparent 40px);
-  pointer-events:none;}
+/* glow */
+.olu-b-glow {
+  position: absolute;
+  top: -60px; left: 50%; transform: translateX(-50%);
+  width: 260px; height: 180px;
+  background: radial-gradient(ellipse, rgba(34,197,94,.12) 0%, transparent 70%);
+  pointer-events: none;
+}
 
-/* ────────────────────────────────────────────────────────────
-   A — ACTUEL (référence)
-──────────────────────────────────────────────────────────── */
-.olu-a{background:linear-gradient(160deg,#fff,#edfaf4);
-  border:1.5px solid rgba(34,197,94,.28);border-radius:26px;
-  padding:32px 34px;display:flex;flex-direction:column;align-items:center;gap:14px;
-  max-width:360px;width:100%;position:relative;overflow:hidden;}
-.olu-a-halo{position:absolute;top:-40px;left:50%;transform:translateX(-50%);
-  width:200px;height:200px;border-radius:50%;
-  background:radial-gradient(circle,rgba(34,197,94,.12) 0%,transparent 70%);pointer-events:none;}
-.olu-a-icon{font-size:3.2rem;}
-.olu-a-tag{background:rgba(34,197,94,.1);border:1px solid rgba(34,197,94,.28);
-  border-radius:20px;padding:4px 15px;font-size:.66rem;font-weight:800;letter-spacing:2px;
-  color:#16a34a;text-transform:uppercase;}
-.olu-a-title{font-size:1.5rem;font-weight:800;color:#1a1a2e;text-align:center;line-height:1.2;}
-.olu-a-desc{font-size:.8rem;color:#666;text-align:center;line-height:1.6;}
-.olu-a-eco{width:100%;background:linear-gradient(135deg,#f0fdf4,#ecfdf5);
-  border:1px solid rgba(34,197,94,.2);border-radius:12px;padding:12px 14px;}
-.olu-a-eco-ttl{font-size:.64rem;font-weight:800;letter-spacing:1.8px;text-transform:uppercase;color:#16a34a;margin-bottom:10px;text-align:center;}
-.olu-a-eco-row{display:flex;flex-direction:column;gap:5px;}
-.olu-a-eco-m{display:flex;align-items:center;gap:10px;}
-.olu-a-eco-m-ico{font-size:1.1rem;width:22px;text-align:center;flex-shrink:0;}
-.olu-a-eco-m-val{font-size:.82rem;font-weight:800;color:#1a1a2e;flex-shrink:0;}
-.olu-a-eco-m-lbl{font-size:.56rem;color:#6b7280;text-transform:uppercase;letter-spacing:.5px;}
-.olu-a-eco-m-badge{font-size:.52rem;font-weight:800;letter-spacing:.5px;text-transform:uppercase;
-  padding:2px 8px;border-radius:20px;margin-left:auto;white-space:nowrap;}
-.olu-a-eco-m-badge.low{background:rgba(34,197,94,.12);color:#16a34a;}
-.olu-a-eco-m-badge.mid{background:rgba(249,115,22,.12);color:#ea580c;}
-.olu-a-eco-m-badge.high{background:rgba(239,68,68,.12);color:#dc2626;}
-.olu-a-eco-equiv{font-size:.64rem;color:#374151;text-align:center;
-  background:rgba(255,255,255,.6);border-radius:7px;padding:6px 10px;margin-top:10px;
-  border-left:3px solid rgba(34,197,94,.4);}
-.olu-a-progress{display:flex;gap:5px;}
-.olu-a-pip{width:24px;height:4px;border-radius:3px;background:#e5e7eb;}
-.olu-a-pip.done{background:#22c55e;}
-.olu-a-pip.next{background:linear-gradient(90deg,#f09433,#cc2366);}
-.olu-a-btn{padding:12px 30px;border-radius:22px;border:none;cursor:pointer;
-  font-weight:800;font-size:.86rem;letter-spacing:.5px;
-  background:linear-gradient(135deg,#22c55e,#16a34a);color:#fff;
-  box-shadow:0 5px 14px rgba(34,197,94,.28);}
+/* badges top */
+.badge-new {
+  position: absolute; top: 14px; right: 14px;
+  background: rgba(34,197,94,.12);
+  border: 1px solid rgba(34,197,94,.25);
+  border-radius: 20px;
+  padding: 3px 11px;
+  font-size: .62rem; font-weight: 700; color: #22c55e;
+}
+.scene-label {
+  position: absolute; top: 14px; left: 14px;
+  font-size: .58rem; color: rgba(255,255,255,.25);
+  max-width: 180px; line-height: 1.4;
+}
 
+.olu-b-icon { font-size: 2.2rem; margin-top: 28px; }
+.olu-b-tag {
+  font-size: .62rem; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase;
+  color: #22c55e; margin-top: 4px;
+}
+.olu-b-title {
+  font-size: 1.1rem; font-weight: 800; color: #fff;
+  text-align: center; line-height: 1.3;
+}
+.olu-b-desc {
+  font-size: .72rem; color: rgba(255,255,255,.45);
+  text-align: center; line-height: 1.6;
+}
 
-/* ────────────────────────────────────────────────────────────
-   B — DARK GLOW "NIGHT MODE"
-──────────────────────────────────────────────────────────── */
-.olu-b{
-  background:linear-gradient(160deg,#0d1f0f,#111827);
-  border:1.5px solid rgba(34,197,94,.22);border-radius:28px;
-  padding:36px 32px;display:flex;flex-direction:column;align-items:center;gap:16px;
-  max-width:380px;width:100%;position:relative;overflow:hidden;
-  box-shadow:0 0 60px rgba(34,197,94,.08),inset 0 1px 0 rgba(34,197,94,.12);}
-.olu-b-glow{position:absolute;top:-60px;left:50%;transform:translateX(-50%);
-  width:260px;height:260px;border-radius:50%;
-  background:radial-gradient(circle,rgba(34,197,94,.18) 0%,transparent 65%);pointer-events:none;}
-.olu-b-icon{font-size:3.4rem;filter:drop-shadow(0 0 12px rgba(34,197,94,.4));}
-.olu-b-tag{background:rgba(34,197,94,.12);border:1px solid rgba(34,197,94,.3);
-  border-radius:20px;padding:4px 16px;font-size:.66rem;font-weight:800;
-  letter-spacing:2.5px;color:#4ade80;text-transform:uppercase;}
-.olu-b-title{font-size:1.55rem;font-weight:800;color:#f0fdf4;text-align:center;line-height:1.2;}
-.olu-b-desc{font-size:.82rem;color:#6b7280;text-align:center;line-height:1.6;}
-.olu-b-eco{width:100%;background:rgba(34,197,94,.07);
-  border:1px solid rgba(34,197,94,.18);border-radius:14px;padding:12px 14px;}
-.olu-b-eco-ttl{font-size:.66rem;font-weight:800;letter-spacing:2px;text-transform:uppercase;
-  color:#4ade80;margin-bottom:12px;display:flex;align-items:center;justify-content:center;gap:6px;}
-.olu-b-eco-ttl::before{content:'';display:inline-block;width:5px;height:5px;border-radius:50%;
-  background:#4ade80;box-shadow:0 0 6px #4ade80;}
-.olu-b-eco-row{display:flex;flex-direction:column;gap:7px;}
-.olu-b-eco-m{
-  background:rgba(0,0,0,.22);border-radius:12px;padding:12px 16px;
-  width:100%;box-sizing:border-box;}
-.olu-b-eco-m-hero{display:flex;align-items:center;gap:10px;margin-bottom:10px;}
-.olu-b-eco-m-trio{display:flex;flex-direction:column;gap:6px;margin-bottom:10px;}
-.olu-b-eco-m-col{display:flex;align-items:center;gap:10px;}
-.olu-b-eco-m-ico{font-size:1.1rem;width:22px;text-align:center;flex-shrink:0;}
-.olu-b-eco-m-val{
-  font-size:.88rem;font-weight:800;color:#f0fdf4;flex-shrink:0;}
-.olu-b-eco-m-lbl{
-  font-size:.56rem;color:#9ca3af;text-transform:uppercase;letter-spacing:.4px;}
-.olu-b-eco-m-badge{
-  font-size:.52rem;font-weight:800;letter-spacing:.5px;text-transform:uppercase;
-  padding:2px 8px;border-radius:20px;flex-shrink:0;white-space:nowrap;margin-left:auto;}
-.olu-b-eco-m-badge.low{background:rgba(34,197,94,.15);color:#4ade80;}
-.olu-b-eco-m-badge.mid{background:rgba(249,115,22,.15);color:#fb923c;}
-.olu-b-eco-m-badge.high{background:rgba(239,68,68,.15);color:#f87171;}
-.olu-b-eco-m-bottom{
-  display:flex;align-items:center;gap:10px;
-  width:100%;min-width:0;}
-.olu-b-eco-bar-track{
-  flex:1;min-width:0;height:8px;border-radius:5px;
-  background:rgba(255,255,255,.06);overflow:hidden;}
-.olu-b-eco-bar-fill{
-  height:100%;border-radius:5px;
-  background:var(--bar-col,#22c55e);
-  transition:width .5s ease;}
-.olu-b-eco-m-ref{
-  font-size:.64rem;color:#4b5563;
-  flex-shrink:0;white-space:nowrap;}
-.olu-b-eco-equiv{font-size:.68rem;color:#6b7280;text-align:center;margin-top:10px;line-height:1.6;word-break:break-word;}
-.olu-b-progress{display:flex;gap:5px;}
-.olu-b-pip{width:24px;height:3px;border-radius:3px;background:rgba(255,255,255,.08);}
-.olu-b-pip.done{background:#22c55e;box-shadow:0 0 4px rgba(34,197,94,.5);}
-.olu-b-pip.next{background:linear-gradient(90deg,#f09433,#cc2366);
-  box-shadow:0 0 6px rgba(220,39,67,.4);}
-.olu-b-btn{padding:13px 32px;border-radius:24px;border:1px solid rgba(34,197,94,.35);cursor:pointer;
-  font-weight:800;font-size:.88rem;letter-spacing:.8px;
-  background:rgba(34,197,94,.15);color:#4ade80;
-  box-shadow:0 0 20px rgba(34,197,94,.12);transition:all .2s;}
-.olu-b-btn:hover{background:rgba(34,197,94,.25);}
+/* ════════════════════════
+   ECO BLOCK — PATCH
+════════════════════════ */
+.olu-b-eco {
+  width: 100%;
+  background: rgba(255,255,255,.03);
+  border: 1px solid rgba(255,255,255,.07);
+  border-radius: 14px;
+  padding: 12px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+  margin-top: 4px;
+}
 
+/* ✦ PATCH 1 : titre centré */
+.olu-b-eco-ttl {
+  font-size: .65rem;
+  font-weight: 700;
+  color: rgba(255,255,255,.45);
+  text-transform: uppercase;
+  letter-spacing: 1.2px;
+  text-align: center;           /* ← centré */
+}
 
-/* ────────────────────────────────────────────────────────────
-   C — CARTE LARGE HORIZONTALE
-──────────────────────────────────────────────────────────── */
-.olu-c{
-  background:#fff;border-radius:24px;
-  max-width:480px;width:100%;overflow:hidden;
-  box-shadow:0 20px 60px rgba(0,0,0,.15);}
-.olu-c-top{
-  background:linear-gradient(135deg,#14532d,#166534);
-  padding:26px 28px;display:flex;align-items:center;gap:18px;}
-.olu-c-top-icon{font-size:3rem;filter:drop-shadow(0 2px 8px rgba(0,0,0,.3));}
-.olu-c-top-txt{flex:1;}
-.olu-c-top-tag{font-size:.64rem;font-weight:800;letter-spacing:2.5px;
-  text-transform:uppercase;color:rgba(255,255,255,.5);margin-bottom:5px;}
-.olu-c-top-title{font-size:1.35rem;font-weight:800;color:#fff;line-height:1.2;}
-.olu-c-top-desc{font-size:.76rem;color:rgba(255,255,255,.6);line-height:1.5;margin-top:4px;}
-.olu-c-body{padding:18px 22px;display:flex;flex-direction:column;gap:14px;}
-.olu-c-eco{display:flex;gap:10px;}
-.olu-c-eco-m{flex:1;background:#f0fdf4;border:1px solid rgba(34,197,94,.2);
-  border-radius:12px;padding:12px 14px;display:flex;flex-direction:column;gap:5px;}
-.olu-c-eco-m-col{display:flex;align-items:center;gap:10px;}
-.olu-c-eco-m-ico{font-size:1.1rem;width:22px;text-align:center;flex-shrink:0;}
-.olu-c-eco-m-val{font-size:.82rem;font-weight:800;color:#111;flex-shrink:0;}
-.olu-c-eco-m-lbl{font-size:.54rem;color:#6b7280;text-transform:uppercase;letter-spacing:.5px;}
-.olu-c-eco-m-badge{font-size:.52rem;font-weight:800;letter-spacing:.5px;text-transform:uppercase;
-  padding:2px 8px;border-radius:20px;margin-left:auto;white-space:nowrap;}
-.olu-c-eco-m-badge.low{background:rgba(34,197,94,.12);color:#16a34a;}
-.olu-c-eco-m-badge.mid{background:rgba(249,115,22,.12);color:#ea580c;}
-.olu-c-eco-m-badge.high{background:rgba(239,68,68,.12);color:#dc2626;}
-.olu-c-eco-equiv{font-size:.72rem;color:#6b7280;background:#f9fafb;
-  border-radius:8px;padding:9px 12px;text-align:center;line-height:1.6;
-  border-left:3px solid #22c55e;}
-.olu-c-progress{display:flex;gap:4px;align-items:center;}
-.olu-c-pip{flex:1;height:6px;border-radius:3px;background:#f3f4f6;}
-.olu-c-pip.done{background:#22c55e;}
-.olu-c-pip.next{background:linear-gradient(90deg,#f09433,#cc2366);}
-.olu-c-footer{display:flex;justify-content:flex-end;}
-.olu-c-btn{padding:12px 28px;border-radius:20px;border:none;cursor:pointer;
-  font-weight:800;font-size:.88rem;letter-spacing:.5px;font-family:'Syne',sans-serif;
-  background:linear-gradient(135deg,#22c55e,#16a34a);color:#fff;
-  box-shadow:0 4px 12px rgba(34,197,94,.25);}
+/* trio de métriques */
+.olu-b-eco-m-trio {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 6px;
+}
 
+.olu-b-eco-m-col {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  padding: 8px 6px;
+  background: rgba(255,255,255,.04);
+  border: 1px solid rgba(255,255,255,.07);
+  border-radius: 10px;
+}
 
-/* ────────────────────────────────────────────────────────────
-   D — SPLIT "ECO HERO"
-──────────────────────────────────────────────────────────── */
-.olu-d{
-  background:#fff;border-radius:26px;
-  max-width:360px;width:100%;overflow:hidden;
-  box-shadow:0 20px 50px rgba(0,0,0,.15);}
-.olu-d-band{
-  background:linear-gradient(135deg,#052e16,#14532d);
-  padding:20px 24px 18px;
-  display:flex;flex-direction:column;align-items:center;gap:10px;}
-.olu-d-band-tag{font-size:.64rem;font-weight:800;letter-spacing:2.5px;
-  text-transform:uppercase;color:rgba(134,239,172,.6);text-align:center;}
-.olu-d-band-metrics{display:flex;flex-direction:column;gap:5px;width:100%;}
-.olu-d-band-m{display:flex;align-items:center;gap:10px;}
-.olu-d-band-m-ico{font-size:1.1rem;width:22px;text-align:center;flex-shrink:0;}
-.olu-d-band-m-val{font-size:.82rem;font-weight:800;color:#fff;flex-shrink:0;}
-.olu-d-band-m-lbl{font-size:.5rem;color:rgba(255,255,255,.4);text-transform:uppercase;letter-spacing:.5px;}
-.olu-d-band-m-badge{font-size:.52rem;font-weight:800;letter-spacing:.5px;text-transform:uppercase;
-  padding:2px 8px;border-radius:20px;margin-left:auto;white-space:nowrap;}
-.olu-d-band-m-badge.low{background:rgba(134,239,172,.15);color:#86efac;}
-.olu-d-band-m-badge.mid{background:rgba(249,115,22,.2);color:#fb923c;}
-.olu-d-band-m-badge.high{background:rgba(239,68,68,.2);color:#f87171;}
-.olu-d-band-equiv{font-size:.68rem;color:rgba(134,239,172,.55);text-align:center;line-height:1.5;}
-.olu-d-body{padding:24px 26px;display:flex;flex-direction:column;align-items:center;gap:14px;}
-.olu-d-icon{font-size:3.2rem;}
-.olu-d-title-wrap{text-align:center;}
-.olu-d-supertitle{font-size:.66rem;font-weight:800;letter-spacing:2px;
-  text-transform:uppercase;color:#16a34a;margin-bottom:5px;}
-.olu-d-title{font-size:1.4rem;font-weight:800;color:#1a1a2e;line-height:1.2;}
-.olu-d-desc{font-size:.8rem;color:#6b7280;text-align:center;line-height:1.6;}
-.olu-d-progress{display:flex;gap:5px;}
-.olu-d-pip{width:24px;height:4px;border-radius:3px;background:#f3f4f6;}
-.olu-d-pip.done{background:#22c55e;}
-.olu-d-pip.next{background:linear-gradient(90deg,#f09433,#cc2366);}
-.olu-d-btn{width:100%;padding:13px;border-radius:22px;border:none;cursor:pointer;
-  font-weight:800;font-size:.88rem;letter-spacing:.5px;font-family:'Syne',sans-serif;
-  background:linear-gradient(135deg,#22c55e,#16a34a);color:#fff;
-  box-shadow:0 5px 14px rgba(34,197,94,.28);}
+.olu-b-eco-m-ico  { font-size: 1rem; }
+.olu-b-eco-m-val  { font-size: .72rem; font-weight: 700; color: #fff; }
 
+/* ✦ PATCH 2 : label + badge sur chaque colonne */
+.olu-b-eco-m-lbl  {
+  font-size: .52rem;
+  color: rgba(255,255,255,.3);
+  letter-spacing: .4px;
+}
 
-/* ─── BADGE "ACTUEL" / labels ─── */
-.badge-ref{display:inline-block;padding:2px 9px;background:rgba(255,255,255,.06);
-  border:1px solid rgba(255,255,255,.1);border-radius:20px;
-  font-size:.52rem;font-weight:700;letter-spacing:1px;color:rgba(255,255,255,.3);
-  margin-bottom:6px;text-transform:uppercase;}
-.badge-new{display:inline-block;padding:2px 9px;background:rgba(34,197,94,.1);
-  border:1px solid rgba(34,197,94,.25);border-radius:20px;
-  font-size:.52rem;font-weight:700;letter-spacing:1px;color:#4ade80;
-  margin-bottom:6px;text-transform:uppercase;}
+.olu-b-eco-m-badge {
+  font-size: .52rem;
+  font-weight: 700;
+  padding: 1px 7px;
+  border-radius: 20px;
+  white-space: nowrap;
+}
+.olu-b-eco-m-badge.low {
+  background: rgba(34,197,94,.12);
+  border: 1px solid rgba(34,197,94,.25);
+  color: #22c55e;
+}
+
+/* barre progression */
+.olu-b-eco-m-bottom {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 2px;
+}
+.olu-b-eco-bar-track {
+  flex: 1; height: 4px;
+  background: rgba(255,255,255,.06);
+  border-radius: 3px;
+  overflow: hidden;
+}
+.olu-b-eco-bar-fill {
+  height: 100%;
+  border-radius: 3px;
+  background: var(--bar-col, #22c55e);
+  transition: width .6s ease;
+}
+.olu-b-eco-m-ref {
+  font-size: .57rem; color: rgba(255,255,255,.25);
+  white-space: nowrap;
+}
+
+/* équivalence */
+.olu-b-eco-equiv {
+  font-size: .62rem;
+  color: rgba(255,255,255,.3);
+  text-align: center;
+  line-height: 1.5;
+  font-style: italic;
+}
+
+/* phrase pédagogique */
+.olu-b-eco-pedagogy {
+  font-size: .68rem;
+  color: rgba(255,255,255,.55);
+  text-align: center;
+  margin-top: 6px;
+  line-height: 1.4;
+  padding: 5px 8px;
+  background: rgba(255,255,255,.03);
+  border-radius: 8px;
+  border: 1px solid rgba(255,255,255,.06);
+}
+
+/* progress pips */
+.olu-b-progress { display: flex; gap: 5px; margin-top: 4px; }
+.olu-b-pip {
+  width: 8px; height: 8px; border-radius: 50%;
+  background: rgba(255,255,255,.1);
+}
+.olu-b-pip.done { background: #22c55e; }
+.olu-b-pip.next {
+  background: transparent;
+  border: 2px solid rgba(255,255,255,.3);
+}
+
+/* bouton */
+.olu-b-btn {
+  width: 100%;
+  padding: 12px;
+  background: linear-gradient(135deg, #16a34a, #15803d);
+  border: none; border-radius: 12px;
+  font-size: .82rem; font-weight: 700; color: #fff;
+  cursor: pointer;
+  box-shadow: 0 4px 18px rgba(34,197,94,.25);
+  transition: all .22s;
+}
+.olu-b-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(34,197,94,.35); }
 </style>
 </head>
 <body>
 
-<!-- ─── SELECTOR ─── -->
-<div class="selector">
-  <button class="sel-btn active" onclick="show('a')">A — Actuel (référence)</button>
-  <button class="sel-btn" onclick="show('b')">B — Dark Glow</button>
-  <button class="sel-btn" onclick="show('c')">C — Carte large horizontale</button>
-  <button class="sel-btn" onclick="show('d')">D — Split Éco Hero</button>
-</div>
-
-<!-- ════════════ A ════════════ -->
-<div class="scene show" id="scene-a">
-  <span class="badge-ref">Actuel (référence)</span>
-  <p class="scene-label">Design existant — base de comparaison</p>
-  <div class="backdrop">
-    <div class="olu-a">
-      <div class="olu-a-halo"></div>
-      <div class="olu-a-icon">🔍</div>
-      <div class="olu-a-tag">Étape débloquée !</div>
-      <div class="olu-a-title">Jour 1 — Problématiser</div>
-      <div class="olu-a-desc">Votre équipe a complété "Découvrir" ✓<br>La prochaine étape est débloquée !</div>
-      <div class="olu-a-eco">
-        <div class="olu-a-eco-ttl">💨 Votre impact pour cette étape</div>
-        <div class="olu-a-eco-row">
-          <div class="olu-a-eco-m"><span class="olu-a-eco-m-ico">⚡</span><span class="olu-a-eco-m-val">0.042 Wh</span></div>
-          <div class="olu-a-eco-m"><span class="olu-a-eco-m-ico">💧</span><span class="olu-a-eco-m-val">0.8 ml</span></div>
-          <div class="olu-a-eco-m"><span class="olu-a-eco-m-ico">💨</span><span class="olu-a-eco-m-val">0.025 gCO₂</span><span class="olu-a-eco-m-lbl">Gaz</span><span class="olu-a-eco-m-badge low">Faible</span></div>
-        </div>
-        <div class="olu-a-eco-equiv">≈ 109 cm en voiture thermique — soit l’équivalent de quelques secondes au ralenti</div>
-      </div>
-      <div class="olu-a-progress">
-        <div class="olu-a-pip done"></div><div class="olu-a-pip next"></div>
-        <div class="olu-a-pip"></div><div class="olu-a-pip"></div>
-        <div class="olu-a-pip"></div><div class="olu-a-pip"></div>
-      </div>
-      <button class="olu-a-btn">On continue ! 🚀</button>
-    </div>
-  </div>
-</div>
-
 <!-- ════════════ B ════════════ -->
 <div class="scene" id="scene-b">
-  <span class="badge-new">Proposition B</span>
-  <p class="scene-label">Dark Glow — pour les utilisateurs en mode sombre ou usage nocturne</p>
   <div class="backdrop" style="background:#070d12;">
     <div class="olu-b">
       <div class="olu-b-glow"></div>
       <div class="olu-b-icon">🔍</div>
       <div class="olu-b-tag">Étape débloquée !</div>
       <div class="olu-b-title">Jour 1 — Problématiser</div>
-      <div class="olu-b-desc">Votre équipe a complété "Découvrir" ✓<br>La prochaine étape est débloquée !</div>
+      <div class="olu-b-desc">
+        Votre équipe a complété "Découvrir" ✓<br>
+        La prochaine étape est débloquée !
+      </div>
+
       <div class="olu-b-eco">
+
+        <!-- ✦ PATCH 1 : text-align:center ajouté dans le CSS -->
         <div class="olu-b-eco-ttl">Votre impact pour cette étape</div>
-        <div class="olu-b-eco-row">
 
-          <!-- 3 métriques compactes -->
-          <div class="olu-b-eco-m">
-            <div class="olu-b-eco-m-trio">
-              <div class="olu-b-eco-m-col"><span class="olu-b-eco-m-ico">⚡</span><span class="olu-b-eco-m-val">0.042 Wh</span></div>
-              <div class="olu-b-eco-m-col"><span class="olu-b-eco-m-ico">💧</span><span class="olu-b-eco-m-val">0.8 ml</span></div>
-              <div class="olu-b-eco-m-col"><span class="olu-b-eco-m-ico">💨</span><span class="olu-b-eco-m-val">0.025 gCO₂</span><span class="olu-b-eco-m-lbl">Gaz</span><span class="olu-b-eco-m-badge low">Faible</span></div>
+        <div class="olu-b-eco-m">
+          <div class="olu-b-eco-m-trio">
+
+            <!-- ⚡ Énergie — ✦ PATCH 2 : label + badge ajoutés -->
+            <div class="olu-b-eco-m-col">
+              <span class="olu-b-eco-m-ico">⚡</span>
+              <span class="olu-b-eco-m-val" id="val-wh">0.042 Wh</span>
+              <span class="olu-b-eco-m-lbl">Énergie</span>
+              <span class="olu-b-eco-m-badge low" id="badge-wh">Faible</span>
             </div>
-            <div class="olu-b-eco-m-bottom">
-              <div class="olu-b-eco-bar-track">
-                <div class="olu-b-eco-bar-fill" style="--bar-col:#22c55e;width:1.4%"></div>
-              </div>
-              <span class="olu-b-eco-m-ref">/ 1.8 gCO₂ session</span>
+
+            <!-- 💧 Eau — ✦ PATCH 2 : label + badge ajoutés -->
+            <div class="olu-b-eco-m-col">
+              <span class="olu-b-eco-m-ico">💧</span>
+              <span class="olu-b-eco-m-val" id="val-ml">0.8 ml</span>
+              <span class="olu-b-eco-m-lbl">Eau</span>
+              <span class="olu-b-eco-m-badge low" id="badge-ml">Faible</span>
             </div>
+
+            <!-- 💨 CO₂ — inchangé -->
+            <div class="olu-b-eco-m-col">
+              <span class="olu-b-eco-m-ico">💨</span>
+              <span class="olu-b-eco-m-val" id="val-co2">0.025 gCO₂</span>
+              <span class="olu-b-eco-m-lbl">Gaz</span>
+              <span class="olu-b-eco-m-badge low" id="badge-co2">Faible</span>
+            </div>
+
           </div>
 
+          <div class="olu-b-eco-m-bottom">
+            <div class="olu-b-eco-bar-track">
+              <div class="olu-b-eco-bar-fill" style="--bar-col:#22c55e; width:1.4%"></div>
+            </div>
+            <span class="olu-b-eco-m-ref">/ 1.8 gCO₂ session</span>
+          </div>
         </div>
-        <div class="olu-b-eco-equiv">≈ 109 cm en voiture thermique — soit l’équivalent de quelques secondes au ralenti</div>
+
+        <div class="olu-b-eco-equiv" id="eco-equiv"></div>
+        <div class="olu-b-eco-pedagogy" id="eco-pedagogy"></div>
       </div>
+
       <div class="olu-b-progress">
-        <div class="olu-b-pip done"></div><div class="olu-b-pip next"></div>
-        <div class="olu-b-pip"></div><div class="olu-b-pip"></div>
-        <div class="olu-b-pip"></div><div class="olu-b-pip"></div>
+        <div class="olu-b-pip done"></div>
+        <div class="olu-b-pip next"></div>
+        <div class="olu-b-pip"></div>
+        <div class="olu-b-pip"></div>
+        <div class="olu-b-pip"></div>
+        <div class="olu-b-pip"></div>
       </div>
-      <button class="olu-b-btn">On continue ! 🚀</button>
-    </div>
-  </div>
-</div>
 
-<!-- ════════════ C ════════════ -->
-<div class="scene" id="scene-c">
-  <span class="badge-new">Proposition C</span>
-  <p class="scene-label">Carte large horizontale — plus d'espace, lecture naturelle haut→bas</p>
-  <div class="backdrop" style="max-width:560px;margin:0 auto;">
-    <div class="olu-c">
-      <div class="olu-c-top">
-        <div class="olu-c-top-icon">🔍</div>
-        <div class="olu-c-top-txt">
-          <div class="olu-c-top-tag">Étape débloquée !</div>
-          <div class="olu-c-top-title">Jour 1 — Problématiser</div>
-          <div class="olu-c-top-desc">Votre équipe a complété "Découvrir" ✓ La prochaine étape est débloquée !</div>
-        </div>
-      </div>
-      <div class="olu-c-body">
-        <div class="olu-c-eco">
-          <div class="olu-c-eco-m">
-            <div class="olu-c-eco-m-col"><span class="olu-c-eco-m-ico">⚡</span><span class="olu-c-eco-m-val">0.042 Wh</span></div>
-            <div class="olu-c-eco-m-col"><span class="olu-c-eco-m-ico">💧</span><span class="olu-c-eco-m-val">0.8 ml</span></div>
-            <div class="olu-c-eco-m-col"><span class="olu-c-eco-m-ico">💨</span><span class="olu-c-eco-m-val">0.025 gCO₂</span><span class="olu-c-eco-m-lbl">Gaz</span><span class="olu-c-eco-m-badge low">Faible</span></div>
-          </div>
-        </div>
-        <div class="olu-c-eco-equiv">≈ 109 cm en voiture thermique — soit l’équivalent de quelques secondes au ralenti</div>
-        <div class="olu-c-progress">
-          <div class="olu-c-pip done"></div><div class="olu-c-pip next"></div>
-          <div class="olu-c-pip"></div><div class="olu-c-pip"></div>
-          <div class="olu-c-pip"></div><div class="olu-c-pip"></div>
-        </div>
-        <div class="olu-c-footer">
-          <button class="olu-c-btn">On continue ! 🚀</button>
-        </div>
-      </div>
-    </div>
-  </div>
-</div>
-
-<!-- ════════════ D ════════════ -->
-<div class="scene" id="scene-d">
-  <span class="badge-new">Proposition D</span>
-  <p class="scene-label">Split Éco Hero — l'éco en bandeau sombre en haut, unlock en bas clair</p>
-  <div class="backdrop">
-    <div class="olu-d">
-      <div class="olu-d-band">
-        <div class="olu-d-band-tag">⚡ Impact IA — Étape Découvrir</div>
-        <div class="olu-d-band-metrics">
-          <div class="olu-d-band-m"><span class="olu-d-band-m-ico">⚡</span><span class="olu-d-band-m-val">0.042 Wh</span></div>
-          <div class="olu-d-band-m"><span class="olu-d-band-m-ico">💧</span><span class="olu-d-band-m-val">0.8 ml</span></div>
-          <div class="olu-d-band-m"><span class="olu-d-band-m-ico">💨</span><span class="olu-d-band-m-val">0.025 gCO₂</span><span class="olu-d-band-m-lbl">Gaz</span><span class="olu-d-band-m-badge low">Faible</span></div>
-        </div>
-        <div class="olu-d-band-equiv">≈ 109 cm en voiture thermique — soit l’équivalent de quelques secondes au ralenti</div>
-      </div>
-      <div class="olu-d-body">
-        <div class="olu-d-icon">🔍</div>
-        <div class="olu-d-title-wrap">
-          <div class="olu-d-supertitle">Étape débloquée !</div>
-          <div class="olu-d-title">Jour 1 — Problématiser</div>
-        </div>
-        <div class="olu-d-desc">Votre équipe a complété "Découvrir" ✓<br>La prochaine étape est débloquée !</div>
-        <div class="olu-d-progress">
-          <div class="olu-d-pip done"></div><div class="olu-d-pip next"></div>
-          <div class="olu-d-pip"></div><div class="olu-d-pip"></div>
-          <div class="olu-d-pip"></div><div class="olu-d-pip"></div>
-        </div>
-        <button class="olu-d-btn">On continue ! 🚀</button>
-      </div>
+      <button class="olu-b-btn" onclick="continuer()">On continue ! 🚀</button>
     </div>
   </div>
 </div>
 
 <script>
-function show(id){
-  document.querySelectorAll('.scene').forEach(s=>s.classList.remove('show'));
-  document.querySelectorAll('.sel-btn').forEach(b=>b.classList.remove('active'));
-  document.getElementById('scene-'+id).classList.add('show');
-  document.querySelectorAll('.sel-btn')[{a:0,b:1,c:2,d:3}[id]].classList.add('active');
+// ── CONSTANTES DE CALCUL (identiques à la spec) ──
+const WH_PER_TOKEN  = 0.001;
+const ML_PER_TOKEN  = 0.018;
+const CO2_PER_TOKEN = 0.0006;
+
+// ── LIRE localStorage ──
+function getEcoData() {
+  try {
+    return JSON.parse(localStorage.getItem('spark_eco_data') || '{}');
+  } catch(e) {
+    return {};
+  }
 }
+
+// ── ÉQUIVALENCES textuelles ──
+
+// Phrase pédagogique : traduit les Wh en analogie du quotidien
+function equivPedago(wh) {
+  // Ampoule LED 4 W → 4/3600 Wh par seconde
+  const ledSec = Math.round(wh / (4 / 3600));
+  if (ledSec < 2)  return '💡 Moins d\'une seconde d\'ampoule LED allumée.';
+  if (ledSec < 90) return `💡 Comme avoir une ampoule LED allumée ${ledSec} seconde${ledSec > 1 ? 's' : ''}.`;
+  const ledMin = Math.round(ledSec / 60);
+  if (ledMin < 120) return `💡 Comme avoir une ampoule LED allumée ${ledMin} minute${ledMin > 1 ? 's' : ''}.`;
+  const ledH = (ledSec / 3600).toFixed(1);
+  return `💡 Comme avoir une ampoule LED allumée ${ledH} heure${parseFloat(ledH) > 1 ? 's' : ''}.`;
+}
+
+function equivCo2(gCo2) {
+  const cm = Math.round(gCo2 / 0.00023);
+  if (cm < 100)  return `≈ ${cm} cm en voiture thermique`;
+  if (cm < 1000) return `≈ ${(cm/100).toFixed(1)} m en voiture thermique`;
+  return `≈ ${(cm/100000).toFixed(2)} km en voiture thermique`;
+}
+
+// ── NIVEAU (low / mid / high) ──
+function level(wh) {
+  if (wh < 0.3)  return 'low';
+  if (wh < 1.5)  return 'mid';
+  return 'high';
+}
+
+const LEVEL_LABELS = { low: 'Faible', mid: 'Modéré', high: 'Élevé' };
+const LEVEL_COLORS = { low: '#22c55e', mid: '#f5a623', high: '#f06050' };
+
+// ── REMPLIR L'ÉCRAN ──
+function renderBilan(stepId) {
+  const data       = getEcoData();
+  const step       = (data.byStep || {})[stepId] || { wh: 0, ml: 0, co2: 0 };
+  const sessionCo2 = data.sessionCo2 || 0;
+
+  // Valeurs de l'étape
+  const wh  = step.wh  || 0;
+  const ml  = step.ml  || 0;
+  const co2 = step.co2 || 0;
+
+  // Niveau commun basé sur l'énergie
+  const lvl      = level(wh);
+  const lvlLabel = LEVEL_LABELS[lvl];
+  const lvlColor = LEVEL_COLORS[lvl];
+
+  // Remplir les valeurs
+  document.getElementById('val-wh').textContent  = wh  < 0.1 ? wh.toFixed(3)  + ' Wh'   : wh.toFixed(2)  + ' Wh';
+  document.getElementById('val-ml').textContent  = ml  < 1   ? ml.toFixed(2)  + ' ml'   : ml.toFixed(1)  + ' ml';
+  document.getElementById('val-co2').textContent = co2 < 0.01 ? co2.toFixed(4) + ' gCO₂' : co2.toFixed(3) + ' gCO₂';
+
+  // Badges dynamiques
+  ['badge-wh', 'badge-ml', 'badge-co2'].forEach(id => {
+    const el = document.getElementById(id);
+    el.textContent = lvlLabel;
+    el.style.background = lvlColor + '22';
+    el.style.borderColor = lvlColor + '55';
+    el.style.color = lvlColor;
+  });
+
+  // Barre de progression : proportion de cette étape dans la session
+  const barPct = sessionCo2 > 0
+    ? Math.min(100, (co2 / sessionCo2) * 100)
+    : 1.4; // fallback si session vide (démo)
+
+  const barFill = document.querySelector('.olu-b-eco-bar-fill');
+  barFill.style.setProperty('--bar-col', lvlColor);
+  barFill.style.width = Math.max(barPct, 0.5) + '%';
+
+  // Référence session (dénominateur de la barre)
+  const refEl = document.querySelector('.olu-b-eco-m-ref');
+  if (sessionCo2 > 0) {
+    refEl.textContent = `/ ${sessionCo2.toFixed(3)} gCO₂ session`;
+  } else {
+    refEl.textContent = ''; // pas de session connue → on masque
+  }
+
+  // Équivalence textuelle CO₂
+  document.getElementById('eco-equiv').textContent = equivCo2(co2);
+
+  // Phrase pédagogique énergie
+  document.getElementById('eco-pedagogy').textContent = equivPedago(wh);
+}
+
+function continuer() {
+  // Reset sessionCo2/Wh/Ml pour la prochaine étape
+  const data = getEcoData();
+  data.sessionCo2    = 0;
+  data.sessionWh     = 0;
+  data.sessionMl     = 0;
+  data.sessionTokens = 0;
+  localStorage.setItem('spark_eco_data', JSON.stringify(data));
+  alert('→ Navigation vers l\'étape suivante');
+}
+
+// ── DEMO : injecter des données fictives si localStorage vide ──
+(function seedDemoIfEmpty() {
+  const data = getEcoData();
+  if (!data.byStep) {
+    // Simuler une session réelle avec 3 messages
+    const mock = {
+      totalTokens: 168, totalWh: 0.168, totalMl: 3.024, totalCo2: 0.1008,
+      sessionTokens: 70, sessionWh: 0.07, sessionMl: 1.26, sessionCo2: 0.042,
+      byStep: {
+        etape0: { tokens: 70, wh: 0.07, ml: 1.26, co2: 0.042 }
+      },
+      lastUpdated: new Date().toISOString()
+    };
+    localStorage.setItem('spark_eco_data', JSON.stringify(mock));
+  }
+})();
+
+// Lancer le rendu pour l'étape 0
+renderBilan('etape0');
 </script>
 </body>
 </html>
