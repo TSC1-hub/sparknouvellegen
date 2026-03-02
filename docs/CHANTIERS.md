@@ -84,12 +84,16 @@ Voir aussi [`docs/PROD_SECURITE.md`](PROD_SECURITE.md) pour le détail.
 |---|---|---|
 | Écriture vitrines via Edge Function uniquement | ✅ | `verifierAccesEcritureVitrine()` |
 | Vérification auth double (session + actor_code) | ✅ | Edge Function `proxy-mistral` |
+| Appel Edge Function avec clé anon (fix 401) | ✅ | `invokeProxyMistral` envoie toujours `Bearer SUPABASE_KEY` — plus de JWT ES256 |
+| `validerEtape` via Edge Function (service role) | ✅ | Nouvelle action `equipe_valider_etape` — fix reprise étape après déco/reco |
+| Team → Mentor : `saveMsg` robuste | ✅ | Fix 401 sur INSERT `conversations` |
+| `ensureEdgeSession` robuste (refresh + nouv. session) | ✅ | Gestion tokens expirés et refresh tokens périmés |
 | RLS table `vitrines` — écriture client interdite | ⚠️ | Script SQL fourni, à appliquer en prod (voir PROD_SECURITE.md §1) |
-| Rate-limit par actor_code | ❌ | À implémenter dans l'Edge Function (30 req/min recommandé) |
-| Logs d'audit (actor_code, équipe, action, timestamp) | ❌ | À implémenter dans l'Edge Function |
+| Rate-limit par actor_code | ✅ | Implémenté dans l'Edge Function (60 req/min Mistral, 30 valider_etape) |
+| Logs d'audit (actor_code, équipe, action, timestamp) | ✅ | `logEvent()` dans l'Edge Function |
 | Login par code → session JWT signée | ❌ | Auth Supabase réelle — nécessaire avant ouverture publique |
 | Monitoring + alertes erreurs Edge | ❌ | À configurer avant prod |
-| Secrets (`service_role`, clés API) côté serveur uniquement | ⚠️ | À vérifier : aucune clé exposée côté client |
+| Secrets (`service_role`, clés API) côté serveur uniquement | ⚠️ | Clé anon exposée côté client (normal), service_role uniquement dans l'Edge |
 
 ---
 
@@ -143,29 +147,66 @@ Expérience utilisateur, responsive, animations.
 
 ---
 
+## Chantier 9 — RGPD & Conformité
+
+Contexte : programme scolaire avec mineurs. Le DPA Mistral et la purge des données sont les deux points bloquants pour un déploiement conforme.
+
+| Action | Statut | Détail |
+|---|---|---|
+| DPA (Data Processing Agreement) Mistral signé | ❌ | À signer manuellement sur https://mistral.ai/terms avant usage en production avec mineurs |
+| Purge automatique des données | ❌ | `pg_cron` — DELETE conversations + messages WHERE `created_at < NOW() - INTERVAL '9 months'` |
+| Colonne `consentement_papier` | ❌ | `ALTER TABLE utilisateurs ADD COLUMN IF NOT EXISTS consentement_papier boolean DEFAULT false;` |
+| CORS restreint à l'origine prod | ⚠️ | Edge Function actuellement `"Access-Control-Allow-Origin": "*"` — à restreindre à `https://tsc1-hub.github.io` |
+| Politique de conservation documentée | ❌ | Définir durée de conservation dans mentions légales / CGU |
+| Pas de données personnelles identifiantes stockées | ✅ | Seuls pseudos + codes équipe — pas de nom réel ni email |
+| Logs Edge Function sans PII | ✅ | Logs limites à `actor_code`, `equipe_id`, action — pas de contenu de messages |
+
+### Ce qu'il faut faire avant tout usage avec mineurs en production
+
+1. **DPA Mistral** : https://mistral.ai/terms — signature manuelle, gratuit
+2. **CORS** : dans `supabase/functions/proxy-mistral/index.ts`, remplacer `"*"` par `"https://tsc1-hub.github.io"`
+3. **Purge** : activer `pg_cron` dans Supabase (Extensions) + créer le job SQL ci-dessous
+4. **Consentement** : ajouter la colonne + cocher dans l’interface FAC lors de l’inscription d’une équipe
+
+```sql
+-- Job de purge à exécuter 1x/mois (extension pg_cron requise)
+SELECT cron.schedule(
+  'purge-old-data',
+  '0 3 1 * *',  -- 1er du mois à 3h
+  $$
+    DELETE FROM public.conversations  WHERE created_at < NOW() - INTERVAL '9 months';
+    DELETE FROM public.messages_mentors WHERE created_at < NOW() - INTERVAL '9 months';
+  $$
+);
+```
+
+---
+
 ## Récapitulatif priorités
 
 ### Avant ouverture publique (bloquant)
 
-1. ❌ **Rate-limit** Edge Function — risque d'abus / coûts Mistral
-2. ⚠️ **RLS vitrines** — appliquer le script SQL (PROD_SECURITE.md §1)
-3. ❌ **Login JWT** — remplacer auth par simple code par session Supabase signée
-4. ⚠️ **Secrets** — audit final aucune clé exposée côté client
+1. ❌ **DPA Mistral** signé — obligatoire avec mineurs
+2. ❌ **CORS restreint** — remplacer `"*"` par `"https://tsc1-hub.github.io"` dans l’Edge
+3. ❌ **Purge data** `pg_cron` 9 mois — obligation RGPD
+4. ⚠️ **RLS vitrines** — appliquer le script SQL (PROD_SECURITE.md §1)
+5. ❌ **Login JWT** — remplacer auth par simple code par session Supabase signée
+6. ⚠️ **Secrets** — audit final aucune clé service_role exposée côté client
 
 ### Recommandé avant beta large
 
-5. ❌ **Logs d'audit** Edge Function
-6. ❌ **Tests parcours** élève + mentor + FAC
-7. ⚠️ **RLS conversations & messages_mentors** — vérification
-8. ❌ **Indexes BDD** — performance sous charge
+7. ❌ **Colonne `consentement_papier`** — suivi consentement par équipe
+8. ❌ **Tests parcours** élève + mentor + FAC
+9. ⚠️ **RLS conversations & messages_mentors** — vérification
+10. ❌ **Indexes BDD** — performance sous charge
 
 ### Améliorations non bloquantes
 
-9. ❌ Dark mode
-10. ❌ Accessibilité a11y
-11. ⚠️ Responsive mobile — tests terminaux réels
-12. ❌ Animations de transition entre vues
+11. ❌ Dark mode
+12. ❌ Accessibilité a11y
+13. ⚠️ Responsive mobile — tests terminaux réels
+14. ❌ Animations de transition entre vues
 
 ---
 
-*Dernière mise à jour : 2025-02 · Commit de référence : `4ac4ea8`*
+*Dernière mise à jour : 2026-03-02 · Commit de référence : `905096d`*

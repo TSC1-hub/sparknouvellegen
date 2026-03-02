@@ -1,67 +1,107 @@
-# Migration prod sans rupture (version noob-friendly)
+# Sécurité prod — SPARK · The Schools Challenge
 
-Objectif: garder la même application côté utilisateur, mais fermer les failles de sécurité avant un vrai déploiement public.
-
-## Niveau actuel (après durcissement)
-
-- ✅ Écritures `vitrines` passent par l’Edge Function.
-- ✅ L’Edge vérifie que l’utilisateur (`actor_code`) a le droit d’écrire pour l’équipe.
-- ⚠️ Il reste à fermer proprement les policies SQL côté table `vitrines`.
-- ⚠️ Le login par simple code reste faible pour une vraie prod internet.
+> État au 2026-03-02 · Commit de référence : `905096d`
 
 ---
 
-## Plan en 5 actions
+## État actuel de la sécurité
 
-## 1) Fermer la table `vitrines` côté client (urgent)
-
-Dans Supabase SQL Editor, exécute le script de:
-
-- [supabase/migrations/20260227_prod_security_baseline.sql](supabase/migrations/20260227_prod_security_baseline.sql)
-
-Effet:
-- lecture autorisée,
-- écriture directe client interdite,
-- seules les écritures via Edge Function autorisée restent possibles.
-
-## 2) Tester les parcours sans changer l’UX
-
-Checklist (dans l’app):
-- élève envoie un message,
-- SPARK modifie la vitrine,
-- sauvegarde carnet fonctionne,
-- facilitateur édite une vitrine,
-- mentor continue de fonctionner.
-
-Attendu: tout fonctionne comme avant.
-
-## 3) Bloquer les abus réseau simples
-
-Dans l’Edge Function `proxy-mistral`, ajouter ensuite (étape suivante):
-- rate-limit par `actor_code` (ex: 30 requêtes / minute),
-- logs d’audit (`actor_code`, `equipe_id`, action, timestamp, résultat).
-
-## 4) Passer de “code-only login” à une vraie session
-
-C’est la vraie marche vers la prod:
-- utiliser Supabase Auth (JWT) au login,
-- garder les codes d’équipe, mais les échanger contre une session signée,
-- vérifier le JWT dans l’Edge (en plus de `actor_code`).
-
-## 5) Bascule prod en sécurité
-
-Avant ouverture publique:
-- revérifier qu’aucune policy `FOR ALL USING (true)` n’existe,
-- revérifier les secrets (`service_role`, clés API) uniquement côté serveur,
-- activer monitoring + alertes d’erreurs Edge.
+| Point | Statut | Notes |
+|---|---|---|
+| Écritures `vitrines` via Edge Function uniquement | ✅ | `verifierAccesEcritureVitrine()` — service role |
+| RLS table `vitrines` — écriture client bloquée | ⚠️ | Script SQL prêt (`20260227_prod_security_baseline.sql`) — **à appliquer en prod** |
+| Auth double (session + `actor_code`) | ✅ | Edge Function valide les deux |
+| `invokeProxyMistral` — clé anon uniquement | ✅ | Fix 401 : plus de JWT ES256 envoyé à la gateway Supabase |
+| `validerEtape` via Edge Function (service role) | ✅ | Action `equipe_valider_etape` — contourne les restrictions anon sur `equipes` |
+| Rate-limit par `actor_code` | ✅ | 60 req/min Mistral · 30 req/min valider_etape · 10 req/min login |
+| Logs d'audit structurés | ✅ | `logEvent()` — actor_code, equipe_id, action, durée, timestamp |
+| Binding `auth_user_id` ↔ code métier | ✅ | Migration `20260227_auth_user_binding.sql` — vérification progressive |
+| Secrets (`service_role`, clés API) côté serveur | ✅ | Uniquement dans les secrets Edge Function Supabase |
+| Clé anon exposée côté client | ⚠️ | Normal pour Supabase — protégée par RLS en prod |
+| CORS `Access-Control-Allow-Origin: *` | ❌ | **À restreindre** à `https://tsc1-hub.github.io` avant prod |
+| Login JWT signé (vs simple code) | ❌ | Auth Supabase en session — nécessaire avant ouverture publique large |
+| Monitoring + alertes Edge | ❌ | À configurer avant prod |
 
 ---
 
-## Réponse à la question “est-ce que ça cassera l’app ?”
+## Actions restantes avant production
 
-Si on suit ce plan dans cet ordre: non.
+### 1 — Appliquer le script RLS `vitrines` (5 min)
 
-- Les étapes 1 et 2 sont conçues pour garder le fonctionnement actuel.
-- Les étapes 3-5 renforcent la sécurité progressivement, sans casser l’UX.
+Dans le **SQL Editor Supabase** :
 
-Le seul endroit qui peut demander un ajustement est le HTML vitrine si le contenu est invalide ou mal formé (normal et gérable).
+```sql
+-- Contenu de supabase/migrations/20260227_prod_security_baseline.sql
+ALTER TABLE public.vitrines ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS allow_all_vitrines ON public.vitrines;
+DROP POLICY IF EXISTS vitrines_read_all  ON public.vitrines;
+CREATE POLICY vitrines_read_all ON public.vitrines FOR SELECT USING (true);
+-- Pas de policy INSERT/UPDATE/DELETE → écritures client bloquées
+```
+
+Effet : seule l'Edge Function (service role) peut écrire dans `vitrines`.
+
+### 2 — Restreindre CORS (2 min)
+
+Dans `supabase/functions/proxy-mistral/index.ts`, remplacer :
+
+```typescript
+"Access-Control-Allow-Origin": "*",
+```
+
+par :
+
+```typescript
+"Access-Control-Allow-Origin": "https://tsc1-hub.github.io",
+```
+
+Puis redéployer :
+
+```bash
+npx supabase functions deploy proxy-mistral --project-ref mqfkjikpdnpmynwtfjep
+```
+
+### 3 — RGPD : DPA Mistral (manuel)
+
+Signer le Data Processing Agreement Mistral avant tout usage avec des mineurs :
+- URL : https://mistral.ai/terms
+- Gratuit, signature en ligne
+
+### 4 — RGPD : Purge automatique des données (pg_cron)
+
+Dans Supabase **Extensions**, activer `pg_cron`, puis exécuter :
+
+```sql
+SELECT cron.schedule(
+  'purge-old-data',
+  '0 3 1 * *',
+  $$
+    DELETE FROM public.conversations    WHERE created_at < NOW() - INTERVAL '9 months';
+    DELETE FROM public.messages_mentors WHERE created_at < NOW() - INTERVAL '9 months';
+  $$
+);
+```
+
+### 5 — RGPD : Colonne consentement (migration SQL)
+
+```sql
+ALTER TABLE public.utilisateurs
+  ADD COLUMN IF NOT EXISTS consentement_papier boolean DEFAULT false;
+```
+
+À cocher côté FAC lors de l'inscription d'une équipe (formulaire à ajouter dans l'interface).
+
+---
+
+## Historique des correctifs
+
+| Date | Fix | Commit |
+|---|---|---|
+| 2026-02-27 | RLS vitrines + écriture via Edge Function | baseline |
+| 2026-02-27 | Rate-limit + logs d'audit | baseline |
+| 2026-02-27 | Binding auth_user_id ↔ code métier | `20260227_auth_user_binding.sql` |
+| 2026-03-02 | `validerEtape` via Edge Function — fix reprise étape après déco/reco | `6ec7781` |
+| 2026-03-02 | Fix 401 Invalid JWT — clé anon en Bearer (plus de JWT ES256) | `905096d` |
+| 2026-03-02 | `saveMsg` robuste — fix Team→Mentor bloqué | `5d2e29f` |
+| 2026-03-02 | `ensureEdgeSession` gère refresh tokens expirés | `5d2e29f` |
+| 2026-03-02 | Action `equipe_valider_etape` avec garde-fou progression | `6ec7781` |
