@@ -2844,10 +2844,24 @@ MODE STRICT HTML UNIQUEMENT :
 async function getEdgeAuthHeaders(){
   try {
     const { data } = await sb.auth.getSession();
-    const token = data?.session?.access_token;
-    return token
-      ? { 'Authorization': `Bearer ${token}` }
-      : { 'Authorization': `Bearer ${SUPABASE_KEY}` };
+    const session = data?.session;
+
+    if (!session?.access_token) {
+      return { 'Authorization': `Bearer ${SUPABASE_KEY}` };
+    }
+
+    // expires_at est un timestamp Unix (secondes)
+    const expiresAt = session.expires_at ?? 0;
+    const now = Math.floor(Date.now() / 1000);
+
+    if (expiresAt > 0 && expiresAt < now + 60) {
+      // Token expiré ou expire dans moins de 60 s → tentative de refresh
+      const { data: r } = await sb.auth.refreshSession();
+      const fresh = r?.session?.access_token;
+      return { 'Authorization': `Bearer ${fresh || SUPABASE_KEY}` };
+    }
+
+    return { 'Authorization': `Bearer ${session.access_token}` };
   } catch {
     return { 'Authorization': `Bearer ${SUPABASE_KEY}` };
   }
