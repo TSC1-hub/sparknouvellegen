@@ -13,6 +13,7 @@ const RATE_LIMITS: Record<string, { limit: number; windowMs: number }> = {
   vitrine_update: { limit: 120, windowMs: 60_000 },
   utilisateur_login: { limit: 10, windowMs: 60_000 },
   equipe_reset: { limit: 10, windowMs: 60_000 },
+  equipe_valider_etape: { limit: 30, windowMs: 60_000 },
   message_mentor_approuver: { limit: 60, windowMs: 60_000 },
   message_mentor_refuser: { limit: 60, windowMs: 60_000 },
 };
@@ -425,6 +426,63 @@ serve(async (req: Request) => {
       );
 
       logEvent("info", "utilisateur.login.ok", { reqId, actorCode: actorCodeLogin, durationMs: Date.now() - t0 });
+      return new Response(JSON.stringify({ ok: true }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    // ── equipe_valider_etape ──────────────────────────────────────────────
+    if (body?.action === "equipe_valider_etape") {
+      const actorCodeVE = String(body?.actor_code || "").trim().toUpperCase();
+      const equipeIdVE  = body?.equipe_id;
+      const toEtapeVE   = Number(body?.to_etape);
+
+      if (!actorCodeVE || !equipeIdVE || Number.isNaN(toEtapeVE) || toEtapeVE < 1 || toEtapeVE > 5) {
+        throw new Error("Payload equipe_valider_etape invalide.");
+      }
+
+      // Vérifier que l'acteur appartient bien à cette équipe
+      const utilisateurVE = await getUtilisateurParCode(actorCodeVE);
+      if (!utilisateurVE) throw new Error("Utilisateur non autorisé.");
+      const roleVE = utilisateurVE?.roles?.nom || "";
+
+      // Seuls eleve (team) ou facilitateur peuvent valider
+      if (![
+        "eleve", "team",
+        "facilitateur", "facilitateur_general", "admin"
+      ].includes(roleVE)) {
+        throw new Error("Rôle non autorisé pour valider une étape.");
+      }
+
+      // Vérifier que l'équipe existe et que toEtape = etape_courante + 1
+      const equipesVE = await restQuery(
+        `/rest/v1/equipes?id=eq.${encodeURIComponent(String(equipeIdVE))}&select=id,etape_courante&limit=1`
+      );
+      const equipeVE = Array.isArray(equipesVE) && equipesVE.length > 0 ? equipesVE[0] : null;
+      if (!equipeVE) throw new Error("Équipe introuvable.");
+
+      const currentEtape = Number(equipeVE.etape_courante ?? 0);
+      // Tolérer toEtape = currentEtape + 1 (normal) ou == currentEtape+1 déjà (idempotent)
+      if (toEtapeVE !== currentEtape + 1) {
+        // Si déjà à jour, renvoyer ok (idempotent)
+        if (toEtapeVE <= currentEtape) {
+          return new Response(JSON.stringify({ ok: true, already_done: true }), {
+            headers: { ...corsHeaders, "Content-Type": "application/json" },
+          });
+        }
+        throw new Error(`Progression invalide : étape actuelle ${currentEtape}, demandé ${toEtapeVE}.`);
+      }
+
+      await restQuery(
+        `/rest/v1/equipes?id=eq.${encodeURIComponent(String(equipeIdVE))}`,
+        { method: "PATCH", headers: { "Prefer": "return=minimal" }, body: JSON.stringify({ etape_courante: toEtapeVE }) }
+      );
+
+      logEvent("info", "equipe.valider_etape.ok", {
+        reqId, actorCode: actorCodeVE, equipeId: equipeIdVE,
+        fromEtape: currentEtape, toEtape: toEtapeVE, durationMs: Date.now() - t0
+      });
+
       return new Response(JSON.stringify({ ok: true }), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });

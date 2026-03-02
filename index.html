@@ -2338,23 +2338,22 @@ function animerDeblocage(fromEtape, toEtape) {
 
 async function validerEtape(fromEtape, toEtape) {
   animerDeblocage(fromEtape, toEtape);
-  currentEquipe.etape_courante = toEtape;
-  await ensureEdgeSession(); // garantit une session anon valide avant l'écriture
-  const { error } = await sb.from('equipes')
-    .update({ etape_courante: toEtape })
-    .eq('id', currentEquipe.id);
-  if (error) {
-    console.error('Erreur maj etape_courante:', error);
-    // Retry une fois
-    await ensureEdgeSession();
-    const { error: error2 } = await sb.from('equipes')
-      .update({ etape_courante: toEtape })
-      .eq('id', currentEquipe.id);
-    if (error2) {
-      console.error('Retry etape_courante échoué:', error2);
-      showToast("⚠️ La progression n'a pas pu être sauvegardée. Reconnectez-vous si le problème persiste.", 'error');
-    }
+  currentEquipe.etape_courante = toEtape; // optimiste côté client
+
+  // Persistance via Edge Function (service role → contourne RLS anon)
+  try {
+    const actorCode = String(currentUser?.code || '').trim().toUpperCase();
+    await invokeProxyMistral({
+      action:     'equipe_valider_etape',
+      actor_code: actorCode,
+      equipe_id:  currentEquipe.id,
+      to_etape:   toEtape
+    });
+  } catch (err) {
+    console.error('Erreur equipe_valider_etape:', err);
+    showToast("⚠️ La progression n'a pas pu être sauvegardée. Reconnectez-vous si le problème persiste.", 'error');
   }
+
   // Ouvrir le carnet d'abord ; l'overlay se déclenchera à la fermeture du carnet
   setTimeout(() => {
     pendingStepOverlayArgs = [fromEtape, toEtape];
