@@ -2866,26 +2866,13 @@ MODE STRICT HTML UNIQUEMENT :
   return contenu;
 }
 
-async function getEdgeAuthHeaders(){
-  try {
-    // Garantit un token frais (refresh ou nouvelle session anon si nécessaire)
-    await ensureEdgeSession();
-    const { data } = await sb.auth.getSession();
-    const token = data?.session?.access_token;
-    return { 'Authorization': `Bearer ${token || SUPABASE_KEY}` };
-  } catch {
-    return { 'Authorization': `Bearer ${SUPABASE_KEY}` };
-  }
-}
-
 async function invokeProxyMistral(payload){
-  const authHeaders = await getEdgeAuthHeaders();
   const resp = await fetch(EDGE_URL, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
       'apikey': SUPABASE_KEY,
-      ...authHeaders
+      'Authorization': `Bearer ${SUPABASE_KEY}`
     },
     body: JSON.stringify(payload)
   });
@@ -2934,7 +2921,6 @@ async function updateVitrineSecurisee(vitrineId, htmlSection){
 
 async function saveMsg(role,message,pseudo){
   if(!currentEquipe) return;
-  await ensureEdgeSession(); // garantit que le JWT du client sb est valide
   const { error } = await sb.from('conversations').insert({
     equipe_id:currentEquipe.id,role,message,pseudo,
     auteur_code:currentUser.code,statut:'visible',
