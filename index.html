@@ -1825,13 +1825,24 @@ function updatePP() {
 
 async function ensureEdgeSession(){
   try {
+    // 1. Lire la session en cache
     const { data } = await sb.auth.getSession();
-    if (data?.session?.access_token) return true;
-    const { error } = await sb.auth.signInAnonymously();
-    if (error) {
-      console.warn('Session anonyme indisponible:', error.message || error);
-      return false;
+    const session  = data?.session;
+    const now      = Math.floor(Date.now() / 1000);
+    const expiresAt = session?.expires_at ?? 0;
+
+    // 2. Token encore valide (> 60 s) → rien à faire
+    if (session?.access_token && expiresAt > now + 60) return true;
+
+    // 3. Token expiré → tenter le refresh (fonctionne si refresh_token < 7 j)
+    if (session?.refresh_token) {
+      const { data: rd, error: re } = await sb.auth.refreshSession();
+      if (!re && rd?.session?.access_token) return true;
     }
+
+    // 4. Refresh impossible → nouvelle session anonyme
+    const { error: ae } = await sb.auth.signInAnonymously();
+    if (ae) { console.warn('Session anonyme indisponible:', ae.message || ae); return false; }
     return true;
   } catch {
     return false;
@@ -2414,8 +2425,8 @@ function renderEleveConversation(){
   c.innerHTML='';
 
   const visible = eleveCanalActif==='mentor'
-    ? eleveMessagesCache.filter(m=>m.role==='mentor')
-    : eleveMessagesCache.filter(m=>m.role!=='mentor' && (Number(m.etape??0))===eleveEtapeAfficheeConversation);
+    ? eleveMessagesCache.filter(m=>m.role==='mentor'||m.role==='team_to_mentor')
+    : eleveMessagesCache.filter(m=>m.role!=='mentor'&&m.role!=='team_to_mentor' && (Number(m.etape??0))===eleveEtapeAfficheeConversation);
 
   if(!visible.length){
     const note=document.createElement('div');
@@ -2443,13 +2454,13 @@ function switchEleveCanal(canal, silent=false){
   if(input && sendBtn){
     const isMentor = eleveCanalActif==='mentor';
     const isPastEtape = eleveCanalActif==='spark' && eleveEtapeAfficheeConversation < getEtapeActiveEquipe();
-    const locked = isMentor || isPastEtape;
+    const locked = isPastEtape; // mentor canal est maintenant ouvert à l'écriture
     input.disabled = locked;
     sendBtn.disabled = locked;
     input.placeholder = isMentor
-      ? 'Canal Mentor en lecture seule.'
+      ? 'Envoyer un message à votre mentor...'
       : (isPastEtape ? '📜 Conversation archivée — lecture seule.' : 'Tapez votre message...');
-    sendBtn.textContent = isMentor ? 'Lecture seule' : 'Envoyer 🌱';
+    sendBtn.textContent = isMentor ? 'Envoyer 🎓' : 'Envoyer 🌱';
   }
 
   if(eleveCanalActif==='mentor'){
@@ -2501,12 +2512,12 @@ async function clickerEtapeSidebar(etape) {
   const sendBtn = document.getElementById('btn-send');
   const vitBtn = document.getElementById('btn-vitrine');
   if (inp && sendBtn) {
-    const mentorLock = eleveCanalActif === 'mentor';
+    const mentorLock = false; // Canal Mentor ouvert à l'écriture
     inp.disabled = isPast || mentorLock;
     sendBtn.disabled = isPast || mentorLock;
     inp.placeholder = isPast
       ? '📜 Conversation archivée — lecture seule.'
-      : (mentorLock ? 'Canal Mentor en lecture seule.' : 'Tapez votre message...');
+      : (eleveCanalActif === 'mentor' ? 'Envoyer un message à votre mentor...' : 'Tapez votre message...');
   }
   if (vitBtn) vitBtn.disabled = isPast;
 
@@ -2585,7 +2596,21 @@ async function demanderMiseAJourVitrine() {
 async function sendMessage(){
   const inp=document.getElementById('msg-input');
   const txt=inp.value.trim();
-  if(!txt||!currentEquipe||eleveCanalActif!=='spark') return;
+  if(!txt||!currentEquipe) return;
+
+  // ── Canal Mentor : message direct à mentore ──
+  if(eleveCanalActif==='mentor'){
+    inp.value=''; inp.style.height='auto';
+    const pseudo = currentEquipe.code_equipe || 'La Team';
+    const msg = {role:'team_to_mentor',message:txt,pseudo,etape: currentEquipe.etape_courante||0};
+    eleveMessagesCache.push(msg);
+    renderEleveConversation();
+    await saveMsg('team_to_mentor', txt, pseudo);
+    scrollBot();
+    return;
+  }
+
+  if(eleveCanalActif!=='spark') return;
   // Lecture seule si on visionne une étape passée
   if(eleveEtapeAfficheeConversation < getEtapeActiveEquipe()) return;
   inp.value=''; inp.style.height='auto';
@@ -2843,25 +2868,11 @@ MODE STRICT HTML UNIQUEMENT :
 
 async function getEdgeAuthHeaders(){
   try {
+    // Garantit un token frais (refresh ou nouvelle session anon si nécessaire)
+    await ensureEdgeSession();
     const { data } = await sb.auth.getSession();
-    const session = data?.session;
-
-    if (!session?.access_token) {
-      return { 'Authorization': `Bearer ${SUPABASE_KEY}` };
-    }
-
-    // expires_at est un timestamp Unix (secondes)
-    const expiresAt = session.expires_at ?? 0;
-    const now = Math.floor(Date.now() / 1000);
-
-    if (expiresAt > 0 && expiresAt < now + 60) {
-      // Token expiré ou expire dans moins de 60 s → tentative de refresh
-      const { data: r } = await sb.auth.refreshSession();
-      const fresh = r?.session?.access_token;
-      return { 'Authorization': `Bearer ${fresh || SUPABASE_KEY}` };
-    }
-
-    return { 'Authorization': `Bearer ${session.access_token}` };
+    const token = data?.session?.access_token;
+    return { 'Authorization': `Bearer ${token || SUPABASE_KEY}` };
   } catch {
     return { 'Authorization': `Bearer ${SUPABASE_KEY}` };
   }
@@ -2923,11 +2934,13 @@ async function updateVitrineSecurisee(vitrineId, htmlSection){
 
 async function saveMsg(role,message,pseudo){
   if(!currentEquipe) return;
-  await sb.from('conversations').insert({
+  await ensureEdgeSession(); // garantit que le JWT du client sb est valide
+  const { error } = await sb.from('conversations').insert({
     equipe_id:currentEquipe.id,role,message,pseudo,
     auteur_code:currentUser.code,statut:'visible',
     etape: currentEquipe.etape_courante || 0
   });
+  if (error) console.error('saveMsg error:', error.message || error);
 }
 
 function renderMsg(role,text,pseudo){
@@ -2947,6 +2960,9 @@ function renderMsg(role,text,pseudo){
     c.appendChild(chip);
     d.className='msg mentor-msg';
     d.innerHTML=`<div class="msg-av">🎓</div><div class="msg-col"><div class="msg-who">${pseudo||'Mentor'}</div><div class="msg-bubble">${t}</div><div class="mentor-tag">🔒 Validé par votre facilitateur</div></div>`;
+  } else if(role==='team_to_mentor'){
+    d.className='msg eleve-msg';
+    d.innerHTML=`<div class="msg-av">👥</div><div class="msg-col"><div class="msg-who">${pseudo||'La Team'}</div><div class="msg-bubble">${t}</div></div>`;
   }
   c.appendChild(d);
 }
@@ -3053,9 +3069,13 @@ function listenEleveConversations(){
           badge.style.display='inline-block';
         }
       }
-      // N'afficher que si le message est pour l'étape actuellement visible (ou mentor)
-      if(m.role !== 'mentor' && Number(m.etape ?? 0) !== eleveEtapeAfficheeConversation) {
+      // N'afficher que si le message est pour l'étape actuellement visible (ou canal mentor)
+      const isMentorRole = m.role==='mentor'||m.role==='team_to_mentor';
+      if(!isMentorRole && Number(m.etape ?? 0) !== eleveEtapeAfficheeConversation) {
         return;
+      }
+      if(isMentorRole && eleveCanalActif!=='mentor') {
+        return; // ne pas afficher dans le canal SPARK
       }
       renderEleveConversation();
       if(m.role==='mentor') showToast('Message de '+m.pseudo,'success');
@@ -3210,20 +3230,35 @@ function listenMentorTeamMessages(eqId){
   mentorTeamMessagesChannel = sb.channel('mentor-team-msg-'+eqId)
     .on('postgres_changes',{event:'INSERT',schema:'public',table:'conversations',filter:`equipe_id=eq.${eqId}`}, async (payload)=>{
       const m = payload?.new;
-      if(m?.role !== 'user') return;
-      const isConvOpen = document.getElementById('panel-conv-mentor')?.classList.contains('open');
-      if(isConvOpen){
-        await chargerConversationMentor(eqId);
+
+      // Messages Team→SPARK dans le panel Conversation
+      if(m?.role === 'user') {
+        const isConvOpen = document.getElementById('panel-conv-mentor')?.classList.contains('open');
+        if(isConvOpen){
+          await chargerConversationMentor(eqId);
+          return;
+        }
+        mentorConvUnread += 1;
+        const badge=document.getElementById('mentor-conv-notif');
+        if(badge){
+          badge.textContent=String(mentorConvUnread);
+          badge.style.display='inline-block';
+        }
+        showToast('Nouveau message Team','success');
         return;
       }
 
-      mentorConvUnread += 1;
-      const badge=document.getElementById('mentor-conv-notif');
-      if(badge){
-        badge.textContent=String(mentorConvUnread);
-        badge.style.display='inline-block';
+      // Messages Team→Mentor dans le Canal Mentor
+      if(m?.role === 'team_to_mentor') {
+        const isCanalOpen = document.getElementById('panel-canal-mentor')?.classList.contains('open');
+        if(isCanalOpen){
+          await alimenterCanalMentor(eqId);
+          return;
+        }
+        const badge=document.getElementById('mentor-canal-notif');
+        if(badge){ badge.style.display='inline-block'; }
+        showToast('\ud83d\udc65 Message de la Team sur le canal mentor','success');
       }
-      showToast('Nouveau message Team','success');
     })
     .subscribe();
 }
@@ -3256,7 +3291,8 @@ async function alimenterCanalMentor(eqId){
   const c=document.getElementById('mentor-canal-msgs');
   if(!c) return;
   const { data: msgs } = await sb.from('conversations')
-    .select('*').eq('equipe_id',eqId).eq('statut','visible').eq('role','mentor')
+    .select('*').eq('equipe_id',eqId).eq('statut','visible')
+    .in('role',['mentor','team_to_mentor'])
     .order('created_at',{ascending:true});
 
   c.innerHTML='';
@@ -3267,8 +3303,13 @@ async function alimenterCanalMentor(eqId){
 
   msgs.forEach(m=>{
     const d=document.createElement('div');
-    d.className='msg mentor-msg';
-    d.innerHTML=`<div class="msg-av">🎓</div><div class="msg-col"><div class="msg-who">${m.pseudo||'Mentor'}</div><div class="msg-bubble">${formatTxt(m.message)}</div></div>`;
+    if(m.role==='team_to_mentor'){
+      d.className='msg eleve-msg';
+      d.innerHTML=`<div class="msg-av">👥</div><div class="msg-col"><div class="msg-who">${m.pseudo||'La Team'}</div><div class="msg-bubble">${formatTxt(m.message)}</div></div>`;
+    } else {
+      d.className='msg mentor-msg';
+      d.innerHTML=`<div class="msg-av">🎓</div><div class="msg-col"><div class="msg-who">${m.pseudo||'Mentor'}</div><div class="msg-bubble">${formatTxt(m.message)}</div></div>`;
+    }
     c.appendChild(d);
   });
   c.scrollTop=c.scrollHeight;
@@ -3313,7 +3354,7 @@ async function ouvrirPanelMentor(id){
 
     mentorConversationChannel = sb.channel('mentor-canal-'+selectedEquipeId)
       .on('postgres_changes',{event:'INSERT',schema:'public',table:'conversations',filter:`equipe_id=eq.${selectedEquipeId}`}, async (payload)=>{
-        if(payload?.new?.role==='mentor') await alimenterCanalMentor(selectedEquipeId);
+        if(payload?.new?.role==='mentor'||payload?.new?.role==='team_to_mentor') await alimenterCanalMentor(selectedEquipeId);
       })
       .subscribe();
     return;
