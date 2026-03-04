@@ -300,8 +300,8 @@
         {
           ico: '✏️',
           ttl: 'À toi de jouer !',
-          desc: `Dans le code ci-contre, modifie :<br><strong style="color:#3d5c3a">1.</strong> Le texte entre <code>&lt;h1&gt;</code> et <code>&lt;/h1&gt;</code> — tape le nom de ton projet.<br><strong style="color:#3d5c3a">2.</strong> La couleur <code>#7ab648</code> → remplace-la par un de ces codes :<div id="gt-exo-colors" style="display:flex;flex-wrap:wrap;gap:4px;margin:7px 0 4px;"></div><div id="gt-exo-status" style="font-size:.6rem;margin-top:2px;"></div>`,
-          target: '#mockup-carnet-code,#carnet-code-edit',
+          desc: `2 modifications dans le code :<br><strong style="color:#3d5c3a">1.</strong> Change le titre <code>&lt;h1&gt;</code> — tape le nom de <strong>ton</strong> projet.<br><strong style="color:#3d5c3a">2.</strong> Change la couleur <code>#7ab648</code> — clique un code couleur ci-dessous pour le copier, puis colle-le.<div id="gt-exo-colors" style="display:flex;flex-wrap:wrap;gap:4px;margin:6px 0 4px;"></div><div id="gt-exo-status" style="font-size:.6rem;margin-top:4px;"></div>`,
+          target: '.carnet-col-code,#carnet-code-edit,#mockup-carnet-code',
           pos: 'left',
           btnLabel: 'Valider ✓',
           interactiveExo: true,
@@ -362,19 +362,38 @@
   function _carnetPreviewEl() { return _el('vitrine-rendu',    'mockup-vitrine-rendu'); }
   function _carnetWrapEl()    { return _el('carnet-drawer',    'mockup-carnet');        }
 
-  /* Palette de couleurs pour l'exercice */
+  /* Palette de couleurs pour l'exercice (synchronisée avec carnet-aide) */
   const EXO_COLORS = [
-    { hex: '#ef4444', nom: 'Rouge'     },
     { hex: '#f97316', nom: 'Orange'    },
+    { hex: '#ef4444', nom: 'Rouge'     },
     { hex: '#3b82f6', nom: 'Bleu'      },
     { hex: '#8b5cf6', nom: 'Violet'    },
     { hex: '#ec4899', nom: 'Rose'      },
+    { hex: '#14b8a6', nom: 'Turquoise' },
     { hex: '#f59e0b', nom: 'Jaune'     },
+    { hex: '#22c55e', nom: 'Vert vif'  },
+    { hex: '#6b7280', nom: 'Gris'      },
+    { hex: '#1e293b', nom: 'Nuit'      },
+    { hex: '#ffffff', nom: 'Blanc'     },
+    { hex: '#000000', nom: 'Noir'      },
   ];
 
   // Contenu original avant exercice (pour détecter n'importe quelle modification)
   let _exoOriginalVal = null;
 
+
+  // ── Helpers aide rapide intégrée dans le carnet (index.html) ──
+  function _openCarnetAide() {
+    const aide = document.getElementById('carnet-aide');
+    if (aide && aide.classList.contains('collapsed')) {
+      aide.classList.remove('collapsed');
+      aide.classList.add('expanded');
+    }
+  }
+  function _closeCarnetAide() {
+    const aide = document.getElementById('carnet-aide');
+    if (aide) { aide.classList.add('collapsed'); aide.classList.remove('expanded'); }
+  }
 
   function _cleanExoWatcher() {
     if (_exoWatchEl && _exoWatchFn) {
@@ -383,6 +402,7 @@
     _exoWatchEl = null;
     _exoWatchFn = null;
     _exoOriginalVal = null;
+    _closeCarnetAide(); // refermer l'aide rapide quand on quitte l'exercice
   }
   /* HTML de démo injecté dans le carnet si vide lors de l'exercice */
   const DEMO_VITRINE_HTML = `<!DOCTYPE html>
@@ -456,6 +476,9 @@
   }
 
   function _startInteractiveExo() {
+    // Ouvrir l'aide rapide intégrée (index.html) pour qu'elle soit dans le spotlight
+    _openCarnetAide();
+    // Construire la palette in-card (fallback pour le mockup sans aide rapide)
     _buildExoColors();
     const ta = _carnetCodeEl();
     if (!ta) return;
@@ -927,6 +950,9 @@
    * Si vide = reset FAC ou première fois → effacer le flag et lancer le tour.
    */
   function _checkConvEmpty() {
+    // Garder uniquement si l'écran élève est actif (prévient le déclenchement au logout)
+    const sEleve = document.getElementById('s-eleve');
+    if (!sEleve || !sEleve.classList.contains('on')) return;
     const msgs = document.getElementById('chat-messages');
     if (!msgs) return;
     // On attend que sparkGreet (bulle d'accueil) soit rendue
@@ -954,6 +980,9 @@
       clearTimeout(debounce);
       debounce = setTimeout(() => {
         if (document.getElementById('gt-overlay')) return; // tour déjà en cours
+        // Ne pas déclencher lors d'un logout (s-eleve n'est plus .on après go('login'))
+        const sEleve = document.getElementById('s-eleve');
+        if (!sEleve || !sEleve.classList.contains('on')) return;
         const userMsgs = msgs.querySelectorAll('.eleve-msg');
         if (userMsgs.length === 0) {
           obs.disconnect();
