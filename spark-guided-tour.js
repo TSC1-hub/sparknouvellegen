@@ -372,19 +372,55 @@
     { hex: '#f59e0b', nom: 'Jaune'     },
   ];
 
+  // Contenu original avant exercice (pour détecter n'importe quelle modification)
+  let _exoOriginalVal = null;
+
+
   function _cleanExoWatcher() {
     if (_exoWatchEl && _exoWatchFn) {
       _exoWatchEl.removeEventListener('input', _exoWatchFn);
     }
     _exoWatchEl = null;
     _exoWatchFn = null;
+    _exoOriginalVal = null;
   }
+  /* HTML de démo injecté dans le carnet si vide lors de l'exercice */
+  const DEMO_VITRINE_HTML = `<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<style>
+  body { font-family: 'Georgia', serif; background: #faf7f2; color: #2c3a28; margin: 0; padding: 20px; }
+  h1   { color: #7ab648; font-size: 1.3rem; margin-bottom: 8px; }
+  p    { font-size: .9rem; line-height: 1.6; }
+</style>
+</head>
+<body>
+<h1>ForestGuard</h1>
+<p>Notre projet vise à protéger la biodiversité locale grâce à des capteurs connectés.</p>
+</body>
+</html>`;
 
   function _checkExoDone(val) {
+    // Si on a un contenu de démo, on cherche ForestGuard + #7ab648
+    if (_exoOriginalVal && _exoOriginalVal.includes('ForestGuard')) {
+      const h1Match = val.match(/<h1[^>]*>([\s\S]*?)<\/h1>/i);
+      const h1Text  = (h1Match ? h1Match[1] : '').replace(/<[^>]+>/g, '').trim();
+      const h1Changed    = h1Text.length > 0 && !h1Text.includes('ForestGuard');
+      const colorChanged = !val.toLowerCase().includes('#7ab648');
+      return { h1Changed, colorChanged, done: h1Changed && colorChanged };
+    }
+    // Contenu réel de l'élève : détecter simplement une modification du <h1> et d'une couleur
     const h1Match = val.match(/<h1[^>]*>([\s\S]*?)<\/h1>/i);
     const h1Text  = (h1Match ? h1Match[1] : '').replace(/<[^>]+>/g, '').trim();
-    const h1Changed    = h1Text.length > 0 && !h1Text.includes('ForestGuard');
-    const colorChanged = !val.toLowerCase().includes('#7ab648');
+    const origH1Match = (_exoOriginalVal || '').match(/<h1[^>]*>([\s\S]*?)<\/h1>/i);
+    const origH1Text  = (origH1Match ? origH1Match[1] : '').replace(/<[^>]+>/g, '').trim();
+    const h1Changed    = h1Text.length > 0 && h1Text !== origH1Text;
+    // Pour la couleur, détecter qu'une valeur hex a changé dans le CSS
+    const colorMatch    = val.match(/color\s*:\s*(#[0-9a-fA-F]{3,6})/i);
+    const origColorMatch= (_exoOriginalVal || '').match(/color\s*:\s*(#[0-9a-fA-F]{3,6})/i);
+    const colorChanged  = !!(colorMatch && origColorMatch && colorMatch[1].toLowerCase() !== origColorMatch[1].toLowerCase())
+                       || !!(colorMatch && !origColorMatch);
     return { h1Changed, colorChanged, done: h1Changed && colorChanged };
   }
 
@@ -421,10 +457,17 @@
 
   function _startInteractiveExo() {
     _buildExoColors();
-    _updateExoStatus();
     const ta = _carnetCodeEl();
     if (!ta) return;
-    _cleanExoWatcher();
+    // Si le textarea est vide, injecter le HTML de démo
+    if (!ta.value.trim()) {
+      ta.value = DEMO_VITRINE_HTML;
+      const iframe = _carnetPreviewEl();
+      if (iframe) iframe.srcdoc = ta.value;
+    }
+    _cleanExoWatcher();           // nettoyer AVANT de sauvegarder l'original
+    _exoOriginalVal = ta.value;   // mémoriser l'état initial
+    _updateExoStatus();
     _exoWatchEl = ta;
     _exoWatchFn = () => {
       const iframe = _carnetPreviewEl();
@@ -682,6 +725,10 @@
     arr.classList.remove('hidden');
   }
 
+  // Tableau des stamps éco injectés (un par réponse SPARK)
+  // Permet de les réinjecter après chaque renderEleveConversation()
+  let _ecoStamps = [];
+
   /* ══════════════════════════════════════════════
      7. Éco stamp — injecte le badge sous la bulle Team
   ══════════════════════════════════════════════ */
@@ -689,19 +736,39 @@
     const msgs = document.getElementById('chat-messages');
     if (!msgs) return null;
     const t = tokens(userTxt) + tokens(replyTxt);
-    const stamp = document.createElement('div');
-    stamp.className = 'gt-eco-stamp';
     const e = ecoCalc(t);
-    stamp.innerHTML = `
+    const inner = `
       <span class="es-col">⚡ <strong>${fWh(e.wh)}</strong></span>
       <span class="es-sep">·</span>
       <span class="es-col">🌍 <strong>${fCo2(e.co2)}</strong></span>
       <span class="es-sep">·</span>
       <span class="es-col">🚗 <strong>${fCar(e.car_m)}</strong></span>
       <a class="es-src" href="https://ecologits.ai/latest/" target="_blank">EcoLogits ↗</a>`;
+    _ecoStamps.push(inner); // sauvegarder pour réinjection après renderEleveConversation
+    const stamp = document.createElement('div');
+    stamp.className = 'gt-eco-stamp';
+    stamp.innerHTML = inner;
     msgs.appendChild(stamp);
     msgs.scrollTop = msgs.scrollHeight;
     return stamp;
+  }
+
+  // Re-injecte les stamps après chaque re-rendu de la conversation
+  function _reInjectStamps() {
+    const msgs = document.getElementById('chat-messages');
+    if (!msgs || !_ecoStamps.length) return;
+    const sparkMsgs = Array.from(msgs.querySelectorAll('.spark-msg'));
+    // Supprimer les stamps orphelins éventuels pour éviter les doublons
+    msgs.querySelectorAll('.gt-eco-stamp').forEach(s => s.remove());
+    // Réinjecter après chaque bulle SPARK correspondante
+    _ecoStamps.forEach((inner, i) => {
+      if (!sparkMsgs[i]) return;
+      const stamp = document.createElement('div');
+      stamp.className = 'gt-eco-stamp';
+      stamp.innerHTML = inner;
+      sparkMsgs[i].after(stamp);
+    });
+    msgs.scrollTop = msgs.scrollHeight;
   }
 
   /* ══════════════════════════════════════════════
@@ -773,6 +840,17 @@
       cur    = 0;
       curSub = 0;
       chatSent = false;
+      _ecoStamps = [];
+
+      // Patch renderEleveConversation pour réinjecter les stamps après chaque re-rendu
+      if (typeof window.renderEleveConversation === 'function' && !window._gtOrigRender) {
+        window._gtOrigRender = window.renderEleveConversation;
+        window.renderEleveConversation = function() {
+          window._gtOrigRender.apply(this, arguments);
+          _reInjectStamps();
+        };
+      }
+
       hookChatSend();
       showStep(cur);
     },
@@ -819,7 +897,13 @@
 
     finish() {
       _cleanExoWatcher();
+      _ecoStamps = [];
       try { localStorage.setItem('spark_onboarding_done', '1'); } catch(e) {}
+      // Restaurer renderEleveConversation
+      if (window._gtOrigRender) {
+        window.renderEleveConversation = window._gtOrigRender;
+        delete window._gtOrigRender;
+      }
       // Callback de sortie de l'étape courante si besoin
       if (STEPS[cur] && STEPS[cur].onLeave) STEPS[cur].onLeave();
       curSub = 0;
