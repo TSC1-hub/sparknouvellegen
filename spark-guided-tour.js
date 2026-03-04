@@ -342,8 +342,19 @@
   function _openCarnet()  {
     if (typeof ouvrirCarnet === 'function') { ouvrirCarnet(); }
     else { const d = document.getElementById('mockup-carnet'); if (d) d.classList.add('open'); }
+    // Élever le carnet au-dessus de l'overlay du tour (9990) mais sous la carte (9998)
+    const drawer  = document.getElementById('carnet-drawer');
+    const overlay = document.getElementById('carnet-overlay');
+    if (drawer)  { drawer._gtOldZ  = drawer.style.zIndex;  drawer.style.zIndex  = '9993'; }
+    if (overlay) { overlay._gtOldZ = overlay.style.zIndex; overlay.style.zIndex = '9992';
+                   overlay.style.pointerEvents = 'none'; } // ne pas bloquer le tour
   }
   function _closeCarnet() {
+    // Remettre les z-index d'origine
+    const drawer  = document.getElementById('carnet-drawer');
+    const overlay = document.getElementById('carnet-overlay');
+    if (drawer)  { drawer.style.zIndex  = drawer._gtOldZ  || ''; }
+    if (overlay) { overlay.style.zIndex = overlay._gtOldZ || ''; overlay.style.pointerEvents = ''; }
     if (typeof fermerCarnet === 'function') { fermerCarnet(); }
     else { const d = document.getElementById('mockup-carnet'); if (d) d.classList.remove('open'); }
   }
@@ -530,7 +541,7 @@
       }
     }
 
-    // ── Callback d'entrée ──
+    // Callback d'entrée pour les étapes sans subSteps
     if (step.onEnter) step.onEnter();
   }
 
@@ -569,12 +580,17 @@
     // ── Position ──
     const target = sub.target;
     const pos    = sub.pos || 'top';
-    if (!target || pos === 'center') {
-      positionCenter();
-    } else {
-      const el = document.querySelector(target);
-      if (el) positionAround(el, pos); else positionCenter();
-    }
+    const _doPosition = () => {
+      if (!target || pos === 'center') {
+        positionCenter();
+      } else {
+        const el = document.querySelector(target);
+        if (el) positionAround(el, pos); else positionCenter();
+      }
+    };
+    // Sous-étape 0 du carnet : le drawer vient juste de s'ouvrir,
+    // attendre que l'animation (400ms) soit terminée avant de mesurer les coordonnées
+    if (subIdx === 0) { setTimeout(_doPosition, 420); } else { _doPosition(); }
 
     if (sub.onEnter) sub.onEnter();
 
