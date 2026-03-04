@@ -300,7 +300,7 @@
         {
           ico: '✏️',
           ttl: 'À toi de jouer !',
-          desc: `2 modifications dans le code :<br><strong style="color:#3d5c3a">1.</strong> Change le titre <code>&lt;h1&gt;</code> — tape le nom de <strong>ton</strong> projet.<br><strong style="color:#3d5c3a">2.</strong> Change la couleur <code>#7ab648</code> — clique un code couleur ci-dessous pour le copier, puis colle-le.<div id="gt-exo-colors" style="display:flex;flex-wrap:wrap;gap:4px;margin:6px 0 4px;"></div><div id="gt-exo-status" style="font-size:.6rem;margin-top:4px;"></div>`,
+          desc: `<div style="font-size:.58rem;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:#5a6b54;margin-bottom:3px">✏️ Changer un texte</div><div style="background:rgba(44,58,40,.06);border:1px solid rgba(44,58,40,.1);border-radius:7px;padding:6px 9px;font-family:'Courier New',monospace;font-size:.67rem;line-height:1.7;color:#2c3a28;margin-bottom:8px;">Trouve la balise dans le code, ex :<br><span style="color:#c0392b">&lt;h1&gt;</span><strong style="color:#27ae60">Mon titre de projet</strong><span style="color:#c0392b">&lt;/h1&gt;</span><br>→ remplace le texte <em>entre</em> les balises.</div><div style="font-size:.58rem;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:#5a6b54;margin-bottom:3px">🎨 Changer une couleur</div><div style="background:rgba(44,58,40,.06);border:1px solid rgba(44,58,40,.1);border-radius:7px;padding:5px 9px;font-family:'Courier New',monospace;font-size:.67rem;line-height:1.6;color:#2c3a28;margin-bottom:6px;">Ex : <span style="background:rgba(122,182,72,.15);border-radius:3px;padding:0 3px;color:#3d5c3a">color: #7ab648</span> → remplace par :</div><div id="gt-exo-colors" style="display:flex;flex-wrap:wrap;gap:4px;margin-bottom:5px;"></div><div id="gt-exo-status" style="font-size:.6rem;margin-top:3px;"></div>`,
           target: '.carnet-col-code,#carnet-code-edit,#mockup-carnet-code',
           pos: 'left',
           btnLabel: 'Valider ✓',
@@ -362,7 +362,7 @@
   function _carnetPreviewEl() { return _el('vitrine-rendu',    'mockup-vitrine-rendu'); }
   function _carnetWrapEl()    { return _el('carnet-drawer',    'mockup-carnet');        }
 
-  /* Palette de couleurs pour l'exercice (synchronisée avec carnet-aide) */
+  // EXO_COLORS — palette synchronisée avec la carte du tour
   const EXO_COLORS = [
     { hex: '#f97316', nom: 'Orange'    },
     { hex: '#ef4444', nom: 'Rouge'     },
@@ -382,19 +382,6 @@
   let _exoOriginalVal = null;
 
 
-  // ── Helpers aide rapide intégrée dans le carnet (index.html) ──
-  function _openCarnetAide() {
-    const aide = document.getElementById('carnet-aide');
-    if (aide && aide.classList.contains('collapsed')) {
-      aide.classList.remove('collapsed');
-      aide.classList.add('expanded');
-    }
-  }
-  function _closeCarnetAide() {
-    const aide = document.getElementById('carnet-aide');
-    if (aide) { aide.classList.add('collapsed'); aide.classList.remove('expanded'); }
-  }
-
   function _cleanExoWatcher() {
     if (_exoWatchEl && _exoWatchFn) {
       _exoWatchEl.removeEventListener('input', _exoWatchFn);
@@ -402,7 +389,6 @@
     _exoWatchEl = null;
     _exoWatchFn = null;
     _exoOriginalVal = null;
-    _closeCarnetAide(); // refermer l'aide rapide quand on quitte l'exercice
   }
   /* HTML de démo injecté dans le carnet si vide lors de l'exercice */
   const DEMO_VITRINE_HTML = `<!DOCTYPE html>
@@ -449,15 +435,18 @@
     if (!wrap || wrap.children.length > 0) return;
     EXO_COLORS.forEach(c => {
       const chip = document.createElement('span');
-      chip.style.cssText = 'display:inline-flex;align-items:center;gap:4px;padding:3px 9px;border-radius:10px;background:rgba(44,58,40,.06);border:1px solid rgba(44,58,40,.14);cursor:pointer;font-family:monospace;font-size:.62rem;color:#2c3a28;transition:all .15s;user-select:none;';
-      chip.innerHTML = `<span style="width:10px;height:10px;border-radius:50%;background:${c.hex};display:inline-block;flex-shrink:0;border:1px solid rgba(0,0,0,.12)"></span>${c.hex}`;
-      chip.title = `${c.nom} — cliquer pour copier`;
-      chip.addEventListener('mouseenter', () => chip.style.background = 'rgba(44,58,40,.14)');
-      chip.addEventListener('mouseleave', () => chip.style.background = 'rgba(44,58,40,.06)');
+      const isDark = ['#1e293b','#000000'].includes(c.hex.toLowerCase());
+      const isWhite = c.hex.toLowerCase() === '#ffffff';
+      chip.style.cssText = 'display:inline-flex;align-items:center;gap:5px;padding:3px 9px 3px 6px;border-radius:20px;background:rgba(44,58,40,.05);border:1px solid rgba(44,58,40,.13);cursor:pointer;font-family:\'DM Sans\',sans-serif;font-size:.63rem;color:#2c3a28;transition:all .15s;user-select:none;';
+      chip.innerHTML = `<span style="width:11px;height:11px;border-radius:50%;background:${c.hex};display:inline-block;flex-shrink:0;border:1.5px solid rgba(0,0,0,${isWhite ? '.15' : '.08'})"></span>${c.nom}`;
+      chip.title = `${c.nom} (${c.hex}) — cliquer pour copier`;
+      chip.addEventListener('mouseenter', () => chip.style.background = 'rgba(44,58,40,.13)');
+      chip.addEventListener('mouseleave', () => chip.style.background = 'rgba(44,58,40,.05)');
       chip.addEventListener('click', () => {
         navigator.clipboard?.writeText(c.hex).catch(() => {});
-        chip.style.cssText += ';background:rgba(122,182,72,.18);border-color:rgba(122,182,72,.45);';
-        setTimeout(() => { chip.style.background = 'rgba(44,58,40,.06)'; chip.style.borderColor = 'rgba(44,58,40,.14)'; }, 1200);
+        const prev = chip.style.cssText;
+        chip.style.cssText += ';background:rgba(122,182,72,.18);border-color:rgba(122,182,72,.5);';
+        setTimeout(() => { chip.style.background = 'rgba(44,58,40,.05)'; chip.style.borderColor = 'rgba(44,58,40,.13)'; }, 1300);
       });
       wrap.appendChild(chip);
     });
@@ -476,9 +465,6 @@
   }
 
   function _startInteractiveExo() {
-    // Ouvrir l'aide rapide intégrée (index.html) pour qu'elle soit dans le spotlight
-    _openCarnetAide();
-    // Construire la palette in-card (fallback pour le mockup sans aide rapide)
     _buildExoColors();
     const ta = _carnetCodeEl();
     if (!ta) return;

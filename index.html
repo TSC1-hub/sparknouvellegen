@@ -616,35 +616,7 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
 .carnet-edit-note{font-size:.62rem;color:#9ca3af;}
 
 /* ── Aide rapide HTML ── */
-.carnet-aide{flex-shrink:0;background:#161626;border-bottom:1px solid rgba(255,255,255,.07);overflow:hidden;transition:max-height .3s ease;}
-.carnet-aide.collapsed{max-height:32px;}
-.carnet-aide.expanded{max-height:340px;}
-.carnet-aide-hdr{display:flex;align-items:center;justify-content:space-between;padding:6px 14px;cursor:pointer;user-select:none;}
-.carnet-aide-hdr-lbl{font-size:.62rem;font-weight:700;color:#8ea1b8;letter-spacing:.04em;display:flex;align-items:center;gap:5px;}
-.carnet-aide-toggle{font-size:.6rem;color:#8ea1b8;transition:transform .25s;}
-.carnet-aide.expanded .carnet-aide-toggle{transform:rotate(180deg);}
-.carnet-aide-body{padding:0 14px 12px;display:flex;flex-direction:column;gap:10px;}
-.carnet-aide-section{font-size:.62rem;color:#7f849c;font-weight:600;text-transform:uppercase;letter-spacing:.08em;margin-bottom:2px;}
-.carnet-aide-ex{
-  background:#1e1e2e;border:1px solid rgba(255,255,255,.08);border-radius:7px;
-  padding:7px 10px;font-family:monospace;font-size:.69rem;line-height:1.7;color:#cdd6f4;
-}
-.carnet-aide-ex em{color:#f38ba8;font-style:normal;}
-.carnet-aide-ex strong{color:#a6e3a1;font-weight:500;}
-.carnet-aide-ex span.hl{background:rgba(163,187,128,.15);border-radius:3px;padding:0 3px;color:#a6e3a1;}
-.carnet-aide-colors{display:flex;flex-wrap:wrap;gap:5px;}
-.carnet-aide-color{
-  display:flex;align-items:center;gap:5px;padding:3px 9px 3px 6px;
-  border-radius:20px;border:1px solid rgba(255,255,255,.1);
-  cursor:pointer;font-size:.63rem;font-family:monospace;color:#cdd6f4;
-  transition:border-color .15s,background .15s;
-  background:rgba(255,255,255,.04);
-}
-.carnet-aide-color:hover{border-color:rgba(255,255,255,.3);background:rgba(255,255,255,.09);}
-.carnet-aide-color:active{transform:scale(.96);}
-.carnet-aide-color-dot{width:12px;height:12px;border-radius:50%;flex-shrink:0;border:1.5px solid rgba(255,255,255,.15);}
-.carnet-aide-copied{font-size:.55rem;color:#a6e3a1;margin-left:2px;display:none;}
-.carnet-aide-note{font-size:.6rem;color:#585b70;font-style:italic;line-height:1.5;}
+
 
 /* ── Mini-chat vitrine ── */
 .carnet-mini-chat{flex-shrink:0;background:#f8fafc;border-top:1px solid var(--border);display:flex;flex-direction:column;max-height:190px;min-height:120px;}
@@ -1733,26 +1705,6 @@ body::before{background:radial-gradient(ellipse 60% 50% at 85% 5%,rgba(62,212,24
     <!-- Colonne droite : éditeur code + sauvegarde -->
     <div class="carnet-col-code">
       <div id="carnet-edit-etapes" class="carnet-edit-etapes"></div>
-
-      <!-- Aide rapide HTML -->
-      <div class="carnet-aide collapsed" id="carnet-aide">
-        <div class="carnet-aide-hdr" onclick="toggleCarnetAide()">
-          <span class="carnet-aide-hdr-lbl">💡 Aide rapide — modifier le code</span>
-          <span class="carnet-aide-toggle">▾</span>
-        </div>
-        <div class="carnet-aide-body">
-          <div>
-            <div class="carnet-aide-section">✏️ Changer un texte</div>
-            <div class="carnet-aide-ex">Trouve la balise dans le code, ex&nbsp;:<br><em>&lt;h1&gt;</em><strong>Mon titre de projet</strong><em>&lt;/h1&gt;</em><br>→ remplace le texte <em>entre</em> les balises.</div>
-          </div>
-          <div>
-            <div class="carnet-aide-section">🎨 Changer une couleur</div>
-            <div class="carnet-aide-ex">Les couleurs s'écrivent avec un <strong>#</strong> suivi de 6 lettres/chiffres.<br>Ex&nbsp;: <span class="hl">color: #7ab648</span> → remplace <strong>#7ab648</strong> par une couleur ci-dessous.</div>
-            <div class="carnet-aide-colors" id="carnet-aide-colors"></div>
-            <div class="carnet-aide-note">Clique sur une couleur pour copier son code, puis colle-le dans le code.</div>
-          </div>
-        </div>
-      </div>
 
       <textarea class="carnet-code" id="carnet-code-edit" spellcheck="false" style="resize:none;outline:none;border:none;"></textarea>
       <div class="carnet-code-footer">
@@ -3816,47 +3768,7 @@ async function sauvegarderCarnet(){
   await chargerCarnet();
 }
 
-function toggleCarnetAide(){
-  const el = document.getElementById('carnet-aide');
-  if(!el) return;
-  el.classList.toggle('collapsed');
-  el.classList.toggle('expanded');
-}
 
-(function buildCarnetAideColors(){
-  const COLORS = [
-    { hex:'#f97316', nom:'Orange' },
-    { hex:'#ef4444', nom:'Rouge' },
-    { hex:'#3b82f6', nom:'Bleu' },
-    { hex:'#8b5cf6', nom:'Violet' },
-    { hex:'#ec4899', nom:'Rose' },
-    { hex:'#14b8a6', nom:'Turquoise' },
-    { hex:'#f59e0b', nom:'Jaune' },
-    { hex:'#22c55e', nom:'Vert vif' },
-    { hex:'#6b7280', nom:'Gris' },
-    { hex:'#1e293b', nom:'Nuit' },
-    { hex:'#ffffff', nom:'Blanc' },
-    { hex:'#000000', nom:'Noir' },
-  ];
-  function ready(){
-    const wrap = document.getElementById('carnet-aide-colors');
-    if(!wrap){ setTimeout(ready, 300); return; }
-    COLORS.forEach(c => {
-      const btn = document.createElement('div');
-      btn.className = 'carnet-aide-color';
-      btn.title = `Cliquer pour copier ${c.hex}`;
-      btn.innerHTML = `<span class="carnet-aide-color-dot" style="background:${c.hex}"></span>${c.nom} <span class="carnet-aide-copied" id="copied-${c.hex.slice(1)}">✓ copié</span>`;
-      btn.addEventListener('click', () => {
-        navigator.clipboard?.writeText(c.hex).catch(()=>{});
-        const lbl = document.getElementById('copied-'+c.hex.slice(1));
-        if(lbl){ lbl.style.display='inline'; setTimeout(()=>lbl.style.display='none', 1400); }
-      });
-      wrap.appendChild(btn);
-    });
-  }
-  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded', ready);
-  else ready();
-})();
 
 function renderCarnetEditionEtapes(etapeActive){
   const wrap = document.getElementById('carnet-edit-etapes');
