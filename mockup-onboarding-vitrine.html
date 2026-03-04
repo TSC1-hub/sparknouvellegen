@@ -1,0 +1,810 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Démo Guided Tour — Spark</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300..800;1,9..40,300..800&family=Fraunces:ital,opsz,wght@0,9..144,300..900;1,9..144,300..900&family=Syne:wght@600..800&display=swap" rel="stylesheet">
+<style>
+/* ─── Design System Spark (copié depuis index.html) ─── */
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+:root{
+  --moss:#3d5c3a;--sage:#5a7a5a;--leaf:#7ab648;
+  --warm:#faf7f2;--terra:#d4694a;--sun:#f0c040;
+  --text:#2c3a28;--mid:#5a6b54;--light:#8fa085;--bg:#e8e2d0;
+  --border:rgba(44,58,40,.12);--shadow:rgba(44,58,40,.08);
+  --mentor:#7b5ea7;--mentor-l:rgba(123,94,167,.09);--mentor-b:rgba(123,94,167,.22);
+}
+html,body{height:100%;overflow:hidden;font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);}
+
+/* ─── Bandeau démo ─── */
+#demo-banner{
+  position:fixed;top:0;left:0;right:0;z-index:10010;
+  background:#1a1a2e;color:#aef;
+  font-size:.62rem;font-weight:700;letter-spacing:.05em;text-transform:uppercase;
+  text-align:center;padding:5px 12px;
+  display:flex;align-items:center;justify-content:center;gap:10px;
+}
+#demo-banner button{
+  padding:2px 10px;border-radius:6px;
+  background:rgba(174,238,255,.15);border:1px solid rgba(174,238,255,.3);
+  color:#aef;font-size:.58rem;font-weight:700;cursor:pointer;
+  font-family:inherit;transition:background .15s;
+}
+#demo-banner button:hover{background:rgba(174,238,255,.28);}
+
+/* ─── Structure globale ─── */
+body{padding-top:28px;}
+.screen{display:none;flex:1;flex-direction:column;overflow:hidden;position:relative;z-index:1;}
+.screen.on{display:flex;}
+#s-eleve{height:calc(100vh - 28px);}
+
+/* ─── Header ─── */
+.app-header{position:relative;z-index:20;padding:0 20px;height:54px;
+  display:flex;align-items:center;gap:14px;flex-shrink:0;}
+.header-spark{background:#fff;border-bottom:1px solid var(--border);}
+.h-logo{font-family:'Fraunces',serif;font-weight:800;font-size:1.08rem;letter-spacing:1.3px;
+  display:flex;align-items:center;gap:8px;color:var(--text);}
+.h-logo-sub{font-size:.62rem;font-style:italic;font-weight:400;opacity:.4;margin-left:2px;}
+.h-spacer{flex:1;}
+.h-pill{display:flex;align-items:center;gap:7px;border-radius:20px;padding:5px 14px;
+  font-size:.7rem;font-weight:500;background:#f8f9fb;border:1.5px solid var(--border);color:var(--mid);}
+.btn-logout{padding:4px 12px;background:transparent;border:1px solid var(--border);
+  border-radius:8px;font-size:.65rem;font-weight:600;color:var(--light);cursor:pointer;font-family:inherit;transition:all .2s;}
+.btn-logout:hover{border-color:var(--mid);color:var(--text);}
+
+/* ─── Workspace ─── */
+.eleve-workspace{flex:1;display:flex;overflow:hidden;position:relative;}
+
+/* ─── Sidebar étapes ─── */
+.steps-sidebar{
+  width:96px;background:#fff;border-right:1px solid var(--border);
+  display:flex;flex-direction:column;align-items:center;
+  padding:10px 0;overflow-y:auto;flex-shrink:0;
+}
+.steps-sidebar::-webkit-scrollbar{display:none;}
+.ss-title{font-size:.48rem;font-weight:700;letter-spacing:2px;text-transform:uppercase;
+  color:#bbb;text-align:center;padding:6px 4px 10px;}
+
+.step-item{display:flex;flex-direction:column;align-items:center;gap:5px;
+  padding:8px 6px;width:100%;cursor:pointer;transition:background .18s;}
+.step-item:hover{background:#f5f5f5;}
+.step-item.locked{opacity:.52;}
+.step-item.locked:hover{background:transparent;cursor:default;}
+.step-item.active{cursor:pointer;}
+.step-item.active:hover{background:rgba(0,184,148,.05);}
+
+.step-orb{
+  width:50px;height:50px;border-radius:50%;flex-shrink:0;
+  position:relative;display:flex;align-items:center;justify-content:center;
+  background:#f0f0f0;
+}
+.step-rp{position:absolute;inset:0;border-radius:50%;border:1.5px solid rgba(44,58,40,.1);}
+.step-rp:nth-child(2){inset:4px;}
+.step-rp:nth-child(3){inset:8px;}
+.step-ring-inner{
+  display:flex;align-items:center;justify-content:center;
+  width:32px;height:32px;border-radius:50%;background:#f8f8f8;
+  position:relative;z-index:1;font-size:1rem;
+}
+.step-lock{
+  position:absolute;inset:0;border-radius:50%;
+  background:rgba(240,240,240,.7);display:flex;align-items:center;justify-content:center;
+  font-size:.75rem;z-index:2;
+}
+.step-item.active .step-lock,.step-item.done .step-lock{display:none;}
+.step-item.active .step-orb{
+  background:linear-gradient(135deg,#f09433,#e6683c,#dc2743,#cc2366);padding:2.5px;
+}
+.step-item.active .step-ring-inner{background:#fff;}
+.step-connector{width:2px;height:11px;background:#ebebeb;border-radius:2px;margin:0 auto;}
+
+.step-label{font-size:.52rem;font-weight:600;color:#888;text-align:center;line-height:1.3;hyphens:auto;}
+.step-item.active .step-label{color:#1a1a2e;font-weight:700;}
+.step-item.locked .step-label{color:#bbb;}
+.step-num{
+  font-size:.48rem;font-weight:800;letter-spacing:.8px;
+  padding:1px 5px;border-radius:5px;
+  background:#f0f0f0;color:#ccc;
+}
+.step-item.active .step-num{background:#f0f0f0;color:#1a1a2e;}
+
+/* ─── Zone chat ─── */
+.chat-zone{
+  flex:1;display:flex;flex-direction:column;padding:16px;gap:10px;
+  background:linear-gradient(180deg,#ffffff,#fcfdff);overflow:hidden;
+}
+
+/* Tabs */
+.eleve-chat-tabs{display:flex;gap:8px;flex-shrink:0;align-items:center;}
+.eleve-chat-tab{
+  padding:7px 12px;border-radius:999px;border:1.5px solid var(--border);
+  background:#fff;color:var(--mid);font-size:.68rem;font-weight:700;
+  cursor:pointer;display:flex;align-items:center;gap:6px;
+  transition:all .2s;font-family:inherit;
+}
+.eleve-chat-tab.active{background:rgba(62,212,245,.08);border-color:rgba(62,212,245,.28);color:var(--text);}
+.eleve-chat-tab.mentor{border-color:rgba(144,64,184,.25);color:#9040b8;background:rgba(144,64,184,.06);}
+.eleve-chat-tab.mentor.active{background:rgba(144,64,184,.12);border-color:rgba(144,64,184,.45);color:#6b21a8;font-weight:800;}
+
+/* Eco chip */
+.eco-wrap{position:relative;display:inline-flex;align-items:center;margin-left:4px;}
+.eco-chip{
+  display:flex;align-items:center;gap:4px;padding:5px 10px;border-radius:999px;
+  border:1.5px solid rgba(34,197,94,.3);background:rgba(34,197,94,.07);
+  font-size:.6rem;font-weight:700;cursor:pointer;color:var(--text);font-family:inherit;
+  transition:background .2s;
+}
+.eco-chip:hover{background:rgba(34,197,94,.15);}
+.eco-dot{width:6px;height:6px;border-radius:50%;background:#22c55e;margin-right:2px;}
+.tab-spacer{flex:1;}
+.btn-carnet{
+  padding:5px 12px;border-radius:999px;border:1.5px solid var(--border);
+  background:#fff;color:var(--mid);font-size:.68rem;font-weight:700;
+  cursor:pointer;display:flex;align-items:center;gap:5px;
+  transition:all .2s;font-family:inherit;
+}
+.btn-carnet:hover{background:rgba(44,58,40,.06);color:var(--moss);}
+
+/* Messages */
+.messages{flex:1;overflow-y:auto;display:flex;flex-direction:column;gap:12px;padding:2px 4px;scroll-behavior:smooth;}
+.messages::-webkit-scrollbar{width:3px;}
+.messages::-webkit-scrollbar-thumb{background:rgba(90,122,90,.25);border-radius:2px;}
+
+.msg{display:flex;gap:9px;max-width:85%;animation:msgIn .3s ease-out;}
+@keyframes msgIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+.msg.spark-msg{align-self:flex-start;}
+.msg.eleve-msg{align-self:flex-end;flex-direction:row-reverse;}
+.msg-av{width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.85rem;flex-shrink:0;}
+/* SPARK : anneau instagram + cercle blanc intérieur (identique à index.html) */
+.msg.spark-msg .msg-av{background:linear-gradient(135deg,#f09433,#e6683c,#dc2743,#cc2366);padding:2.5px;}
+.msg-av-inner{background:#fff;width:100%;height:100%;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.85rem;}
+/* Élève/Team : fond soleil jaune (var(--sun)) */
+.msg.eleve-msg .msg-av{background:var(--sun);}
+.msg-col{display:flex;flex-direction:column;gap:2px;}
+.msg-who{font-size:.6rem;font-weight:600;padding:0 4px;}
+.msg.spark-msg .msg-who{color:var(--sage);}
+.msg.eleve-msg .msg-who{text-align:right;color:#c4951a;}
+.msg-bubble{padding:10px 14px;border-radius:16px;font-size:.83rem;line-height:1.65;}
+/* SPARK bulle : gris très clair bordé */
+.msg.spark-msg .msg-bubble{background:#f8f9fb;border:1.5px solid var(--border);color:var(--text);border-bottom-left-radius:4px;box-shadow:none;}
+/* Élève/Team bulle : vert mousse (var(--moss)) */
+.msg.eleve-msg .msg-bubble{background:var(--moss);color:white;border-bottom-right-radius:4px;}
+
+/* Typing */
+.typing-bubble{display:flex;align-items:center;gap:5px;padding:10px 14px;}
+.typing-dot{width:7px;height:7px;border-radius:50%;background:var(--light);}
+.typing-dot:nth-child(1){animation:typing .9s ease-in-out infinite;}
+.typing-dot:nth-child(2){animation:typing .9s ease-in-out .2s infinite;}
+.typing-dot:nth-child(3){animation:typing .9s ease-in-out .4s infinite;}
+@keyframes typing{0%,60%,100%{transform:translateY(0)}30%{transform:translateY(-5px)}}
+
+/* Éco stamp sous bulle */
+.gt-eco-stamp{
+  display:inline-flex;align-items:center;gap:7px;
+  background:rgba(122,182,72,.08);border:1px solid rgba(122,182,72,.18);
+  border-radius:20px;padding:3px 10px;
+  margin-left:40px;
+  animation:stampIn .4s ease-out;
+}
+@keyframes stampIn{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
+.gt-eco-stamp .es-col{display:flex;align-items:center;gap:3px;font-size:.58rem;font-weight:700;color:var(--mid);}
+.gt-eco-stamp .es-tok{font-size:.54rem;font-weight:600;color:var(--mid);opacity:.6;}
+.gt-eco-stamp .es-sep{color:var(--border);font-size:.8rem;}
+.gt-eco-stamp .es-src{font-size:.53rem;color:rgba(122,182,72,.7);text-decoration:none;margin-left:2px;}
+.gt-eco-stamp .es-src:hover{color:#7ab648;}
+
+/* Input zone */
+.input-zone{display:flex;flex-direction:column;gap:7px;flex-shrink:0;}
+.conv-etape-header{
+  font-size:.57rem;font-weight:700;letter-spacing:.9px;text-transform:uppercase;
+  color:var(--light);display:flex;align-items:center;gap:5px;
+}
+.conv-etape-header::before{content:'';width:7px;height:7px;border-radius:50%;background:var(--leaf);display:block;}
+.input-row{
+  display:flex;gap:8px;align-items:flex-end;background:white;
+  border:1.5px solid var(--border);border-radius:14px;padding:8px 10px;
+  transition:border-color .2s;
+}
+.input-row:focus-within{border-color:var(--moss);}
+.msg-input{
+  flex:1;background:transparent;border:none;outline:none;color:var(--text);
+  font-family:'DM Sans',sans-serif;font-size:.83rem;line-height:1.5;
+  resize:none;min-height:20px;max-height:100px;
+}
+.msg-input::placeholder{color:var(--light);}
+.btn-send{
+  background:var(--moss);border:none;border-radius:10px;padding:10px 18px;
+  color:white;font-family:'Syne',sans-serif;font-size:.72rem;font-weight:700;
+  cursor:pointer;transition:all .2s;white-space:nowrap;flex-shrink:0;
+}
+.btn-send:hover{background:var(--sage);transform:translateY(-1px);}
+
+/* Note : la vitrine n'est pas un panel — elle est accessible via le bouton Carnet (#btn-carnet)
+   SPARK la génère automatiquement à chaque checkpoint avec les marqueurs SPARK_HTML_START/END */
+
+/* ── Carnet drawer (mockup) ───────────────────────── */
+.carnet-drawer{
+  position:fixed;top:0;left:0;right:0;bottom:0;
+  background:#fff;z-index:50;
+  transform:translateX(100vw);
+  transition:transform .4s cubic-bezier(.32,.72,0,1);
+  display:flex;flex-direction:column;
+  border-left:1.5px solid var(--border);
+  box-shadow:-8px 0 40px rgba(0,0,0,.12);
+}
+.carnet-drawer.open{transform:translateX(0);}
+.carnet-hdr{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:10px 18px;background:var(--moss);flex-shrink:0;gap:12px;
+}
+.carnet-hdr-title{font-family:'Fraunces',serif;font-size:.95rem;color:var(--sun);font-weight:700;}
+.carnet-hdr-sub{font-size:.68rem;color:rgba(240,192,64,.7);margin-top:1px;}
+.carnet-etapes-pills{display:flex;gap:5px;}
+.carnet-etape-pill{
+  background:rgba(255,255,255,.12);color:rgba(240,192,64,.7);
+  border-radius:20px;padding:2px 9px;font-size:.7rem;font-weight:600;
+}
+.carnet-etape-pill.active{background:var(--sun);color:var(--moss);}
+.btn-carnet-close{
+  background:rgba(255,255,255,.12);border:none;color:#fff;
+  border-radius:8px;padding:4px 13px;font-size:.78rem;cursor:pointer;
+  font-family:'DM Sans',sans-serif;flex-shrink:0;
+}
+.carnet-split{display:flex;flex:1;overflow:hidden;}
+.carnet-col-preview{
+  flex:1;display:flex;flex-direction:column;
+  border-right:1.5px solid var(--border);overflow:hidden;
+}
+.carnet-iframe{flex:1;border:none;width:100%;}
+.carnet-mini-chat{
+  flex-shrink:0;border-top:1.5px solid var(--border);
+  display:flex;flex-direction:column;background:var(--warm);
+}
+.carnet-mini-msgs{
+  padding:10px 14px;font-size:.78rem;color:var(--mid);
+  display:flex;flex-direction:column;gap:4px;overflow-y:auto;max-height:120px;
+}
+@keyframes cm-blink{
+  0%,80%,100%{opacity:.2;transform:scale(.7);}
+  40%{opacity:1;transform:scale(1);}
+}
+.cm-dot{display:inline-block;width:5px;height:5px;border-radius:50%;
+  background:var(--leaf);margin:0 1px;
+  animation:cm-blink 1.2s infinite ease-in-out;}
+.cm-dot:nth-child(2){animation-delay:.2s;}
+.cm-dot:nth-child(3){animation-delay:.4s;}
+.carnet-mini-input-row{display:flex;gap:8px;padding:8px 12px;border-top:1px solid var(--border);}
+.carnet-mini-input{
+  flex:1;border:1.5px solid var(--border);border-radius:8px;
+  padding:6px 10px;font-family:'DM Sans',sans-serif;font-size:.78rem;
+  resize:none;outline:none;background:#fff;
+}
+.carnet-mini-send{
+  background:var(--leaf);border:none;border-radius:8px;padding:6px 12px;
+  color:#fff;font-family:'DM Sans',sans-serif;font-size:.74rem;
+  font-weight:600;cursor:pointer;flex-shrink:0;
+}
+.carnet-col-code{
+  flex:1;background:#1e1e2e;display:flex;flex-direction:column;overflow:hidden;
+}
+.carnet-code-hdr{
+  padding:7px 16px;background:#181825;
+  font-size:.7rem;color:#7f849c;font-family:monospace;
+  border-bottom:1px solid #313244;flex-shrink:0;letter-spacing:.02em;
+}
+.carnet-code{
+  flex:1;overflow:auto;padding:16px;margin:0;
+  font-family:'Fira Mono','Cascadia Code',Consolas,monospace;
+  font-size:.76rem;line-height:1.65;color:#cdd6f4;white-space:pre;
+  background:transparent;border:none;resize:none;outline:none;
+}
+.carnet-code-footer{
+  padding:8px 16px;background:#181825;border-top:1px solid #313244;
+  display:flex;align-items:center;justify-content:space-between;flex-shrink:0;
+}
+.carnet-code-note{font-size:.68rem;color:#7f849c;font-family:monospace;}
+</style>
+</head>
+<body>
+
+<!-- Bandeau démo -->
+<div id="demo-banner">
+  <span>🔬 DÉMO — Tour guidé Spark (<code>spark-guided-tour.js</code>)</span>
+  <button onclick="resetTour()">↺ Relancer le tour</button>
+  <button onclick="demoMsg()">➜ Simuler msg élève</button>
+  <button onclick="ouvrirDemoCarnet()" style="background:var(--moss);color:var(--sun);">📓 Ouvrir Carnet</button>
+  <button onclick="simulerRetoucheHTML()" style="background:#7523a0;color:#fff;">🎨 Simuler retouche HTML</button>
+</div>
+
+<!-- Écran élève (structure identique à index.html) -->
+<div class="screen on" id="s-eleve">
+
+  <!-- Header -->
+  <div class="app-header header-spark">
+    <div class="h-logo">🌿 SPARK <span class="h-logo-sub">Design Thinking</span></div>
+    <div class="h-spacer"></div>
+    <div class="h-pill">TEAM</div>
+    <button class="btn-logout">↩ Quitter</button>
+  </div>
+
+  <!-- Workspace -->
+  <div class="eleve-workspace">
+
+    <!-- Sidebar étapes -->
+    <div class="steps-sidebar">
+      <div class="ss-title">Votre parcours</div>
+
+      <div class="step-item active" id="step-0">
+        <div class="step-num">0</div>
+        <div class="step-orb">
+          <div class="step-rp"></div><div class="step-rp"></div><div class="step-rp"></div>
+          <div class="step-ring-inner"><span class="step-emoji">🌱</span></div>
+        </div>
+        <div class="step-label">Découvrir</div>
+      </div>
+      <div class="step-connector"></div>
+
+      <div class="step-item locked" id="step-1">
+        <div class="step-num">1</div>
+        <div class="step-orb">
+          <div class="step-rp"></div><div class="step-rp"></div><div class="step-rp"></div>
+          <div class="step-ring-inner"><span class="step-emoji">🔍</span></div>
+          <div class="step-lock">🔒</div>
+        </div>
+        <div class="step-label">Problé­matiser</div>
+      </div>
+      <div class="step-connector"></div>
+
+      <div class="step-item locked" id="step-2">
+        <div class="step-num">2</div>
+        <div class="step-orb">
+          <div class="step-rp"></div><div class="step-rp"></div><div class="step-rp"></div>
+          <div class="step-ring-inner"><span class="step-emoji">✏️</span></div>
+          <div class="step-lock">🔒</div>
+        </div>
+        <div class="step-label">Imaginer</div>
+      </div>
+      <div class="step-connector"></div>
+
+      <div class="step-item locked" id="step-3">
+        <div class="step-num">3</div>
+        <div class="step-orb">
+          <div class="step-rp"></div><div class="step-rp"></div><div class="step-rp"></div>
+          <div class="step-ring-inner"><span class="step-emoji">🔨</span></div>
+          <div class="step-lock">🔒</div>
+        </div>
+        <div class="step-label">Créer</div>
+      </div>
+      <div class="step-connector"></div>
+
+      <div class="step-item locked" id="step-4">
+        <div class="step-num">4</div>
+        <div class="step-orb">
+          <div class="step-rp"></div><div class="step-rp"></div><div class="step-rp"></div>
+          <div class="step-ring-inner"><span class="step-emoji">📢</span></div>
+          <div class="step-lock">🔒</div>
+        </div>
+        <div class="step-label">Chiffrer &amp; Pitcher</div>
+      </div>
+      <div class="step-connector"></div>
+
+      <div class="step-item locked" id="step-5">
+        <div class="step-num">5</div>
+        <div class="step-orb">
+          <div class="step-rp"></div><div class="step-rp"></div><div class="step-rp"></div>
+          <div class="step-ring-inner"><span class="step-emoji">🏆</span></div>
+          <div class="step-lock">🔒</div>
+        </div>
+        <div class="step-label">S'entraîner finale</div>
+      </div>
+    </div><!-- /steps-sidebar -->
+
+    <!-- Chat -->
+    <div class="chat-zone">
+
+      <!-- Tabs -->
+      <div class="eleve-chat-tabs">
+        <button class="eleve-chat-tab active" id="btn-eleve-canal-spark">💬 Conversation SPARK</button>
+        <button class="eleve-chat-tab mentor" id="btn-eleve-canal-mentor">🎓 Canal Mentor <span style="font-size:.6rem;background:rgba(144,64,184,.15);border-radius:10px;padding:1px 5px;">0</span></button>
+        <div class="eco-wrap" style="margin-left:4px;">
+          <button class="eco-chip level-low">
+            <span class="eco-dot"></span>
+            <span>⚡</span><span id="ecoWh">0.00 Wh</span>
+            <span style="opacity:.35;margin:0 2px">·</span>
+            <span>💧</span><span id="ecoMl">0.0 ml</span>
+          </button>
+        </div>
+        <div class="tab-spacer"></div>
+        <button class="btn-carnet" id="btn-carnet">📓 Carnet</button>
+      </div>
+
+      <!-- Messages -->
+      <div class="messages" id="chat-messages">
+        <!-- Message d'accueil SPARK (identique à sparkGreet() dans index.html) -->
+        <div class="msg spark-msg">
+          <div class="msg-av"><div class="msg-av-inner">⚡</div></div>
+          <div class="msg-col">
+            <div class="msg-who">SPARK ⚡</div>
+            <div class="msg-bubble">Bienvenue dans le programme The Schools Challenge, vous êtes la 10ème génération à découvrir ce programme ! 🥳 Vous allez lors de 6 prochains mois collaborer tous.tes ensemble dans la résolution d'un problème ! Etes-vous prêt.e.s? 💪</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Input -->
+      <div class="input-zone">
+        <div class="conv-etape-header" id="conv-etape-header">Étape 0 — Découvrir</div>
+        <div class="input-row">
+          <textarea class="msg-input" id="msg-input"
+            placeholder="Tapez votre message..."
+            rows="1"
+            oninput="autoResize(this)"
+            onkeydown="handleKey(event)"></textarea>
+          <button class="btn-send" id="btn-send" onclick="sendMessage()">Envoyer 🌱</button>
+        </div>
+      </div>
+
+    </div><!-- /chat-zone -->
+
+  </div><!-- /eleve-workspace -->
+</div><!-- /s-eleve -->
+
+<script>
+/* Mode démo : reset localStorage immédiatement */
+localStorage.removeItem('spark_onboarding_done');
+
+/* ── EcoLogits — mistral-small-latest ──────────────────────────────────────
+   Méthodologie : https://ecologits.ai/latest/methodology/ */
+const ECO_KWH_PER_TOKEN   = 2.16e-7;  // kWh/token (opérationnel + embodied, mix EU)
+const ECO_GWP_PER_KWH     = 418;      // gCO2eq/kWh — mix électrique européen
+const ECO_WATER_L_PER_KWH = 1.845;    // L/kWh — refroidissement datacenter
+const ECO_CAR_GCO2_PER_KM = 170;      // gCO2eq/km — voiture moyenne EU
+// Dérivés pour le chip cumulatif (rétrocompat. updateEcoChip)
+const WH = ECO_KWH_PER_TOKEN * 1000;
+const ML = ECO_KWH_PER_TOKEN * ECO_WATER_L_PER_KWH * 1000;
+function tokens(t){return Math.max(10,Math.ceil(t.length/3.5)+15);}
+function ecoCalc(tok){
+  const kwh=tok*ECO_KWH_PER_TOKEN;
+  return{tok,wh:kwh*1000,co2:kwh*ECO_GWP_PER_KWH,ml:kwh*ECO_WATER_L_PER_KWH*1000,
+         car_m:kwh*ECO_GWP_PER_KWH/ECO_CAR_GCO2_PER_KM*1000};
+}
+function fWh(v){return v<1?(v*1000).toFixed(1)+' mWh':v.toFixed(2)+' Wh';}
+function fMl(v){return v.toFixed(2)+' ml';}
+function fCo2(v){return v<1e-3?(v*1e3).toFixed(1)+' µgCO₂eq':v.toFixed(3)+' gCO₂eq';}
+function fCar(m){return m<1?(m*100).toFixed(0)+' cm':m.toFixed(1)+' m';}
+
+/* Compteurs éco globaux (pas de stamp initial : sparkGreet non tracké dans démo) */
+let totalWh=0,totalMl=0,totalCo2=0;
+
+/* Mise à jour de l'eco-chip (IDs identiques à index.html : #ecoWh, #ecoMl) */
+function updateEcoChip(t){
+  totalWh+=t*WH; totalMl+=t*ML; totalCo2+=t*CO2;
+  document.getElementById('ecoWh').textContent=fWh(totalWh);
+  document.getElementById('ecoMl').textContent=fMl(totalMl);
+}
+
+const REPLIES=[
+  "Super ! Pour mieux cerner ton projet, dis-moi : tu voudrais faire quelque chose <em>pour toi</em> ou <em>pour d'autres personnes ?</em>",
+  "J'adore cette idée 💡 Qu'est-ce qui te manque encore pour la concrétiser ?",
+  "Beau point de départ. Imagine que tu présentes ça à un jury dans 3 mois — quelle serait la <em>phrase qui résume ton projet ?</em>",
+  "Intéressant ! On pourrait en faire un projet créatif, solidaire ou entrepreneurial. Tu as une préférence ?",
+];
+let replyIdx=0;
+
+function autoResize(ta){ta.style.height='auto';ta.style.height=Math.min(ta.scrollHeight,100)+'px';}
+function handleKey(e){if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();sendMessage();}}
+
+function sendMessage(){
+  const ta=document.getElementById('msg-input');
+  const text=ta.value.trim();
+  if(!text)return;
+  _appendMsg('eleve',text);
+  ta.value='';ta.style.height='auto';
+  _simulateTeamReply(text);
+}
+
+function _appendMsg(who,text){
+  const msgs=document.getElementById('chat-messages');
+  const m=document.createElement('div');
+  m.className='msg '+(who==='eleve'?'eleve-msg':'spark-msg');
+  if(who==='eleve'){
+    /* Avatar jaune soleil, pseudo "La Team" — identique à index.html renderMsg('user',...) */
+    m.innerHTML=`<div class="msg-av">👥</div><div class="msg-col"><div class="msg-who">La Team</div><div class="msg-bubble">${text.replace(/</g,'&lt;')}</div></div>`;
+  } else {
+    /* Avatar anneau instagram + ⚡ intérieur, pseudo "SPARK ⚡" — identique à index.html renderMsg('assistant',...) */
+    m.innerHTML=`<div class="msg-av"><div class="msg-av-inner">⚡</div></div><div class="msg-col"><div class="msg-who">SPARK ⚡</div><div class="msg-bubble">${text}</div></div>`;
+  }
+  msgs.appendChild(m);
+  msgs.scrollTop=msgs.scrollHeight;
+  return m;
+}
+
+function _simulateTeamReply(userTxt){
+  const msgs=document.getElementById('chat-messages');
+  const typing=document.createElement('div');
+  typing.className='msg spark-msg';
+  typing.innerHTML=`<div class="msg-av">🌿</div><div class="msg-col"><div class="msg-who">SPARK · Team</div><div class="msg-bubble"><div class="typing-bubble"><span class="typing-dot"></span><span class="typing-dot"></span><span class="typing-dot"></span></div></div></div>`;
+  msgs.appendChild(typing);
+  msgs.scrollTop=msgs.scrollHeight;
+
+  setTimeout(()=>{
+    const reply=REPLIES[replyIdx%REPLIES.length]; replyIdx++;
+    typing.querySelector('.msg-bubble').innerHTML=reply;
+
+    const t=tokens(userTxt)+tokens(reply);
+    updateEcoChip(t);
+
+    // Toujours afficher le stamp éco sous la réponse SPARK
+    const stamp=document.createElement('div');
+    stamp.className='gt-eco-stamp';
+    const e=ecoCalc(t);
+    stamp.innerHTML=`<span class="es-col">⚡ <strong>${fWh(e.wh)}</strong></span><span class="es-sep">·</span><span class="es-col">🌍 <strong>${fCo2(e.co2)}</strong></span><span class="es-sep">·</span><span class="es-col">🚗 <strong>${fCar(e.car_m)}</strong></span><a class="es-src" href="https://ecologits.ai/latest/" target="_blank">EcoLogits ↗</a>`;
+    msgs.appendChild(stamp);
+    msgs.scrollTop=msgs.scrollHeight;
+  },1100+Math.random()*700);
+}
+
+function demoMsg(){
+  const samples=["Je suis passionné par la musique électronique","Mon projet porte sur la biodiversité en ville","Je veux créer une appli de troc entre étudiants"];
+  document.getElementById('msg-input').value=samples[Math.floor(Math.random()*samples.length)];
+  sendMessage();
+}
+
+function ouvrirDemoCarnet() {
+  document.getElementById('mockup-carnet').classList.add('open');
+}
+
+function fermerMockupCarnet() {
+  document.getElementById('mockup-carnet').classList.remove('open');
+  // Remettre le mini-chat dans son état initial
+  const msgs = document.getElementById('carnet-mini-msgs-demo');
+  if (msgs) msgs.innerHTML = '<span style="color:var(--mid);font-style:italic;">Décris ce que tu veux modifier et <strong>SPARK</strong> met à jour le code en direct.</span>';
+  const input = document.querySelector('#mockup-carnet .carnet-mini-input');
+  if (input) input.value = '';
+  // Réinitialiser l'iframe et le code
+  const iframe = document.getElementById('mockup-vitrine-rendu');
+  if (iframe) iframe.srcdoc = SAMPLE_VITRINE_HTML;
+  const codeEl = document.getElementById('mockup-carnet-code');
+  if (codeEl) codeEl.value = SAMPLE_VITRINE_HTML;
+}
+
+/* ──────────────────────────────────────────────────────────
+   Simulation retouche HTML dans le Carnet
+   Séquence : frappe → envoi → typing SPARK → HTML mis à jour
+────────────────────────────────────────────────────────── */
+function simulerRetoucheHTML(callback) {
+  ouvrirDemoCarnet();
+
+  const input  = document.querySelector('#mockup-carnet .carnet-mini-input');
+  const msgs   = document.getElementById('carnet-mini-msgs-demo');
+  const iframe = document.getElementById('mockup-vitrine-rendu');
+  const codeEl = document.getElementById('mockup-carnet-code');
+
+  // Reset état
+  msgs.innerHTML = '';
+  if (input) input.value = '';
+  if (iframe) iframe.srcdoc  = SAMPLE_VITRINE_HTML;
+  if (codeEl) codeEl.value = SAMPLE_VITRINE_HTML;
+
+  const demande = 'Mets le titre en orange 🎨';
+  let i = 0;
+
+  // 1. Simulation frappe dans le textarea
+  const typ = setInterval(() => {
+    if (i < demande.length) {
+      if (input) input.value += demande[i++];
+    } else {
+      clearInterval(typ);
+
+      // 2. Envoi → bulle élève
+      setTimeout(() => {
+        if (input) input.value = '';
+        _cmBubble(msgs, demande, 'user');
+
+        // 3. Indicateur typing SPARK
+        setTimeout(() => {
+          const dot = _cmTyping(msgs);
+
+          // 4. SPARK répond → HTML mis à jour
+          setTimeout(() => {
+            dot.remove();
+
+            const updated = SAMPLE_VITRINE_HTML
+              .replace('color: #7ab648; font-size: 1.3rem',
+                       'color: #f97316; font-size: 1.3rem')
+              .replace("  h1   { color: #7ab648;",
+                       "  h1   { color: #f97316;");
+
+            if (iframe) iframe.srcdoc  = updated;
+            if (codeEl) codeEl.value = updated;
+
+            _cmBubble(msgs,
+              '\u2705 Titre passé en <span style="color:#f97316;font-weight:700;">orange</span>'
+              + ' — aperçu mis à jour en direct 👆',
+              'spark', true);
+
+            // Notifier le tour guidé que la démo est terminée
+            if (callback) setTimeout(callback, 600);
+          }, 1800);
+        }, 400);
+      }, 420);
+    }
+  }, 36);
+}
+
+/* ── Interface pour le tour guidé ── */
+window.SparkTourDemo = {
+  runRetouche(cb) { simulerRetoucheHTML(cb); },
+};
+
+function _cmBubble(container, content, who, isHTML) {
+  const d = document.createElement('div');
+  const isUser = (who === 'user');
+  d.style.cssText = [
+    'padding:6px 11px',
+    'border-radius:' + (isUser ? '10px 10px 2px 10px' : '2px 10px 10px 10px'),
+    'font-size:.75rem',
+    'max-width:88%',
+    'line-height:1.45',
+    isUser
+      ? 'background:var(--moss);color:#fff;align-self:flex-end;margin-left:auto;'
+      : 'background:#f0fdf4;border:1px solid #bbf7d0;color:var(--text);',
+  ].join(';');
+  if (isHTML) d.innerHTML = content; else d.textContent = content;
+  container.appendChild(d);
+  container.scrollTop = container.scrollHeight;
+}
+
+function _cmTyping(container) {
+  const d = document.createElement('div');
+  d.style.cssText = 'display:flex;align-items:center;gap:6px;font-size:.74rem;color:var(--mid);padding:2px 0;';
+  d.innerHTML = '<div style="width:18px;height:18px;background:linear-gradient(135deg,#833ab4,#fd1d1d,#fcb045);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.6rem;flex-shrink:0;color:#fff;">⚡</div>'
+    + '<span>SPARK génère le HTML\u00a0<span class="cm-dot"></span><span class="cm-dot"></span><span class="cm-dot"></span></span>';
+  container.appendChild(d);
+  container.scrollTop = container.scrollHeight;
+  return d;
+}
+
+function _highlightCodeChange(preEl, color) {
+  if (!preEl) return;
+  const src = preEl.textContent;
+  const escaped = src
+    .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  // Mettre en surbrillance les lignes contenant la nouvelle couleur
+  const highlighted = escaped.replace(
+    new RegExp('(' + color.replace('#','#') + ')', 'g'),
+    '<mark style="background:#f97316;color:#fff;border-radius:2px;padding:0 2px;">$1</mark>'
+  );
+  preEl.innerHTML = highlighted;
+}
+
+function resetTour(){
+  try { localStorage.removeItem('spark_onboarding_done'); } catch(e){}
+  ['gt-overlay','gt-spotlight','gt-arrow','gt-card','gt-styles'].forEach(id=>{const e=document.getElementById(id);if(e)e.remove();});
+  if(window.SparkTour) SparkTour.start();
+}
+</script>
+
+
+<!-- ═══════════════════════════════════════════════════════════
+     CARNET DRAWER MOCKUP — s'ouvre lors du step "carnet" du tour
+  ════════════════════════════════════════════════════════════ -->
+<div id="mockup-carnet" class="carnet-drawer">
+  <div class="carnet-hdr">
+    <div>
+      <div class="carnet-hdr-title">📓 Carnet de Terrain</div>
+      <div class="carnet-hdr-sub">Équipe ForestGuard — Étape 0 / 5</div>
+    </div>
+    <div class="carnet-etapes-pills">
+      <span class="carnet-etape-pill active">0</span>
+      <span class="carnet-etape-pill">1</span>
+      <span class="carnet-etape-pill">2</span>
+      <span class="carnet-etape-pill">3</span>
+    </div>
+    <button class="btn-carnet-close" onclick="fermerMockupCarnet()">✕ Fermer</button>
+  </div>
+  <div class="carnet-split">
+    <!-- Colonne gauche : aperçu + mini-chat SPARK -->
+    <div class="carnet-col-preview" id="mockup-carnet-preview">
+      <iframe class="carnet-iframe" id="mockup-vitrine-rendu"></iframe>
+      <div class="carnet-mini-chat">
+        <div class="carnet-mini-msgs" id="carnet-mini-msgs-demo">
+          <span style="color:var(--mid);font-style:italic;">Décris ce que tu veux modifier et <strong>SPARK</strong> met à jour le code en direct.</span>
+        </div>
+        <div class="carnet-mini-input-row">
+          <textarea class="carnet-mini-input"
+            placeholder="Ex : mets le titre en orange, ajoute une section équipe…"
+            rows="1"></textarea>
+          <button class="carnet-mini-send">Envoyer ✨</button>
+        </div>
+      </div>
+    </div>
+    <!-- Colonne droite : code HTML généré par SPARK -->
+    <div class="carnet-col-code">
+      <div class="carnet-code-hdr">vitrine-etape0.html &nbsp;·&nbsp; généré par SPARK ⚡ &nbsp;<span style="color:#a6e3a1;font-weight:700;font-size:.62rem">✏️ modifiable directement</span></div>
+      <textarea class="carnet-code" id="mockup-carnet-code" spellcheck="false" autocomplete="off"></textarea>
+      <div class="carnet-code-footer">
+        <span class="carnet-code-note">Étape 0 — modifie le code, l'aperçu se met à jour en direct</span>
+        <button style="padding:6px 16px;background:#7ab648;border:none;border-radius:8px;color:white;font-family:'DM Sans',sans-serif;font-size:.74rem;font-weight:600;cursor:pointer;opacity:.55;">💾 Sauvegarder</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ── Exemple de vitrine HTML générée par SPARK ────────────────── */
+const SAMPLE_VITRINE_HTML = [
+  '<!DOCTYPE html>',
+  '<html lang="fr">',
+  '<head>',
+  '<meta charset="UTF-8">',
+  '<style>',
+  '  body { font-family: sans-serif; background: #0d1f0e;',
+  '         color: #e8f5e9; margin: 0; padding: 20px; }',
+  '  h1   { color: #7ab648; font-size: 1.3rem; margin-bottom: 8px; }',
+  '  .tags { margin-bottom: 12px; }',
+  '  .tag  { display: inline-block; background: #1d4620;',
+  '          color: #7ab648; padding: 3px 10px;',
+  '          border-radius: 20px; font-size: .75rem; margin: 3px; }',
+  '  p    { color: #c8e6c9; line-height: 1.6; font-size: .9rem; }',
+  '  .step { margin-top: 16px; background: #1d4620;',
+  '          border-radius: 10px; padding: 10px 14px;',
+  '          font-size: .85rem; color: #a5d6a7; }',
+  '</style>',
+  '</head>',
+  '<body>',
+  '  <h1>🌱 ForestGuard</h1>',
+  '  <div class="tags">',
+  '    <span class="tag">Biodiversité</span>',
+  '    <span class="tag">Forêts urbaines</span>',
+  '    <span class="tag">Capteurs IoT</span>',
+  '  </div>',
+  '  <p>Notre projet surveille la santé des forêts urbaines',
+  '  grâce à des capteurs à bas coût et une IA embarquée.</p>',
+  '  <div class="step">⏱ Étape 0 — Découvrir</div>',
+  '</body>',
+  '</html>',
+].join('\n');
+
+/* Injecter dans l'iframe (rendu live) et dans le textarea (code affiché) */
+(function() {
+  const iframe = document.getElementById('mockup-vitrine-rendu');
+  if (iframe) iframe.srcdoc = SAMPLE_VITRINE_HTML;
+  const code  = document.getElementById('mockup-carnet-code');
+  if (code) {
+    code.value = SAMPLE_VITRINE_HTML;
+    // Live preview : chaque frappe met à jour l'iframe
+    code.addEventListener('input', () => {
+      const ifr = document.getElementById('mockup-vitrine-rendu');
+      if (ifr) ifr.srcdoc = code.value;
+    });
+  }
+})();
+</script>
+
+<script src="spark-guided-tour.js"></script>
+<script>
+/* Démarrage direct — pas d'attente d'événement */
+(function tryStart() {
+  if (!window.SparkTour) { setTimeout(tryStart, 100); return; } // attend le script
+  ['gt-overlay','gt-spotlight','gt-arrow','gt-card','gt-styles'].forEach(id=>{
+    const e=document.getElementById(id); if(e) e.remove();
+  });
+  try { localStorage.removeItem('spark_onboarding_done'); } catch(e){}
+  SparkTour.start();
+
+  /* Debug : afficher un indicateur rouge si le tour ne démarre pas dans 1s */
+  setTimeout(()=>{
+    if (!document.getElementById('gt-card')) {
+      const d = document.createElement('div');
+      d.style.cssText = 'position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:red;color:white;padding:20px;border-radius:12px;z-index:99999;font-family:sans-serif;font-weight:bold;text-align:center;';
+      d.innerHTML = '⚠️ Tour non démarré<br><small>Ouvre la console (F12) → onglet Console<br>et note les erreurs en rouge</small><br><br><button onclick="SparkTour && SparkTour.start()" style="padding:8px 16px;border-radius:8px;cursor:pointer;border:none;background:white;color:red;font-weight:bold;">Relancer manuellement</button>';
+      document.body.appendChild(d);
+    }
+  }, 1000);
+})();
+</script>
+</body>
+</html>

@@ -615,6 +615,37 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
 .carnet-code-footer{padding:8px 16px;background:#1e1e2e;border-top:1px solid rgba(255,255,255,.08);flex-shrink:0;display:flex;align-items:center;justify-content:space-between;gap:8px;}
 .carnet-edit-note{font-size:.62rem;color:#9ca3af;}
 
+/* ── Aide rapide HTML ── */
+.carnet-aide{flex-shrink:0;background:#161626;border-bottom:1px solid rgba(255,255,255,.07);overflow:hidden;transition:max-height .3s ease;}
+.carnet-aide.collapsed{max-height:32px;}
+.carnet-aide.expanded{max-height:340px;}
+.carnet-aide-hdr{display:flex;align-items:center;justify-content:space-between;padding:6px 14px;cursor:pointer;user-select:none;}
+.carnet-aide-hdr-lbl{font-size:.62rem;font-weight:700;color:#8ea1b8;letter-spacing:.04em;display:flex;align-items:center;gap:5px;}
+.carnet-aide-toggle{font-size:.6rem;color:#8ea1b8;transition:transform .25s;}
+.carnet-aide.expanded .carnet-aide-toggle{transform:rotate(180deg);}
+.carnet-aide-body{padding:0 14px 12px;display:flex;flex-direction:column;gap:10px;}
+.carnet-aide-section{font-size:.62rem;color:#7f849c;font-weight:600;text-transform:uppercase;letter-spacing:.08em;margin-bottom:2px;}
+.carnet-aide-ex{
+  background:#1e1e2e;border:1px solid rgba(255,255,255,.08);border-radius:7px;
+  padding:7px 10px;font-family:monospace;font-size:.69rem;line-height:1.7;color:#cdd6f4;
+}
+.carnet-aide-ex em{color:#f38ba8;font-style:normal;}
+.carnet-aide-ex strong{color:#a6e3a1;font-weight:500;}
+.carnet-aide-ex span.hl{background:rgba(163,187,128,.15);border-radius:3px;padding:0 3px;color:#a6e3a1;}
+.carnet-aide-colors{display:flex;flex-wrap:wrap;gap:5px;}
+.carnet-aide-color{
+  display:flex;align-items:center;gap:5px;padding:3px 9px 3px 6px;
+  border-radius:20px;border:1px solid rgba(255,255,255,.1);
+  cursor:pointer;font-size:.63rem;font-family:monospace;color:#cdd6f4;
+  transition:border-color .15s,background .15s;
+  background:rgba(255,255,255,.04);
+}
+.carnet-aide-color:hover{border-color:rgba(255,255,255,.3);background:rgba(255,255,255,.09);}
+.carnet-aide-color:active{transform:scale(.96);}
+.carnet-aide-color-dot{width:12px;height:12px;border-radius:50%;flex-shrink:0;border:1.5px solid rgba(255,255,255,.15);}
+.carnet-aide-copied{font-size:.55rem;color:#a6e3a1;margin-left:2px;display:none;}
+.carnet-aide-note{font-size:.6rem;color:#585b70;font-style:italic;line-height:1.5;}
+
 /* ── Mini-chat vitrine ── */
 .carnet-mini-chat{flex-shrink:0;background:#f8fafc;border-top:1px solid var(--border);display:flex;flex-direction:column;max-height:190px;min-height:120px;}
 .carnet-mini-msgs{flex:1;overflow-y:auto;padding:7px 12px;font-size:.71rem;color:var(--mid);min-height:36px;}
@@ -1247,7 +1278,7 @@ body::before{background:radial-gradient(ellipse 60% 50% at 85% 5%,rgba(62,212,24
   font-size:.6rem;font-weight:700;letter-spacing:.3px;
   cursor:pointer;transition:background .2s,border-color .2s;
   white-space:nowrap;position:relative;
-  color:inherit;
+  color:inherit;height:100%;box-sizing:border-box;
 }
 .eco-chip:hover{background:rgba(34,197,94,.15);}
 .eco-chip.level-mid{border-color:rgba(249,115,22,.4);background:rgba(249,115,22,.08);}
@@ -1267,7 +1298,7 @@ body::before{background:radial-gradient(ellipse 60% 50% at 85% 5%,rgba(62,212,24
   100%{transform:scale(1);opacity:1;}
 }
 .eco-chip.flash{animation:eco-flash .25s ease-out;}
-.eco-wrap{position:relative;display:inline-flex;align-items:center;}
+.eco-wrap{position:relative;display:inline-flex;align-items:center;align-self:stretch;}
 .eco-tooltip{
   display:none;position:absolute;
   top:calc(100% + 8px);right:0;
@@ -1515,9 +1546,9 @@ body::before{background:radial-gradient(ellipse 60% 50% at 85% 5%,rgba(62,212,24
         <div class="eco-wrap" id="ecoWrap">
           <button class="eco-chip level-low" id="ecoChip" onclick="toggleEcoTooltip()" title="Impact IA de votre session">
             <span class="eco-dot"></span>
-            <span>⚡</span><span id="ecoWh">0.00 Wh</span>
+            <span>⚡</span><span id="ecoWh">0.0 mWh</span>
             <span style="opacity:.35;margin:0 1px">·</span>
-            <span>💧</span><span id="ecoMl">0.0 ml</span>
+            <span>🌍</span><span id="ecoCo2">0.000 gCO₂eq</span>
           </button>
           <div class="eco-tooltip" id="ecoTooltip">
             <div class="eco-tt-title">Impact IA · SPARK ⚡</div>
@@ -1533,16 +1564,16 @@ body::before{background:radial-gradient(ellipse 60% 50% at 85% 5%,rgba(62,212,24
               <span class="eco-tt-val" id="eco-val-wh">0.00 Wh</span>
             </div>
             <div class="eco-tt-row">
-              <span class="eco-tt-ico">💧</span>
-              <span class="eco-tt-label">Eau</span>
-              <div class="eco-bar-track"><div class="eco-bar-fill" id="eco-bar-ml" style="--eco-bar-color:#3b82f6;width:0%"></div></div>
-              <span class="eco-tt-val" id="eco-val-ml">0.0 ml</span>
+              <span class="eco-tt-ico">🌍</span>
+              <span class="eco-tt-label">CO₂eq</span>
+              <div class="eco-bar-track"><div class="eco-bar-fill" id="eco-bar-ml" style="--eco-bar-color:#22c55e;width:0%"></div></div>
+              <span class="eco-tt-val" id="eco-val-ml">0.000 gCO₂eq</span>
             </div>
             <div class="eco-tt-row">
-              <span class="eco-tt-ico">🌿</span>
-              <span class="eco-tt-label">CO₂</span>
-              <div class="eco-bar-track"><div class="eco-bar-fill" id="eco-bar-co2" style="--eco-bar-color:#22c55e;width:0%"></div></div>
-              <span class="eco-tt-val" id="eco-val-co2">0.000 gCO₂</span>
+              <span class="eco-tt-ico">🚗</span>
+              <span class="eco-tt-label">Voiture</span>
+              <div class="eco-bar-track"><div class="eco-bar-fill" id="eco-bar-co2" style="--eco-bar-color:#f97316;width:0%"></div></div>
+              <span class="eco-tt-val" id="eco-val-co2">0 cm</span>
             </div>
             <div class="eco-tt-tip" id="eco-tip">Les messages courts consomment 3× moins. Continuez comme ça !</div>
           </div>
@@ -1702,6 +1733,27 @@ body::before{background:radial-gradient(ellipse 60% 50% at 85% 5%,rgba(62,212,24
     <!-- Colonne droite : éditeur code + sauvegarde -->
     <div class="carnet-col-code">
       <div id="carnet-edit-etapes" class="carnet-edit-etapes"></div>
+
+      <!-- Aide rapide HTML -->
+      <div class="carnet-aide collapsed" id="carnet-aide">
+        <div class="carnet-aide-hdr" onclick="toggleCarnetAide()">
+          <span class="carnet-aide-hdr-lbl">💡 Aide rapide — modifier le code</span>
+          <span class="carnet-aide-toggle">▾</span>
+        </div>
+        <div class="carnet-aide-body">
+          <div>
+            <div class="carnet-aide-section">✏️ Changer un texte</div>
+            <div class="carnet-aide-ex">Trouve la balise dans le code, ex&nbsp;:<br><em>&lt;h1&gt;</em><strong>Mon titre de projet</strong><em>&lt;/h1&gt;</em><br>→ remplace le texte <em>entre</em> les balises.</div>
+          </div>
+          <div>
+            <div class="carnet-aide-section">🎨 Changer une couleur</div>
+            <div class="carnet-aide-ex">Les couleurs s'écrivent avec un <strong>#</strong> suivi de 6 lettres/chiffres.<br>Ex&nbsp;: <span class="hl">color: #7ab648</span> → remplace <strong>#7ab648</strong> par une couleur ci-dessous.</div>
+            <div class="carnet-aide-colors" id="carnet-aide-colors"></div>
+            <div class="carnet-aide-note">Clique sur une couleur pour copier son code, puis colle-le dans le code.</div>
+          </div>
+        </div>
+      </div>
+
       <textarea class="carnet-code" id="carnet-code-edit" spellcheck="false" style="resize:none;outline:none;border:none;"></textarea>
       <div class="carnet-code-footer">
         <div id="carnet-edit-note" class="carnet-edit-note">Étape sélectionnée (jusqu'au jour actif).</div>
@@ -3764,6 +3816,48 @@ async function sauvegarderCarnet(){
   await chargerCarnet();
 }
 
+function toggleCarnetAide(){
+  const el = document.getElementById('carnet-aide');
+  if(!el) return;
+  el.classList.toggle('collapsed');
+  el.classList.toggle('expanded');
+}
+
+(function buildCarnetAideColors(){
+  const COLORS = [
+    { hex:'#f97316', nom:'Orange' },
+    { hex:'#ef4444', nom:'Rouge' },
+    { hex:'#3b82f6', nom:'Bleu' },
+    { hex:'#8b5cf6', nom:'Violet' },
+    { hex:'#ec4899', nom:'Rose' },
+    { hex:'#14b8a6', nom:'Turquoise' },
+    { hex:'#f59e0b', nom:'Jaune' },
+    { hex:'#22c55e', nom:'Vert vif' },
+    { hex:'#6b7280', nom:'Gris' },
+    { hex:'#1e293b', nom:'Nuit' },
+    { hex:'#ffffff', nom:'Blanc' },
+    { hex:'#000000', nom:'Noir' },
+  ];
+  function ready(){
+    const wrap = document.getElementById('carnet-aide-colors');
+    if(!wrap){ setTimeout(ready, 300); return; }
+    COLORS.forEach(c => {
+      const btn = document.createElement('div');
+      btn.className = 'carnet-aide-color';
+      btn.title = `Cliquer pour copier ${c.hex}`;
+      btn.innerHTML = `<span class="carnet-aide-color-dot" style="background:${c.hex}"></span>${c.nom} <span class="carnet-aide-copied" id="copied-${c.hex.slice(1)}">✓ copié</span>`;
+      btn.addEventListener('click', () => {
+        navigator.clipboard?.writeText(c.hex).catch(()=>{});
+        const lbl = document.getElementById('copied-'+c.hex.slice(1));
+        if(lbl){ lbl.style.display='inline'; setTimeout(()=>lbl.style.display='none', 1400); }
+      });
+      wrap.appendChild(btn);
+    });
+  }
+  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded', ready);
+  else ready();
+})();
+
 function renderCarnetEditionEtapes(etapeActive){
   const wrap = document.getElementById('carnet-edit-etapes');
   if(!wrap) return;
@@ -4264,10 +4358,14 @@ window.addEventListener('load', async ()=>{
   }
 });
 
-// ── ÉCO-INDICATEUR ─────────────────────────────────────────────────────────
+// ── ÉCO-INDICATEUR — EcoLogits methodology ────────────────────────────────
+// Source : https://ecologits.ai/latest/methodology/ (mistral-small-latest)
+const ECO_KWH_PER_TOKEN   = 2.16e-7;  // kWh/token (opérationnel + embodied, mix EU)
+const ECO_GWP_PER_KWH     = 418;      // gCO₂eq/kWh — mix électrique européen
+const ECO_CAR_GCO2_PER_KM = 170;      // gCO₂eq/km  — voiture moyenne EU
 const ECO_KEY = 'spark_eco_data';
 let ecoScope = 'session';   // 'msg' | 'session' | 'total'
-let ecoLastMsg = { tokens:0, wh:0, ml:0, co2:0 };
+let ecoLastMsg = { tokens:0, wh:0, co2:0, car_m:0 };
 
 function initEcoData(){
   const raw = localStorage.getItem(ECO_KEY);
@@ -4285,30 +4383,28 @@ function initEcoData(){
 }
 
 function trackSparkResponse(responseText, stepId){
-  const tokens = Math.ceil((responseText||'').length / 4);
-  const wh  = parseFloat((tokens * 0.001  ).toFixed(4));
-  const ml  = parseFloat((tokens * 0.018  ).toFixed(3));
-  const co2 = parseFloat((tokens * 0.0006 ).toFixed(4));
+  const tok   = Math.ceil((responseText||'').length / 4);
+  const kwh   = tok * ECO_KWH_PER_TOKEN;
+  const wh    = parseFloat((kwh * 1000).toFixed(6));
+  const co2   = parseFloat((kwh * ECO_GWP_PER_KWH).toFixed(6));
+  const car_m = parseFloat((kwh * ECO_GWP_PER_KWH / ECO_CAR_GCO2_PER_KM * 1000).toFixed(4));
 
-  ecoLastMsg = { tokens, wh, ml, co2 };
+  ecoLastMsg = { tokens: tok, wh, co2, car_m };
 
   const data = JSON.parse(localStorage.getItem(ECO_KEY) || '{}');
   if (!data.byStep) data.byStep = {};
-  if (!data.byStep[stepId]) data.byStep[stepId] = { tokens:0, wh:0, ml:0, co2:0 };
+  if (!data.byStep[stepId]) data.byStep[stepId] = { tokens:0, wh:0, co2:0 };
 
-  data.totalTokens   = (data.totalTokens   || 0) + tokens;
-  data.totalWh       = (data.totalWh       || 0) + wh;
-  data.totalMl       = (data.totalMl       || 0) + ml;
-  data.totalCo2      = (data.totalCo2      || 0) + co2;
-  data.sessionTokens = (data.sessionTokens || 0) + tokens;
-  data.sessionWh     = (data.sessionWh     || 0) + wh;
-  data.sessionMl     = (data.sessionMl     || 0) + ml;
-  data.sessionCo2    = (data.sessionCo2    || 0) + co2;
+  data.totalTokens  = (data.totalTokens  || 0) + tok;
+  data.totalWh      = (data.totalWh      || 0) + wh;
+  data.totalCo2     = (data.totalCo2     || 0) + co2;
+  data.sessionTokens = (data.sessionTokens || 0) + tok;
+  data.sessionWh    = (data.sessionWh    || 0) + wh;
+  data.sessionCo2   = (data.sessionCo2   || 0) + co2;
 
-  data.byStep[stepId].tokens += tokens;
-  data.byStep[stepId].wh     += wh;
-  data.byStep[stepId].ml     += ml;
-  data.byStep[stepId].co2    += co2;
+  data.byStep[stepId].tokens = (data.byStep[stepId].tokens || 0) + tok;
+  data.byStep[stepId].wh     = (data.byStep[stepId].wh     || 0) + wh;
+  data.byStep[stepId].co2    = (data.byStep[stepId].co2    || 0) + co2;
   data.lastUpdated = new Date().toISOString();
   localStorage.setItem(ECO_KEY, JSON.stringify(data));
   updateEcoChip();
@@ -4319,10 +4415,10 @@ function updateEcoChip(){
   if (!chip) return;
   const data = JSON.parse(localStorage.getItem(ECO_KEY) || '{}');
   const wh  = data.sessionWh  || 0;
-  const ml  = data.sessionMl  || 0;
+  const co2 = data.sessionCo2 || 0;
 
-  document.getElementById('ecoWh').textContent = wh < 0.01  ? '0.00 Wh' : wh.toFixed(2)  + ' Wh';
-  document.getElementById('ecoMl').textContent = ml < 0.1   ? '0.0 ml'  : ml.toFixed(1)  + ' ml';
+  document.getElementById('ecoWh').textContent  = wh  < 0.001 ? (wh*1000).toFixed(1)+' mWh'       : wh.toFixed(3)+' Wh';
+  document.getElementById('ecoCo2').textContent = co2 < 1e-3  ? (co2*1e3).toFixed(1)+' µgCO₂eq'   : co2.toFixed(3)+' gCO₂eq';
 
   // Couleur selon palier session
   chip.classList.remove('level-low','level-mid','level-high');
@@ -4342,9 +4438,9 @@ function updateEcoChip(){
 }
 
 function _getEcoValues(data){
-  if (ecoScope === 'msg')     return { wh: ecoLastMsg.wh,    ml: ecoLastMsg.ml,    co2: ecoLastMsg.co2 };
-  if (ecoScope === 'total')   return { wh: data.totalWh||0,  ml: data.totalMl||0,  co2: data.totalCo2||0 };
-  return                             { wh: data.sessionWh||0, ml: data.sessionMl||0, co2: data.sessionCo2||0 };
+  if (ecoScope === 'msg')   return { wh: ecoLastMsg.wh,     co2: ecoLastMsg.co2,    car_m: ecoLastMsg.car_m };
+  if (ecoScope === 'total') return { wh: data.totalWh||0,   co2: data.totalCo2||0,  car_m: (data.totalCo2||0)/ECO_CAR_GCO2_PER_KM*1000 };
+  return                           { wh: data.sessionWh||0, co2: data.sessionCo2||0, car_m: (data.sessionCo2||0)/ECO_CAR_GCO2_PER_KM*1000 };
 }
 
 function _getEcoTip(wh){
@@ -4354,9 +4450,10 @@ function _getEcoTip(wh){
       : 'Cette réponse était longue. Essayez de regrouper vos questions en une seule.';
   }
   if (ecoScope === 'total'){
-    const d  = JSON.parse(localStorage.getItem(ECO_KEY)||'{}');
-    const cm = Math.round((d.totalCo2||0) / 0.00023);
-    return `Sur tout le programme, votre team a généré l'équivalent de ${cm} cm en voiture thermique.`;
+    const d = JSON.parse(localStorage.getItem(ECO_KEY)||'{}');
+    const m = (d.totalCo2||0) / ECO_CAR_GCO2_PER_KM * 1000;
+    const dist = m < 1 ? Math.round(m*100)+' cm' : m < 1000 ? m.toFixed(1)+' m' : (m/1000).toFixed(3)+' km';
+    return `Sur tout le programme, votre team a généré l'équivalent de ${dist} en voiture thermique.`;
   }
   return wh > 1.5
     ? "Vous avez beaucoup \u00e9chang\u00e9 cette session. Pensez \u00e0 pr\u00e9parer vos questions \u00e0 l'avance."
@@ -4365,19 +4462,20 @@ function _getEcoTip(wh){
 
 function _refreshEcoTooltipValues(data){
   const v = _getEcoValues(data);
-  // Plafonds pour les barres (session : 3 Wh max)
-  const maxWh = ecoScope === 'msg' ? 0.3 : ecoScope === 'total' ? 10 : 3;
+  const maxWh  = ecoScope === 'msg' ? 0.3 : ecoScope === 'total' ? 10 : 3;
+  const maxCo2 = maxWh * 0.001 * ECO_GWP_PER_KWH;
+  const maxCar = maxWh * 0.001 * ECO_GWP_PER_KWH / ECO_CAR_GCO2_PER_KM * 1000;
   const setPct = (id, val, max) => {
     const el = document.getElementById(id);
     if (el) el.style.width = Math.min(100, (val/max)*100).toFixed(1) + '%';
   };
-  setPct('eco-bar-wh',  v.wh,  maxWh);
-  setPct('eco-bar-ml',  v.ml,  maxWh * 18);
-  setPct('eco-bar-co2', v.co2, maxWh * 0.6);
+  setPct('eco-bar-wh',  v.wh,    maxWh);
+  setPct('eco-bar-ml',  v.co2,   maxCo2);
+  setPct('eco-bar-co2', v.car_m, maxCar);
   const s = (id, txt) => { const el = document.getElementById(id); if(el) el.textContent = txt; };
-  s('eco-val-wh',  v.wh.toFixed(3)  + ' Wh');
-  s('eco-val-ml',  v.ml.toFixed(2)  + ' ml');
-  s('eco-val-co2', v.co2.toFixed(4) + ' gCO₂');
+  s('eco-val-wh',  v.wh  < 0.001 ? (v.wh*1000).toFixed(1)+' mWh'       : v.wh.toFixed(3)+' Wh');
+  s('eco-val-ml',  v.co2 < 1e-3  ? (v.co2*1e3).toFixed(1)+' µgCO₂eq'  : v.co2.toFixed(3)+' gCO₂eq');
+  s('eco-val-co2', v.car_m < 1   ? Math.round(v.car_m*100)+' cm'        : v.car_m.toFixed(1)+' m');
   s('eco-tip', _getEcoTip(v.wh));
 }
 
@@ -4434,34 +4532,34 @@ function ecoEquivPedago(wh) {
 }
 
 function ecoEquivCo2(gCo2) {
-  const cm = Math.round(gCo2 / 0.00023);
-  if (cm < 100)  return `≈ ${cm} cm en voiture thermique`;
-  if (cm < 1000) return `≈ ${(cm/100).toFixed(1)} m en voiture thermique`;
-  return `≈ ${(cm/100000).toFixed(2)} km en voiture thermique`;
+  const m = gCo2 / ECO_CAR_GCO2_PER_KM * 1000;
+  if (m < 1)    return `≈ ${Math.round(m*100)} cm en voiture thermique`;
+  if (m < 1000) return `≈ ${m.toFixed(1)} m en voiture thermique`;
+  return `≈ ${(m/1000).toFixed(3)} km en voiture thermique`;
 }
 
 function showEcoBilanInOverlay(stepId) {
   const data  = JSON.parse(localStorage.getItem(ECO_KEY) || '{}');
-  const step  = (data.byStep || {})[stepId] || { wh: 0, ml: 0, co2: 0 };
+  const step  = (data.byStep || {})[stepId] || { wh: 0, co2: 0 };
   const ecoEl = document.getElementById('olu-eco');
   if (!ecoEl) return;
 
-  if (step.wh < 0.0001 && step.ml < 0.001) {
+  if (step.wh < 0.0001 && step.co2 < 0.0001) {
     ecoEl.style.display = 'none';
     return;
   }
 
-  const wh  = step.wh  || 0;
-  const ml  = step.ml  || 0;
-  const co2 = step.co2 || 0;
+  const wh    = step.wh  || 0;
+  const co2   = step.co2 || 0;
+  const car_m = co2 / ECO_CAR_GCO2_PER_KM * 1000;
   const lvl      = ecoLevel(wh);
   const lvlLabel = ECO_LEVEL_LABELS[lvl];
   const lvlColor = ECO_LEVEL_COLORS[lvl];
 
   const s = (id, txt) => { const el = document.getElementById(id); if (el) el.textContent = txt; };
-  s('olu-eco-wh',  wh  < 0.1  ? wh.toFixed(3)  + ' Wh'   : wh.toFixed(2)  + ' Wh');
-  s('olu-eco-ml',  ml  < 1    ? ml.toFixed(2)  + ' ml'   : ml.toFixed(1)  + ' ml');
-  s('olu-eco-co2', co2 < 0.01 ? co2.toFixed(4) + ' gCO₂' : co2.toFixed(3) + ' gCO₂');
+  s('olu-eco-wh',  wh  < 0.001 ? (wh*1000).toFixed(1)+' mWh'      : wh.toFixed(3)+' Wh');
+  s('olu-eco-ml',  co2 < 1e-3  ? (co2*1e3).toFixed(2)+' µgCO₂eq'  : co2.toFixed(4)+' gCO₂eq');
+  s('olu-eco-co2', car_m < 1   ? Math.round(car_m*100)+' cm'       : car_m.toFixed(1)+' m');
 
   ['olu-eco-badge-wh', 'olu-eco-badge-ml', 'olu-eco-badge-co2'].forEach(id => {
     const el = document.getElementById(id);
@@ -4515,15 +4613,15 @@ function showToast(msg,type='success'){
           <span class="olu-eco-m-badge" id="olu-eco-badge-wh"></span>
         </div>
         <div class="olu-eco-m-col">
-          <span class="olu-eco-m-ico">💧</span>
+          <span class="olu-eco-m-ico">🌍</span>
           <span class="olu-eco-m-val" id="olu-eco-ml">—</span>
-          <span class="olu-eco-m-lbl">Eau</span>
+          <span class="olu-eco-m-lbl">CO₂eq</span>
           <span class="olu-eco-m-badge" id="olu-eco-badge-ml"></span>
         </div>
         <div class="olu-eco-m-col">
-          <span class="olu-eco-m-ico">💨</span>
+          <span class="olu-eco-m-ico">🚗</span>
           <span class="olu-eco-m-val" id="olu-eco-co2">—</span>
-          <span class="olu-eco-m-lbl">Gaz</span>
+          <span class="olu-eco-m-lbl">Voiture</span>
           <span class="olu-eco-m-badge" id="olu-eco-badge-co2"></span>
         </div>
       </div>
@@ -4547,6 +4645,9 @@ function showToast(msg,type='success'){
     <button class="olu-btn" onclick="closeStepOverlay()">On continue ! 🚀</button>
   </div>
 </div>
+
+<!-- Tour guidé d'onboarding — se déclenche si la conversation est vide (1ère connexion ou reset FAC) -->
+<script src="spark-guided-tour.js"></script>
 
 </body>
 </html>

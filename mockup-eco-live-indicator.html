@@ -1,0 +1,531 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Éco Indicateur Live — Spark</title>
+<style>
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  font-family: 'Segoe UI', system-ui, sans-serif;
+  background: #070d12;
+  min-height: 100vh;
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: flex-start;
+  padding: 0;
+}
+
+/* ════════════════════════════════
+   INDICATEUR FLOTTANT (persistant)
+════════════════════════════════ */
+#eco-pill {
+  position: fixed;
+  top: 14px; right: 14px;
+  z-index: 200;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 6px;
+}
+
+/* ── chip principal ── */
+.eco-chip {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  background: rgba(14,26,34,.92);
+  border: 1px solid rgba(34,197,94,.22);
+  border-radius: 20px;
+  padding: 5px 12px 5px 8px;
+  cursor: pointer;
+  user-select: none;
+  backdrop-filter: blur(8px);
+  box-shadow: 0 4px 18px rgba(0,0,0,.4);
+  transition: border-color .2s, box-shadow .2s;
+}
+.eco-chip:hover {
+  border-color: rgba(34,197,94,.45);
+  box-shadow: 0 4px 22px rgba(34,197,94,.15);
+}
+
+/* halo pulsant autour du chip quand Team répond */
+.eco-chip.active {
+  border-color: rgba(34,197,94,.5);
+  animation: chip-halo 1.4s ease-in-out infinite;
+}
+@keyframes chip-halo {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(34,197,94,.2); }
+  50%       { box-shadow: 0 0 0 8px rgba(34,197,94,.0); }
+}
+
+/* point live */
+.eco-dot {
+  width: 7px; height: 7px; border-radius: 50%;
+  background: rgba(255,255,255,.2);
+  transition: background .3s;
+  flex-shrink: 0;
+}
+.eco-chip.active .eco-dot {
+  background: #22c55e;
+  box-shadow: 0 0 6px #22c55e;
+  animation: dot-pulse 1s ease-in-out infinite;
+}
+@keyframes dot-pulse {
+  0%, 100% { transform: scale(1); opacity: 1; }
+  50%       { transform: scale(1.5); opacity: .6; }
+}
+
+/* texte principal du chip */
+.eco-chip-val {
+  font-size: .65rem; font-weight: 700; color: #fff;
+  white-space: nowrap;
+}
+.eco-chip-unit {
+  font-size: .57rem; color: rgba(255,255,255,.35);
+}
+.eco-chip-arrow {
+  font-size: .55rem; color: rgba(255,255,255,.25);
+  margin-left: 2px;
+  transition: transform .2s;
+}
+.eco-chip.open .eco-chip-arrow { transform: rotate(180deg); }
+
+/* compteur tokens live (visible seulement si actif) */
+.eco-token-badge {
+  display: none;
+  font-size: .52rem; font-weight: 700;
+  padding: 1px 7px; border-radius: 20px;
+  background: rgba(34,197,94,.12);
+  border: 1px solid rgba(34,197,94,.22);
+  color: #22c55e;
+  white-space: nowrap;
+}
+.eco-chip.active .eco-token-badge { display: block; }
+
+/* ── PANEL DÉROULANT ── */
+.eco-panel {
+  width: 220px;
+  background: rgba(14,26,34,.96);
+  border: 1px solid rgba(34,197,94,.15);
+  border-radius: 16px;
+  padding: 12px 12px 10px;
+  display: none;
+  flex-direction: column;
+  gap: 8px;
+  backdrop-filter: blur(10px);
+  box-shadow: 0 8px 32px rgba(0,0,0,.5);
+}
+.eco-panel.open { display: flex; }
+
+.eco-panel-ttl {
+  font-size: .58rem; font-weight: 700;
+  color: rgba(255,255,255,.35);
+  text-transform: uppercase; letter-spacing: 1.2px;
+  text-align: center;
+}
+
+.eco-panel-trio {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 5px;
+}
+.eco-panel-col {
+  display: flex; flex-direction: column; align-items: center; gap: 3px;
+  background: rgba(255,255,255,.03);
+  border: 1px solid rgba(255,255,255,.06);
+  border-radius: 9px;
+  padding: 7px 4px;
+}
+.eco-panel-ico { font-size: .9rem; }
+.eco-panel-val { font-size: .65rem; font-weight: 700; color: #fff; }
+.eco-panel-lbl { font-size: .5rem; color: rgba(255,255,255,.28); }
+
+/* barre session */
+.eco-panel-bar-wrap {
+  display: flex; align-items: center; gap: 6px;
+}
+.eco-panel-bar-track {
+  flex: 1; height: 3px;
+  background: rgba(255,255,255,.06);
+  border-radius: 3px; overflow: hidden;
+}
+.eco-panel-bar-fill {
+  height: 100%; border-radius: 3px;
+  background: #22c55e;
+  transition: width .5s ease;
+}
+.eco-panel-bar-ref {
+  font-size: .5rem; color: rgba(255,255,255,.2);
+  white-space: nowrap;
+}
+
+/* note pédago */
+.eco-panel-note {
+  font-size: .57rem; color: rgba(255,255,255,.28);
+  text-align: center; font-style: italic; line-height: 1.5;
+}
+
+/* lien vers checkpoint */
+.eco-panel-link {
+  font-size: .57rem; color: rgba(34,197,94,.5);
+  text-align: center;
+  border-top: 1px solid rgba(255,255,255,.05);
+  padding-top: 6px;
+  cursor: pointer;
+}
+.eco-panel-link:hover { color: #22c55e; }
+
+/* ════════════════════════════════
+   FAUX ÉCRAN ÉTAPE (contexte)
+════════════════════════════════ */
+.demo-screen {
+  width: 100%; max-width: 480px;
+  min-height: 100vh;
+  display: flex; flex-direction: column;
+  gap: 0;
+}
+
+/* header étape */
+.demo-header {
+  background: rgba(255,255,255,.03);
+  border-bottom: 1px solid rgba(255,255,255,.06);
+  padding: 16px 20px;
+  display: flex; align-items: center; justify-content: space-between;
+}
+.demo-step-label {
+  font-size: .62rem; font-weight: 700; color: rgba(255,255,255,.3);
+  text-transform: uppercase; letter-spacing: 1.2px;
+}
+.demo-step-title {
+  font-size: .88rem; font-weight: 800; color: #fff;
+  margin-top: 2px;
+}
+
+/* fil de conversation */
+.demo-chat {
+  flex: 1;
+  padding: 20px 16px 100px;
+  display: flex; flex-direction: column; gap: 12px;
+  overflow-y: auto;
+}
+
+/* bulles */
+.msg {
+  max-width: 82%;
+  padding: 10px 14px;
+  border-radius: 16px;
+  font-size: .72rem;
+  line-height: 1.55;
+}
+.msg.user {
+  align-self: flex-end;
+  background: rgba(34,197,94,.12);
+  border: 1px solid rgba(34,197,94,.18);
+  color: rgba(255,255,255,.8);
+  border-bottom-right-radius: 4px;
+}
+.msg.team {
+  align-self: flex-start;
+  background: rgba(255,255,255,.05);
+  border: 1px solid rgba(255,255,255,.08);
+  color: rgba(255,255,255,.7);
+  border-bottom-left-radius: 4px;
+}
+.msg.typing {
+  display: flex; gap: 5px; align-items: center;
+  padding: 12px 16px;
+}
+.msg.typing span {
+  width: 6px; height: 6px; border-radius: 50%;
+  background: rgba(255,255,255,.25);
+  animation: blink 1.2s ease-in-out infinite;
+}
+.msg.typing span:nth-child(2) { animation-delay: .2s; }
+.msg.typing span:nth-child(3) { animation-delay: .4s; }
+@keyframes blink {
+  0%, 80%, 100% { opacity: .25; transform: scale(.8); }
+  40%           { opacity: 1;   transform: scale(1.1); }
+}
+
+/* zone saisie */
+.demo-input-bar {
+  position: fixed; bottom: 0; left: 50%; transform: translateX(-50%);
+  width: 100%; max-width: 480px;
+  background: rgba(10,18,24,.95);
+  border-top: 1px solid rgba(255,255,255,.07);
+  padding: 12px 16px;
+  display: flex; gap: 10px; align-items: center;
+  backdrop-filter: blur(10px);
+}
+.demo-input {
+  flex: 1;
+  background: rgba(255,255,255,.05);
+  border: 1px solid rgba(255,255,255,.1);
+  border-radius: 10px;
+  padding: 9px 14px;
+  font-size: .73rem; color: #fff;
+  outline: none;
+}
+.demo-input::placeholder { color: rgba(255,255,255,.2); }
+.demo-send {
+  background: linear-gradient(135deg, #16a34a, #15803d);
+  border: none; border-radius: 10px;
+  padding: 9px 16px;
+  font-size: .73rem; font-weight: 700; color: #fff;
+  cursor: pointer;
+  transition: opacity .2s;
+}
+.demo-send:hover { opacity: .85; }
+
+/* label debug démo */
+.demo-scenario-bar {
+  background: rgba(34,197,94,.05);
+  border-bottom: 1px solid rgba(34,197,94,.1);
+  padding: 7px 20px;
+  display: flex; align-items: center; justify-content: space-between;
+  font-size: .58rem; color: rgba(255,255,255,.3);
+}
+.demo-scenario-bar button {
+  background: rgba(34,197,94,.12);
+  border: 1px solid rgba(34,197,94,.22);
+  border-radius: 8px; padding: 2px 10px;
+  font-size: .55rem; color: #22c55e; cursor: pointer;
+}
+</style>
+</head>
+<body>
+
+<!-- ════════ INDICATEUR FLOTTANT ════════ -->
+<div id="eco-pill">
+  <div class="eco-chip" id="chip" onclick="togglePanel()">
+    <span class="eco-dot"></span>
+    <span class="eco-chip-val" id="chip-co2">0.000 gCO₂</span>
+    <span class="eco-chip-unit">session</span>
+    <span class="eco-token-badge" id="chip-tokens">+0 tk</span>
+    <span class="eco-chip-arrow">▾</span>
+  </div>
+
+  <div class="eco-panel" id="panel">
+    <div class="eco-panel-ttl">Vitrine · session en cours</div>
+
+    <div class="eco-panel-trio">
+      <div class="eco-panel-col">
+        <span class="eco-panel-ico">⚡</span>
+        <span class="eco-panel-val" id="p-wh">0.000 Wh</span>
+        <span class="eco-panel-lbl">Énergie</span>
+      </div>
+      <div class="eco-panel-col">
+        <span class="eco-panel-ico">💧</span>
+        <span class="eco-panel-val" id="p-ml">0.00 ml</span>
+        <span class="eco-panel-lbl">Eau</span>
+      </div>
+      <div class="eco-panel-col">
+        <span class="eco-panel-ico">💨</span>
+        <span class="eco-panel-val" id="p-co2">0.000 gCO₂</span>
+        <span class="eco-panel-lbl">CO₂</span>
+      </div>
+    </div>
+
+    <div class="eco-panel-bar-wrap">
+      <div class="eco-panel-bar-track">
+        <div class="eco-panel-bar-fill" id="p-bar" style="width:0%"></div>
+      </div>
+      <span class="eco-panel-bar-ref">/ 1.8 g session</span>
+    </div>
+
+    <div class="eco-panel-note" id="p-note">
+      Les métriques se mettent à jour à chaque réponse de Team.
+    </div>
+
+    <div class="eco-panel-link">
+      ✦ Bilan complet au prochain checkpoint
+    </div>
+  </div>
+</div>
+
+<!-- ════════ FAUX ÉCRAN ÉTAPE (contexte démo) ════════ -->
+<div class="demo-screen">
+
+  <div class="demo-scenario-bar">
+    <span>Démo — cliquer "Envoyer" pour simuler un échange Team</span>
+    <button onclick="resetDemo()">Réinitialiser</button>
+  </div>
+
+  <div class="demo-header">
+    <div>
+      <div class="demo-step-label">Étape 1 · Problématiser</div>
+      <div class="demo-step-title">Définir le problème de ton projet</div>
+    </div>
+  </div>
+
+  <div class="demo-chat" id="chat">
+    <div class="msg team">
+      Bonjour ! Pour cette étape, nous allons définir clairement le problème que votre projet cherche à résoudre.
+      Commencez par me décrire la situation que vous observez.
+    </div>
+  </div>
+
+  <div class="demo-input-bar">
+    <input class="demo-input" id="user-input" placeholder="Pose une question à Team…" />
+    <button class="demo-send" onclick="sendMessage()">Envoyer</button>
+  </div>
+
+</div>
+
+<script>
+// ── Constantes de calcul (synchronisées avec l'app) ──
+const WH_PER_TOKEN  = 0.001;
+const ML_PER_TOKEN  = 0.018;
+const CO2_PER_TOKEN = 0.0006;
+
+// ── État session ──
+let session = {
+  tokens: 0, wh: 0, ml: 0, co2: 0
+};
+
+// ── Réponses fictives de Team (pool varié en longueur) ──
+const TEAM_REPLIES = [
+  { text: "C'est une bonne observation. Pouvez-vous préciser en quoi ce problème affecte directement votre public cible ? Il est important de le formuler du point de vue de l'utilisateur, pas de la technologie.", tokens: 58 },
+  { text: "Excellent. Maintenant, cherchons les causes racines : pourquoi ce problème existe-t-il ? Listez au moins 3 facteurs contributifs.", tokens: 42 },
+  { text: "Très bien. Pour aller plus loin, demandez-vous : qui souffre de ce problème, dans quelle mesure, et quelles solutions existent déjà — et pourquoi elles ne suffisent pas ?", tokens: 71 },
+  { text: "Bonne piste. Je vous suggère de reformuler le problème sous la forme : « [Qui] a besoin de [quoi] parce que [pourquoi] ». Essayez !", tokens: 47 },
+  { text: "Très pertinent. N'oubliez pas de valider vos hypothèses sur le terrain — une observation sur papier peut ne pas correspondre à ce que vivent réellement les personnes concernées.", tokens: 65 },
+];
+let replyIdx = 0;
+
+// ── Basculer le panel ──
+function togglePanel() {
+  const chip  = document.getElementById('chip');
+  const panel = document.getElementById('panel');
+  chip.classList.toggle('open');
+  panel.classList.toggle('open');
+}
+
+// ── Mettre à jour l'indicateur ──
+function updateIndicator(deltaTokens) {
+  session.tokens += deltaTokens;
+  session.wh  += deltaTokens * WH_PER_TOKEN;
+  session.ml  += deltaTokens * ML_PER_TOKEN;
+  session.co2 += deltaTokens * CO2_PER_TOKEN;
+
+  // Sauvegarder (silencieux)
+  localStorage.setItem('spark_eco_data', JSON.stringify({
+    sessionTokens: session.tokens,
+    sessionWh:  session.wh,
+    sessionMl:  session.ml,
+    sessionCo2: session.co2,
+  }));
+
+  // Chip
+  document.getElementById('chip-co2').textContent =
+    session.co2 < 0.01 ? session.co2.toFixed(4) + ' gCO₂' : session.co2.toFixed(3) + ' gCO₂';
+  document.getElementById('chip-tokens').textContent = '+' + deltaTokens + ' tk';
+
+  // Panel
+  document.getElementById('p-wh').textContent =
+    session.wh < 0.1 ? session.wh.toFixed(3) + ' Wh' : session.wh.toFixed(2) + ' Wh';
+  document.getElementById('p-ml').textContent =
+    session.ml < 1 ? session.ml.toFixed(2) + ' ml' : session.ml.toFixed(1) + ' ml';
+  document.getElementById('p-co2').textContent =
+    session.co2 < 0.01 ? session.co2.toFixed(4) + ' gCO₂' : session.co2.toFixed(3) + ' gCO₂';
+
+  // Barre (sur 1.8 gCO₂ référence session)
+  const pct = Math.min(100, (session.co2 / 1.8) * 100);
+  document.getElementById('p-bar').style.width = Math.max(pct, 0.5) + '%';
+
+  // Note pédago dynamique
+  const ledSec = Math.round(session.wh / (4 / 3600));
+  document.getElementById('p-note').textContent =
+    ledSec < 2
+      ? '💡 Moins d\'une seconde d\'ampoule LED.'
+      : `💡 Comme ${ledSec}s d\'ampoule LED allumée.`;
+}
+
+// ── Simuler une réponse de Team ──
+function sendMessage() {
+  const input = document.getElementById('user-input');
+  const text = input.value.trim();
+  if (!text) return;
+
+  const chat = document.getElementById('chat');
+  const chip = document.getElementById('chip');
+
+  // Bulle utilisateur
+  const userMsg = document.createElement('div');
+  userMsg.className = 'msg user';
+  userMsg.textContent = text;
+  chat.appendChild(userMsg);
+  input.value = '';
+
+  // Bulle "typing"
+  const typingEl = document.createElement('div');
+  typingEl.className = 'msg team typing';
+  typingEl.innerHTML = '<span></span><span></span><span></span>';
+  chat.appendChild(typingEl);
+  chat.scrollTop = chat.scrollHeight;
+
+  // Activer le chip (Team répond)
+  chip.classList.add('active');
+
+  // Simuler le délai de réponse
+  const reply = TEAM_REPLIES[replyIdx % TEAM_REPLIES.length];
+  replyIdx++;
+
+  setTimeout(() => {
+    // Supprimer typing
+    typingEl.remove();
+
+    // Bulle Team
+    const teamMsg = document.createElement('div');
+    teamMsg.className = 'msg team';
+    teamMsg.textContent = reply.text;
+    chat.appendChild(teamMsg);
+    chat.scrollTop = chat.scrollHeight;
+
+    // Mettre à jour indicateur éco (silencieux)
+    updateIndicator(reply.tokens);
+
+    // Désactiver le chip après 2s
+    setTimeout(() => {
+      chip.classList.remove('active');
+      document.getElementById('chip-tokens').style.display = '';
+    }, 2000);
+
+  }, 1600 + Math.random() * 1000);
+}
+
+// ── Appui Entrée ──
+document.getElementById('user-input').addEventListener('keydown', e => {
+  if (e.key === 'Enter') sendMessage();
+});
+
+// ── Réinitialiser démo ──
+function resetDemo() {
+  session = { tokens: 0, wh: 0, ml: 0, co2: 0 };
+  localStorage.removeItem('spark_eco_data');
+  replyIdx = 0;
+  updateIndicator(0);
+  document.getElementById('chat').innerHTML =
+    '<div class="msg team">Bonjour ! Pour cette étape, nous allons définir clairement le problème que votre projet cherche à résoudre. Commencez par me décrire la situation que vous observez.</div>';
+  document.getElementById('chip').classList.remove('active', 'open');
+  document.getElementById('panel').classList.remove('open');
+}
+
+// ── Restaurer depuis localStorage si existant ──
+(function restoreSession() {
+  try {
+    const saved = JSON.parse(localStorage.getItem('spark_eco_data') || '{}');
+    if (saved.sessionTokens) {
+      session = {
+        tokens: saved.sessionTokens || 0,
+        wh:     saved.sessionWh    || 0,
+        ml:     saved.sessionMl    || 0,
+        co2:    saved.sessionCo2   || 0,
+      };
+      updateIndicator(0); // rafraîchir l'affichage sans ajouter de tokens
+    }
+  } catch(e) {}
+})();
+</script>
+</body>
+</html>
