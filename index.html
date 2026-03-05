@@ -1764,6 +1764,7 @@ let selAv = '🦁';
 let currentUser = null;
 let currentEquipe = null;
 let conversationHistory = [];
+let _sparkDeriveCount = 0; // nb de messages hors-sujet consécutifs bloqués
 let eleveMessagesCache = [];
 let eleveCanalActif = 'spark';
 let eleveMentorUnread = 0;
@@ -2631,6 +2632,37 @@ async function demanderMiseAJourVitrine() {
   if (vitBtn) vitBtn.disabled = false;
 }
 
+/* ══════════════════════════════════════════════════════════════
+   GARDE ① — Analyse d'intention avant appel Mistral
+   Retourne : 'inapproprie' | 'hors-sujet' | 'ok'
+══════════════════════════════════════════════════════════════ */
+function _sparkAnalyserIntent(txt) {
+  // Normaliser : minuscules + supprimer accents pour simplifier les regex
+  const lc = txt.toLowerCase()
+    .normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+
+  // ── Cat C : contenu explicitement inapproprié (toujours bloqué) ──
+  if (/\b(porno|porn\b|viol\b|terroris|bombe|attentat|suicide|xenopho|racis|nazism)/.test(lc)) {
+    return 'inapproprie';
+  }
+
+  // ── Cat A : hors-programme UNIQUEMENT si aucun mot-clé projet n'est présent ──
+  // Si l'élève parle quand même du projet en même temps → laisser passer
+  const motsCleProjet = /projet|vitrine|etape|spark|html|css|code|design|equipe|team|mentor|challenge|biodiversite|capteur|foret|robot|innov|problematique|solution|prototype|pitch/;
+  if (!motsCleProjet.test(lc)) {
+    if (/\b(blague|joke|rigol|truc marrant)/.test(lc))         return 'hors-sujet';
+    if (/\b(recette|gateau|pizza|cuisine|repas)/.test(lc))      return 'hors-sujet';
+    if (/\b(capitale de|capitale du|capitale d)/.test(lc))     return 'hors-sujet';
+    if (/\b(jeu video|minecraft|fortnite|pokemon|roblox)/.test(lc)) return 'hors-sujet';
+    if (/\b(quel film|netflix|streaming|serie tv)/.test(lc))   return 'hors-sujet';
+    if (/\btraduire en\b/.test(lc))                            return 'hors-sujet';
+    if (/\b(meteo|temps qu.il fait|quel temps)/.test(lc))      return 'hors-sujet';
+    if (/\b(devoir de maths|cours de physique|exercice de chimie)/.test(lc)) return 'hors-sujet';
+  }
+
+  return 'ok';
+}
+
 async function sendMessage(){
   const inp=document.getElementById('msg-input');
   const txt=inp.value.trim();
@@ -2655,6 +2687,43 @@ async function sendMessage(){
   document.getElementById('btn-send').disabled=true;
 
   const etapeMsg = currentEquipe.etape_courante || 0;
+
+  // ── Garde ① : analyse d'intention ──────────────────────────────────
+  const _intent = _sparkAnalyserIntent(txt);
+
+  if (_intent === 'inapproprie') {
+    const refus = `⚠️ Ce type de demande ne fait pas partie du programme. SPARK est là pour t'accompagner sur ton projet — revenons-y !`;
+    eleveMessagesCache.push({role:'assistant',message:refus,pseudo:'SPARK ⚡',etape:etapeMsg});
+    renderEleveConversation(); scrollBot();
+    document.getElementById('btn-send').disabled=false; inp.focus();
+    return;
+  }
+
+  if (_intent === 'hors-sujet') {
+    _sparkDeriveCount++;
+    // Sauvegarder le message utilisateur pour cohérence de l'historique affiché
+    eleveMessagesCache.push({role:'user',message:txt,pseudo:'La Team',etape:etapeMsg});
+    renderEleveConversation();
+    await saveMsg('user',txt,'La Team');
+    // Réponse locale de recadrage (sans appel Mistral)
+    const _metaEtape = STEP_META[etapeMsg] || {};
+    const recadrage = `😊 Ma mission c'est de t'accompagner sur "${_metaEtape.name||'ton projet'}" ! `
+      + (_sparkDeriveCount >= 2
+          ? `On s'éloigne un peu du sujet — qu'est-ce qu'on fait avancer sur cette étape ?`
+          : `Cette question dépasse mon rôle de coach projet. Qu'est-ce que tu veux avancer ici ?`);
+    eleveMessagesCache.push({role:'assistant',message:recadrage,pseudo:'SPARK ⚡',etape:etapeMsg});
+    renderEleveConversation();
+    await saveMsg('assistant',recadrage,'SPARK ⚡');
+    scrollBot();
+    document.getElementById('btn-send').disabled=false; inp.focus();
+    return;
+  }
+
+  // Sujet valide → transmettre le compteur à Mistral, puis réinitialiser
+  const _prevDeriveCount = _sparkDeriveCount;
+  _sparkDeriveCount = 0;
+  // ───────────────────────────────────────────────────────────────────
+
   eleveMessagesCache.push({role:'user',message:txt,pseudo:'La Team',etape:etapeMsg});
   renderEleveConversation();
   await saveMsg('user',txt,'La Team');
@@ -2662,7 +2731,7 @@ async function sendMessage(){
   scrollBot(); showTyping();
 
   try{
-    const r=await callMistral(currentEquipe.id, currentEquipe.etape_courante);
+    const r=await callMistral(currentEquipe.id, currentEquipe.etape_courante, {deriveCount: _prevDeriveCount});
     hideTyping();
 
     // Texte narratif affiché dans le chat (sans les blocs HTML vitrine ni les marqueurs internes)
@@ -2821,7 +2890,7 @@ async function appliquerFallbackVisuelLocal(demande){
   return true;
 }
 async function callMistral(equipeId, etapeSlug, options = {}) {
-  const { forceHtml = false, latestUserRequest = '', strictHtmlOnly = false } = options;
+  const { forceHtml = false, latestUserRequest = '', strictHtmlOnly = false, deriveCount = 0 } = options;
   const actorCode = String(currentUser?.code || '').trim().toUpperCase();
   const etapeActive = getEtapeActiveEquipe();
 
@@ -2874,6 +2943,18 @@ MODE STRICT HTML UNIQUEMENT :
 - Applique précisément la demande utilisateur suivante : "${latestUserRequest || 'mise à jour demandée'}".
 ` : '';
 
+  // ── Garde ② : injection contextuelle si l'équipe a dérivé hors-sujet ──
+  let consigneRecadrage = '';
+  if (deriveCount >= 2) {
+    const _etapeMeta = STEP_META[etapeActive] || {};
+    consigneRecadrage = '\n[NOTE PEDAGOGIQUE — ne pas mentionner a l\'equipe]\n'
+      + "L'equipe a tente " + deriveCount + " fois de sortir du cadre du programme juste avant ce message.\n"
+      + "Sans le signaler explicitement, ton prochain message doit :\n"
+      + "1. Repondre brievement a la demande actuelle si elle est valide\n"
+      + "2. Ramener avec bienveillance vers l'objectif de l'etape " + etapeActive + " : \"" + (_etapeMeta.name || '') + "\"\n"
+      + "3. Terminer par une question concrete qui relance leur elan sur l'activite en cours\n";
+  }
+
   // 2. On prépare le paquet de données (payload)
   const payload = {
     action: 'mistral_chat',
@@ -2882,7 +2963,7 @@ MODE STRICT HTML UNIQUEMENT :
     etape_slug: String(etapeActive), 
     system_instruction: { 
       parts: [{ 
-        text: masterPrompt + regleHtmlGlobale + `\n\nCONTEXTE ACTUEL DU PROJET (CODE HTML) :\n${carnetPhysique}\n\nConsigne : Aide l'élève en te basant sur ce qui est déjà écrit dans le carnet ci-dessus.\n${consigneSortie}${consigneRelance}${consigneStrict}` 
+        text: masterPrompt + regleHtmlGlobale + consigneRecadrage + `\n\nCONTEXTE ACTUEL DU PROJET (CODE HTML) :\n${carnetPhysique}\n\nConsigne : Aide l'élève en te basant sur ce qui est déjà écrit dans le carnet ci-dessus.\n${consigneSortie}${consigneRelance}${consigneStrict}` 
       }] 
     },
     contents: strictHtmlOnly
