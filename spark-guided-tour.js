@@ -966,6 +966,10 @@
     if (!msgs) return;
 
     let debounce = null;
+    // Ne déclencher que si des messages élèves existaient PENDANT cette session
+    // (sinon on confond "chargement initial en cours" et "reset FAC")
+    let _hadUserMsgs = false;
+
     const obs = new MutationObserver(() => {
       clearTimeout(debounce);
       debounce = setTimeout(() => {
@@ -974,11 +978,15 @@
         const sEleve = document.getElementById('s-eleve');
         if (!sEleve || !sEleve.classList.contains('on')) return;
         const userMsgs = msgs.querySelectorAll('.eleve-msg');
-        if (userMsgs.length === 0) {
-          obs.disconnect();
-          try { localStorage.removeItem('spark_onboarding_done'); } catch (e) {}
-          setTimeout(SparkTour.start, 800);
+        if (userMsgs.length > 0) {
+          _hadUserMsgs = true; // on a vu des messages élèves → session active
+          return;
         }
+        // Pas de messages élèves : vrai reset FAC seulement si on en avait avant
+        if (!_hadUserMsgs) return;
+        obs.disconnect();
+        try { localStorage.removeItem('spark_onboarding_done'); } catch (e) {}
+        setTimeout(SparkTour.start, 800);
       }, 600);
     });
     obs.observe(msgs, { childList: true, subtree: false });
