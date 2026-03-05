@@ -371,6 +371,34 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
 .btn-send:hover{background:var(--sage);transform:translateY(-1px);}
 .btn-send:disabled{opacity:.5;cursor:not-allowed;transform:none!important;}
 
+/* ── Modes SPARK questionneur ── */
+.spark-mode-bar{display:flex;gap:5px;flex-wrap:wrap;align-items:center;padding:0 2px 6px;}
+.spark-mode-lbl{font-size:.53rem;font-weight:800;text-transform:uppercase;letter-spacing:1px;color:var(--light);margin-right:2px;white-space:nowrap;}
+.spark-mbtn{display:inline-flex;align-items:center;gap:4px;padding:3px 9px;border-radius:20px;
+  border:1px solid var(--border);background:var(--warm);font-size:.61rem;font-weight:600;
+  color:var(--mid);cursor:pointer;white-space:nowrap;transition:all .15s;user-select:none;}
+.spark-mbtn:hover{background:rgba(122,182,72,.1);border-color:rgba(122,182,72,.35);color:var(--moss);}
+.spark-mbtn.active{background:var(--moss);border-color:var(--moss);color:white;}
+.spark-mbtn.active-doc{background:rgba(59,130,246,.1);border-color:rgba(59,130,246,.35);color:#1d4ed8;}
+/* Bouton clip attach */
+.btn-attach{background:none;border:1px solid var(--border);border-radius:8px;width:32px;height:32px;
+  display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;
+  font-size:.9rem;transition:all .15s;}
+.btn-attach:hover{background:rgba(122,182,72,.1);border-color:rgba(122,182,72,.35);}
+.btn-attach.has-file{border-color:rgba(59,130,246,.4);color:#1d4ed8;background:rgba(59,130,246,.06);}
+/* Chip fichier joint */
+.attach-chip{display:inline-flex;align-items:center;gap:5px;background:rgba(61,92,58,.07);
+  border:1px solid var(--border);border-radius:6px;padding:3px 8px;
+  font-size:.61rem;color:var(--mid);font-weight:600;}
+.attach-chip-rm{cursor:pointer;color:var(--light);margin-left:2px;font-size:.7rem;}
+.attach-chip-rm:hover{color:#ef4444;}
+.attach-preview-row{display:flex;gap:5px;flex-wrap:wrap;padding:0 2px 6px;}
+/* Pip de mode dans les bulles SPARK */
+.spark-mode-pip{font-size:.54rem;font-weight:700;letter-spacing:.3px;text-transform:uppercase;
+  color:var(--light);margin-bottom:2px;display:flex;align-items:center;gap:4px;}
+.spark-mode-pip::before{content:'';display:inline-block;width:6px;height:6px;
+  border-radius:50%;background:var(--sage);flex-shrink:0;}
+
 /* VUE MENTOR */
 #s-mentor{flex-direction:column;}
 .mentor-workspace{flex:1;display:flex;overflow:hidden;}
@@ -1603,7 +1631,20 @@ body::before{background:radial-gradient(ellipse 60% 50% at 85% 5%,rgba(62,212,24
       <div class="messages" id="chat-messages"></div>
       <div class="input-zone">
         <div class="conv-etape-header" id="conv-etape-header">Étape 0 — Découvrir</div>
+        <!-- Barre des 5 modes SPARK questionneur -->
+        <div class="spark-mode-bar" id="spark-mode-bar">
+          <span class="spark-mode-lbl">Mode</span>
+          <div class="spark-mbtn" data-mode="science" onclick="toggleSparkMode('science')">🔬 Science</div>
+          <div class="spark-mbtn" data-mode="challenge" onclick="toggleSparkMode('challenge')">💥 Challenge</div>
+          <div class="spark-mbtn" data-mode="analyse" onclick="toggleSparkMode('analyse')">📄 Analyse</div>
+          <div class="spark-mbtn" data-mode="jury" onclick="toggleSparkMode('jury')">⚖️ Jury</div>
+          <div class="spark-mbtn" data-mode="angles" onclick="toggleSparkMode('angles')">🕳️ Angles morts</div>
+        </div>
+        <!-- Chip du fichier joint (masqué par défaut) -->
+        <div class="attach-preview-row" id="attach-preview-row" style="display:none"></div>
         <div class="input-row">
+          <button class="btn-attach" id="btn-attach" title="Joindre un fichier (PDF, image, texte)" onclick="attachFile()">📎</button>
+          <input type="file" id="file-input" accept=".pdf,.txt,.md,image/*" style="display:none" onchange="onFileSelected(event)">
           <textarea class="msg-input" id="msg-input" placeholder="Tapez votre message..." onkeydown="handleKey(event)" rows="1"></textarea>
           <button class="btn-send" id="btn-send" onclick="sendMessage()">Envoyer 🌱</button>
         </div>
@@ -1792,6 +1833,177 @@ let eleveCanalActif = 'spark';
 let eleveMentorUnread = 0;
 let eleveConversationChannel = null;
 let masterPrompt = '';
+
+/* ── 5 modes SPARK questionneur ── */
+const SPARK_MODES = {
+  science: {
+    label: '🔬 Science',
+    placeholder: 'Parlez d\'un concept lié à votre projet…',
+    systemPrompt: `
+[MODE : QUESTION SCIENTIFIQUE]
+Ton rôle est de pousser la team à approfondir un concept ou un phénomène scientifique lié à leur projet.
+Pose des questions de fond : mécanismes, lois physiques, preuves expérimentales, limites du modèle.
+OBLIGATOIRE : ne fournis JAMAIS la réponse toi-même. Pose uniquement des questions.
+Objectif : forcer l'équipe à distinguer ce qu'elle sait vraiment de ce qu'elle suppose.
+`
+  },
+  challenge: {
+    label: '💥 Challenge',
+    placeholder: 'Présentez une idée ou une affirmation à challenger…',
+    systemPrompt: `
+[MODE : CHALLENGE NOTRE IDÉE]
+Ton rôle est de jouer l'avocat du diable face à l'idée présentée par la team.
+Soulève des contradictions, des objections, des cas limites, des hypothèses fragiles.
+OBLIGATOIRE : ne propose JAMAIS de solution ni de correction. Pose uniquement des questions déstabilisantes.
+Objectif : forcer la team à défendre ou reformuler son idée par elle-même.
+`
+  },
+  analyse: {
+    label: '📄 Analyse critique',
+    placeholder: 'Joignez un document et posez votre question…',
+    systemPrompt: `
+[MODE : ANALYSE CRITIQUE DE DOCUMENT]
+Tu vas analyser le document joint par la team.
+Pointe les failles méthodologiques, les manques, les biais, les hypothèses implicites, les données absentes.
+OBLIGATOIRE : ne rédige pas à leur place. Pose des questions critiques uniquement.
+Objectif : amener l'équipe à identifier elle-même les lacunes de son document.
+`
+  },
+  jury: {
+    label: '⚖️ Jury',
+    placeholder: 'Commencez votre pitch ou présentez votre projet…',
+    systemPrompt: `
+[MODE : JEU DE RÔLE JURY]
+Tu joues le rôle d'un jury exigeant et bienveillant qui évalue le projet.
+Pose les questions que poserait un vrai jury : faisabilité, impact réel, éthique, modèle économique, risques.
+OBLIGATOIRE : ne donne pas de réponses ni de conseils directs. Formule uniquement des questions de jury.
+Objectif : préparer l'équipe à argumenter sous pression sans script.
+`
+  },
+  angles: {
+    label: '🕳️ Angles morts',
+    placeholder: 'Décrivez votre projet ou une décision prise…',
+    systemPrompt: `
+[MODE : ANGLES MORTS]
+Ton rôle est d'explorer systématiquement ce que la team n'a pas vu dans leur projet.
+Cherche : parties prenantes oubliées, effets de bord, hypothèses implicites, risques invisibles, paradoxes.
+OBLIGATOIRE : ne donne pas les solutions. Pose des questions qui ouvrent des angles non explorés.
+Objectif : révéler les zones d'ombre sans les remplir à leur place.
+`
+  }
+};
+let _activeMode = null;       // mode SPARK actif (null = conversation libre)
+let _pendingFile = null;      // fichier joint en attente { name, type, content }
+
+function toggleSparkMode(mode) {
+  // Désactiver si déjà actif
+  if (_activeMode === mode) {
+    _activeMode = null;
+  } else {
+    _activeMode = mode;
+    // Si on active un mode autre que 'analyse', on retire le chip doc si présent
+    if (mode !== 'analyse' && _pendingFile) {
+      _clearPendingFile();
+    }
+  }
+  _renderModeBar();
+}
+
+function _renderModeBar() {
+  document.querySelectorAll('.spark-mbtn').forEach(btn => {
+    const m = btn.dataset.mode;
+    btn.classList.remove('active', 'active-doc');
+    if (m === _activeMode) {
+      btn.classList.add(m === 'analyse' ? 'active-doc' : 'active');
+    }
+  });
+  // Placeholder adaptatif
+  const inp = document.getElementById('msg-input');
+  if (inp) {
+    inp.placeholder = _activeMode ? SPARK_MODES[_activeMode].placeholder : 'Tapez votre message…';
+  }
+  // Mettre en avant le bouton 📎 si mode analyse
+  const btnAttach = document.getElementById('btn-attach');
+  if (btnAttach) {
+    if (_activeMode === 'analyse') {
+      btnAttach.style.borderColor = 'rgba(59,130,246,.4)';
+      btnAttach.style.color = '#1d4ed8';
+    } else {
+      btnAttach.style.borderColor = '';
+      btnAttach.style.color = '';
+    }
+  }
+}
+
+function attachFile() {
+  document.getElementById('file-input')?.click();
+}
+
+async function onFileSelected(evt) {
+  const file = evt.target.files?.[0];
+  if (!file) return;
+  // Limite 4 Mo
+  if (file.size > 4 * 1024 * 1024) {
+    showToast('Fichier trop volumineux (max 4 Mo)', 'error');
+    evt.target.value = '';
+    return;
+  }
+  const isImage = file.type.startsWith('image/');
+  const isPdf = file.type === 'application/pdf';
+  try {
+    let content;
+    if (isImage) {
+      // Base64 pour Mistral Vision
+      content = await new Promise((res, rej) => {
+        const fr = new FileReader();
+        fr.onload = e => res(e.target.result); // data URL
+        fr.onerror = rej;
+        fr.readAsDataURL(file);
+      });
+    } else {
+      // Texte brut (PDF via text/plain fallback, TXT, MD)
+      content = await new Promise((res, rej) => {
+        const fr = new FileReader();
+        fr.onload = e => res(e.target.result);
+        fr.onerror = rej;
+        fr.readAsText(file, 'utf-8');
+      });
+      // Tronquer à ~8000 char (~2000 tokens) pour ne pas dépasser le contexte
+      if (content.length > 8000) content = content.slice(0, 8000) + '\n[...contenu tronqué à 8000 caractères]';
+    }
+    _pendingFile = { name: file.name, type: isImage ? 'image' : isPdf ? 'pdf' : 'text', content };
+    _renderAttachChip();
+    // Activer auto le mode analyse si aucun mode actif
+    if (!_activeMode) {
+      _activeMode = 'analyse';
+      _renderModeBar();
+    }
+    document.getElementById('btn-attach')?.classList.add('has-file');
+  } catch(e) {
+    showToast('Impossible de lire ce fichier', 'error');
+  }
+  evt.target.value = '';
+}
+
+function _renderAttachChip() {
+  const row = document.getElementById('attach-preview-row');
+  if (!row) return;
+  if (!_pendingFile) { row.style.display = 'none'; row.innerHTML = ''; return; }
+  row.style.display = 'flex';
+  const icon = _pendingFile.type === 'image' ? '🖼️' : '📄';
+  row.innerHTML = `<div class="attach-chip">${icon} <span>${_escHtml(_pendingFile.name)}</span><span class="attach-chip-rm" onclick="_clearPendingFile()">✕</span></div>`;
+}
+
+function _clearPendingFile() {
+  _pendingFile = null;
+  _renderAttachChip();
+  const btn = document.getElementById('btn-attach');
+  if (btn) { btn.classList.remove('has-file'); btn.style.borderColor = ''; btn.style.color = ''; }
+}
+
+function _escHtml(s) {
+  return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
 let selectedEquipeId = null;
 let resetEquipeId = null;
 let mentorVitrineChannel = null;
@@ -2752,8 +2964,12 @@ async function sendMessage(){
   conversationHistory.push({role:'user',parts:[{text:txt}]});
   scrollBot(); showTyping();
 
+  // Snapshot du fichier joint puis effacement immédiat (UX propre, évite double-envoi)
+  const _fileSentSnapshot = _pendingFile || null;
+  if (_fileSentSnapshot) _clearPendingFile();
+
   try{
-    const r=await callMistral(currentEquipe.id, currentEquipe.etape_courante, {deriveCount: _prevDeriveCount});
+    const r=await callMistral(currentEquipe.id, currentEquipe.etape_courante, {deriveCount: _prevDeriveCount, pendingFile: _fileSentSnapshot});
     hideTyping();
 
     // Texte narratif affiché dans le chat (sans les blocs HTML vitrine ni les marqueurs internes)
@@ -2965,6 +3181,24 @@ MODE STRICT HTML UNIQUEMENT :
 - Applique précisément la demande utilisateur suivante : "${latestUserRequest || 'mise à jour demandée'}".
 ` : '';
 
+  // ── Injection mode SPARK questionneur ──
+  let consigneMode = '';
+  if (typeof _activeMode === 'string' && _activeMode && SPARK_MODES[_activeMode]) {
+    consigneMode = SPARK_MODES[_activeMode].systemPrompt;
+  }
+  // ── Injection fichier joint ──
+  let consigneFichier = '';
+  const _fileToInject = ('pendingFile' in options) ? options.pendingFile : _pendingFile;
+  if (_fileToInject) {
+    if (_fileToInject.type === 'image') {
+      // mistral-small ne supporte pas la vision — on demande à l'équipe de décrire l'image
+      consigneFichier = `\n[FICHIER JOINT - IMAGE]\nNom : ${_fileToInject.name}\nTu ne peux pas analyser l'image directement. Indique à l'équipe que tu ne peux pas voir les images et invite-les à te décrire son contenu en quelques phrases.\n`;
+    } else {
+      const label = _fileToInject.type === 'pdf' ? 'PDF' : 'Texte';
+      consigneFichier = `\n[DOCUMENT JOINT - ${label}]\nNom : ${_fileToInject.name}\n\n${_fileToInject.content}\n[FIN DU DOCUMENT]\n`;
+    }
+  }
+
   // ── Garde ② : injection contextuelle si l'équipe a dérivé hors-sujet ──
   let consigneRecadrage = '';
   if (deriveCount >= 2) {
@@ -2985,7 +3219,7 @@ MODE STRICT HTML UNIQUEMENT :
     etape_slug: String(etapeActive), 
     system_instruction: { 
       parts: [{ 
-        text: masterPrompt + regleHtmlGlobale + consigneRecadrage + `\n\nCONTEXTE ACTUEL DU PROJET (CODE HTML) :\n${carnetPhysique}\n\nConsigne : Aide l'élève en te basant sur ce qui est déjà écrit dans le carnet ci-dessus.\n${consigneSortie}${consigneRelance}${consigneStrict}` 
+        text: masterPrompt + regleHtmlGlobale + consigneMode + consigneRecadrage + consigneFichier + `\n\nCONTEXTE ACTUEL DU PROJET (CODE HTML) :\n${carnetPhysique}\n\nConsigne : Aide l'élève en te basant sur ce qui est déjà écrit dans le carnet ci-dessus.\n${consigneSortie}${consigneRelance}${consigneStrict}` 
       }] 
     },
     contents: strictHtmlOnly
