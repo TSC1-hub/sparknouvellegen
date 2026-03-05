@@ -685,11 +685,12 @@
     card.classList.remove('hidden');
     card.style.transform = 'none';
     const cardW = Math.min(340, window.innerWidth - 32);
+    // Mesurer la vraie hauteur de la carte (tient compte du contenu dynamique)
+    const cardH = card.offsetHeight || 280;
     const MARGIN = 14;
 
     if (pos === 'top') {
       // Carte au-dessus de l'élément
-      const cardH = 240; // estimation
       let top = r.top - PAD - MARGIN - cardH;
       if (top < 16) top = r.bottom + PAD + MARGIN + 10;
       let left = r.left + r.width / 2 - cardW / 2;
@@ -714,8 +715,8 @@
       if (left + cardW + 16 > window.innerWidth) {
         left = r.left - PAD - MARGIN - cardW - 10;
       }
-      let top = r.top + r.height / 2 - 100;
-      top = Math.max(16, Math.min(top, window.innerHeight - 260));
+      let top = r.top + r.height / 2 - cardH / 2;
+      top = Math.max(16, Math.min(top, window.innerHeight - cardH - 16));
       card.style.top  = top + 'px';
       card.style.left = left + 'px';
       arr.classList.add('hidden');
@@ -723,8 +724,8 @@
     } else if (pos === 'left') {
       let left = r.left - PAD - MARGIN - cardW - 10;
       if (left < 16) left = r.right + PAD + MARGIN + 10;
-      let top = r.top + r.height / 2 - 100;
-      top = Math.max(16, Math.min(top, window.innerHeight - 260));
+      let top = r.top + r.height / 2 - cardH / 2;
+      top = Math.max(16, Math.min(top, window.innerHeight - cardH - 16));
       card.style.top  = top + 'px';
       card.style.left = left + 'px';
       arr.classList.add('hidden');
@@ -907,6 +908,9 @@
     finish() {
       _cleanExoWatcher();
       _ecoStamps = [];
+      // Nettoyer les stamps du DOM avant de retirer #gt-styles
+      // (ils perdraient sinon leur CSS et changeraient de taille)
+      document.querySelectorAll('.gt-eco-stamp').forEach(s => s.remove());
       try { localStorage.setItem('spark_onboarding_done', '1'); } catch(e) {}
       // Restaurer renderEleveConversation
       if (window._gtOrigRender) {
