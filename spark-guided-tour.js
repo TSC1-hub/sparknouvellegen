@@ -422,11 +422,14 @@
     const origH1Match = (_exoOriginalVal || '').match(/<h1[^>]*>([\s\S]*?)<\/h1>/i);
     const origH1Text  = (origH1Match ? origH1Match[1] : '').replace(/<[^>]+>/g, '').trim();
     const h1Changed    = h1Text.length > 0 && h1Text !== origH1Text;
-    // Pour la couleur, détecter qu'une valeur hex a changé dans le CSS
-    const colorMatch    = val.match(/color\s*:\s*(#[0-9a-fA-F]{3,6})/i);
-    const origColorMatch= (_exoOriginalVal || '').match(/color\s*:\s*(#[0-9a-fA-F]{3,6})/i);
-    const colorChanged  = !!(colorMatch && origColorMatch && colorMatch[1].toLowerCase() !== origColorMatch[1].toLowerCase())
-                       || !!(colorMatch && !origColorMatch);
+    // Pour la couleur : comparer l'ensemble de toutes les valeurs hex dans le document
+    // (couvre color:, background:, background-color:, border-color:, etc.)
+    const hexRe = /#[0-9a-fA-F]{3,8}\b/gi;
+    const origHexes = new Set(((_exoOriginalVal || '').match(hexRe) || []).map(h => h.toLowerCase()));
+    const newHexes  = new Set((val.match(hexRe) || []).map(h => h.toLowerCase()));
+    const colorChanged = origHexes.size !== newHexes.size
+      || [...newHexes].some(h => !origHexes.has(h))
+      || [...origHexes].some(h => !newHexes.has(h));
     return { h1Changed, colorChanged, done: h1Changed && colorChanged };
   }
 
@@ -954,6 +957,9 @@
       const sEleve2 = document.getElementById('s-eleve');
       if (!sEleve2 || !sEleve2.classList.contains('on')) return;
       if (msgs.querySelectorAll('.eleve-msg').length > 0) return; // messages chargés entretemps
+      // Ne relancer le tour que si l'équipe est à l'étape 0 (premier onboarding ou reset complet)
+      const etapeCourante = window.currentEquipe?.etape_courante ?? 0;
+      if (Number(etapeCourante) !== 0) return;
       // Toujours vide après 4 s → reset FAC entre sessions ou vraie 1ère fois
       try { localStorage.removeItem('spark_onboarding_done'); } catch (e) {}
       if (!document.getElementById('gt-overlay')) {
@@ -989,7 +995,10 @@
           return;
         }
         // Pas de messages élèves : vrai reset FAC seulement si on en avait avant
+        // ET seulement si l'équipe est revenue à l'étape 0 (reset complet)
         if (!_hadUserMsgs) return;
+        const etapeCourante = window.currentEquipe?.etape_courante ?? 0;
+        if (Number(etapeCourante) !== 0) return;
         obs.disconnect();
         try { localStorage.removeItem('spark_onboarding_done'); } catch (e) {}
         setTimeout(SparkTour.start, 800);
