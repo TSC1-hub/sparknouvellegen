@@ -626,7 +626,7 @@ serve(async (req: Request) => {
     }
 
     const mistralBody = {
-      model: "mistral-small-latest",
+      model: "mistral-large-latest",
       messages,
       temperature: Math.min(body.generationConfig?.temperature ?? 0.9, 0.8),
       max_tokens: Math.min(body.generationConfig?.maxOutputTokens ?? 4096, 8192),

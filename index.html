@@ -3191,7 +3191,7 @@ MODE STRICT HTML UNIQUEMENT :
   const _fileToInject = ('pendingFile' in options) ? options.pendingFile : _pendingFile;
   if (_fileToInject) {
     if (_fileToInject.type === 'image') {
-      // mistral-small ne supporte pas la vision — on demande à l'équipe de décrire l'image
+      // mistral-large ne supporte pas la vision multimodal par défaut — on demande à l'équipe de décrire l'image
       consigneFichier = `\n[FICHIER JOINT - IMAGE]\nNom : ${_fileToInject.name}\nTu ne peux pas analyser l'image directement. Indique à l'équipe que tu ne peux pas voir les images et invite-les à te décrire son contenu en quelques phrases.\n`;
     } else {
       const label = _fileToInject.type === 'pdf' ? 'PDF' : 'Texte';
@@ -4914,8 +4914,8 @@ window.addEventListener('load', async ()=>{
 });
 
 // ── ÉCO-INDICATEUR — EcoLogits methodology ────────────────────────────────
-// Source : https://ecologits.ai/latest/methodology/ (mistral-small-latest)
-const ECO_KWH_PER_TOKEN   = 2.16e-7;  // kWh/token (opérationnel + embodied, mix EU)
+// Source : https://ecologits.ai/latest/methodology/ (mistral-large-latest)
+const ECO_KWH_PER_TOKEN   = 5.26e-7;  // kWh/token (opérationnel + embodied, mix EU) — mistral-large
 const ECO_GWP_PER_KWH     = 418;      // gCO₂eq/kWh — mix électrique européen
 const ECO_CAR_GCO2_PER_KM = 170;      // gCO₂eq/km  — voiture moyenne EU
 const ECO_KEY = 'spark_eco_data';
