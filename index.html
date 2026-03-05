@@ -1296,6 +1296,28 @@ body::before{background:radial-gradient(ellipse 60% 50% at 85% 5%,rgba(62,212,24
   100%{transform:scale(1);opacity:1;}
 }
 .eco-chip.flash{animation:eco-flash .25s ease-out;}
+/* ── Éco-stamp sous les bulles SPARK (permanent, indépendant du tour guidé) ── */
+.gt-eco-stamp{
+  display:inline-flex;align-items:center;gap:7px;
+  background:rgba(122,182,72,.08);
+  border:1px solid rgba(122,182,72,.18);
+  border-radius:20px;padding:3px 10px;
+  margin-top:4px;margin-left:38px;
+  animation:gtStampIn .4s ease-out;
+}
+@keyframes gtStampIn{
+  from{opacity:0;transform:translateY(4px);}
+  to{opacity:1;transform:none;}
+}
+.gt-eco-stamp .es-col{
+  display:flex;align-items:center;gap:3px;
+  font-size:.58rem;font-weight:700;color:#5a6b54;
+  font-family:'DM Sans',system-ui,sans-serif;
+}
+.gt-eco-stamp .es-tok{font-size:.54rem;font-weight:600;color:#5a6b54;opacity:.6;font-family:'DM Sans',system-ui,sans-serif;}
+.gt-eco-stamp .es-sep{color:rgba(44,58,40,.2);font-size:.75rem;}
+.gt-eco-stamp .es-src{font-size:.53rem;color:rgba(122,182,72,.7);text-decoration:none;margin-left:2px;}
+.gt-eco-stamp .es-src:hover{color:#7ab648;}
 .eco-wrap{position:relative;display:inline-flex;align-items:center;align-self:stretch;}
 .eco-tooltip{
   display:none;position:absolute;
@@ -4707,6 +4729,33 @@ function trackSparkResponse(responseText, stepId){
   data.lastUpdated = new Date().toISOString();
   localStorage.setItem(ECO_KEY, JSON.stringify(data));
   updateEcoChip();
+  _injectEcoStampPermanent();
+}
+
+function _injectEcoStampPermanent(){
+  const msgs = document.getElementById('chat-messages');
+  if (!msgs) return;
+  // Supprimer les stamps précédents pour éviter les doublons
+  msgs.querySelectorAll('.gt-eco-stamp').forEach(s => s.remove());
+  // Trouver la dernière bulle SPARK
+  const sparkMsgs = msgs.querySelectorAll('.spark-msg');
+  if (!sparkMsgs.length) return;
+  const lastSpark = sparkMsgs[sparkMsgs.length - 1];
+  // Formater les valeurs depuis ecoLastMsg
+  const { wh, co2, car_m } = ecoLastMsg;
+  const whTxt  = wh  < 0.001 ? (wh*1000).toFixed(1)+' mWh'       : wh.toFixed(3)+' Wh';
+  const co2Txt = co2 < 1e-3  ? (co2*1e6).toFixed(1)+' µgCO₂eq'   : co2.toFixed(3)+' gCO₂eq';
+  const carTxt = car_m < 1   ? Math.round(car_m*100)+' cm'        : car_m < 1000 ? car_m.toFixed(1)+' m' : (car_m/1000).toFixed(3)+' km';
+  const stamp = document.createElement('div');
+  stamp.className = 'gt-eco-stamp';
+  stamp.innerHTML = `
+    <span class="es-col">⚡ <strong>${whTxt}</strong></span>
+    <span class="es-sep">·</span>
+    <span class="es-col">🌍 <strong>${co2Txt}</strong></span>
+    <span class="es-sep">·</span>
+    <span class="es-col">🚗 <strong>${carTxt}</strong></span>
+    <a class="es-src" href="https://ecologits.ai/latest/" target="_blank" rel="noopener">EcoLogits ↗</a>`;
+  lastSpark.after(stamp);
 }
 
 function updateEcoChip(){
