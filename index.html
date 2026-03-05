@@ -618,15 +618,41 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
 /* ── Aide rapide HTML ── */
 
 
-/* ── Mini-chat vitrine ── */
-.carnet-mini-chat{flex-shrink:0;background:#f8fafc;border-top:1px solid var(--border);display:flex;flex-direction:column;max-height:190px;min-height:120px;}
-.carnet-mini-msgs{flex:1;overflow-y:auto;padding:7px 12px;font-size:.71rem;color:var(--mid);min-height:36px;}
-.carnet-mini-input-row{display:flex;gap:6px;padding:7px 10px;border-top:1px solid var(--border);background:white;flex-shrink:0;align-items:center;}
-.carnet-mini-input{flex:1;border:1px solid var(--border);border-radius:8px;padding:6px 10px;font-size:.73rem;resize:none;font-family:'DM Sans',sans-serif;outline:none;line-height:1.4;}
-.carnet-mini-input:focus{border-color:var(--moss);}
-.carnet-mini-send{padding:6px 14px;background:var(--moss);color:white;border:none;border-radius:8px;cursor:pointer;font-size:.73rem;font-weight:600;font-family:'DM Sans',sans-serif;white-space:nowrap;transition:background .2s;flex-shrink:0;}
-.carnet-mini-send:hover{background:var(--sage);}
-.carnet-mini-send:disabled{opacity:.4;cursor:not-allowed;}
+/* ── Coach Vitrine ── */
+.carnet-coach{flex-shrink:0;background:#f4f7f3;border-top:1.5px solid var(--border);display:flex;flex-direction:column;max-height:255px;min-height:140px;}
+.coach-hdr{display:flex;align-items:center;gap:7px;padding:5px 13px 4px;background:#ebf2e8;border-bottom:1px solid var(--border);flex-shrink:0;}
+.coach-hdr-dot{width:7px;height:7px;border-radius:50%;background:var(--sage);animation:coachPulse 2s ease-in-out infinite;}
+@keyframes coachPulse{0%,100%{opacity:1;transform:scale(1);}50%{opacity:.45;transform:scale(.72);}}
+.coach-hdr-lbl{font-size:.6rem;font-weight:700;color:var(--moss);letter-spacing:.05em;text-transform:uppercase;flex:1;}
+.coach-hdr-mode{font-size:.56rem;color:var(--light);}
+.coach-hdr-badge{background:rgba(122,182,72,.15);border:1px solid rgba(122,182,72,.3);border-radius:20px;padding:1px 7px;font-weight:700;color:var(--sage);font-size:.55rem;}
+.coach-hdr-badge.action{background:rgba(244,162,97,.14);border-color:rgba(244,162,97,.4);color:#b36b2e;}
+.coach-msgs{flex:1;overflow-y:auto;padding:7px 13px 5px;display:flex;flex-direction:column;gap:5px;}
+.coach-msgs::-webkit-scrollbar{width:3px;}
+.coach-msgs::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px;}
+.coach-msg-spark,.coach-msg-user,.coach-msg-system{max-width:90%;font-size:.69rem;line-height:1.55;padding:5px 10px;border-radius:10px;animation:coachMsgIn .22s ease-out;}
+@keyframes coachMsgIn{from{opacity:0;transform:translateY(5px);}to{opacity:1;transform:none;}}
+.coach-msg-spark{background:white;border:1px solid var(--border);color:var(--text);align-self:flex-start;border-radius:4px 10px 10px 10px;}
+.coach-msg-spark .coach-sender{font-size:.56rem;font-weight:700;color:var(--sage);text-transform:uppercase;letter-spacing:.06em;margin-bottom:2px;display:block;}
+.coach-msg-user{background:var(--moss);color:white;align-self:flex-end;border-radius:10px 4px 10px 10px;}
+.coach-msg-system{background:rgba(122,182,72,.07);border:1px dashed rgba(122,182,72,.3);color:var(--mid);align-self:center;font-size:.61rem;font-style:italic;max-width:100%;text-align:center;}
+.coach-choices{display:flex;flex-wrap:wrap;gap:5px;padding:0 13px 6px;flex-shrink:0;}
+.coach-choice{display:inline-flex;align-items:center;gap:4px;padding:4px 10px;border-radius:20px;background:white;border:1px solid var(--border);cursor:pointer;font-size:.64rem;font-weight:500;color:var(--moss);font-family:'DM Sans',sans-serif;transition:all .18s;white-space:nowrap;}
+.coach-choice:hover{background:rgba(122,182,72,.1);border-color:rgba(122,182,72,.4);transform:translateY(-1px);}
+.coach-choice.do-it{background:rgba(244,162,97,.08);border-color:rgba(244,162,97,.35);color:#b36b2e;}
+.coach-choice.do-it:hover{background:rgba(244,162,97,.18);}
+.coach-input-row{display:flex;gap:6px;padding:5px 9px 7px;border-top:1px solid var(--border);background:white;flex-shrink:0;align-items:flex-end;}
+.coach-input{flex:1;border:1.5px solid var(--border);border-radius:8px;padding:5px 9px;font-size:.71rem;resize:none;font-family:'DM Sans',sans-serif;outline:none;line-height:1.4;background:#fafaf9;max-height:64px;overflow-y:auto;color:var(--text);transition:border-color .2s;}
+.coach-input:focus{border-color:var(--sage);background:white;}
+.coach-input::placeholder{color:var(--light);}
+.coach-send{padding:5px 13px;background:var(--moss);color:white;border:none;border-radius:8px;cursor:pointer;font-size:.71rem;font-weight:600;font-family:'DM Sans',sans-serif;white-space:nowrap;transition:background .2s;flex-shrink:0;align-self:flex-end;}
+.coach-send:hover{background:var(--sage);}
+.coach-send:disabled{opacity:.4;cursor:not-allowed;}
+.coach-typing{display:inline-flex;gap:3px;align-items:center;padding:2px 0;}
+.coach-typing span{width:5px;height:5px;border-radius:50%;background:var(--light);animation:coachDot .9s ease-in-out infinite;}
+.coach-typing span:nth-child(2){animation-delay:.15s;}
+.coach-typing span:nth-child(3){animation-delay:.30s;}
+@keyframes coachDot{0%,80%,100%{transform:translateY(0);opacity:.4;}40%{transform:translateY(-4px);opacity:1;}}
 
 .carnet-toast{position:fixed;bottom:20px;right:24px;background:var(--moss);color:white;
   padding:10px 16px;border-radius:12px;font-size:.8rem;font-weight:500;
@@ -1079,8 +1105,8 @@ body::before{background:radial-gradient(ellipse 60% 50% at 85% 5%,rgba(62,212,24
 .btn-carnet-close{background:#fff;border:1.5px solid var(--border);color:var(--mid);}
 .btn-carnet-close:hover{color:var(--text);border-color:var(--mid);}
 .carnet-col-preview{border-right:1.5px solid var(--border);}
-.carnet-mini-chat{background:#fff;border-top:1.5px solid var(--border);}
-.carnet-mini-input{border:1.5px solid var(--border);font-family:'Syne',sans-serif;}
+.carnet-coach{background:#f4f7f3;border-top:1.5px solid var(--border);}
+.coach-input{border:1.5px solid var(--border);font-family:'Syne',sans-serif;}
 .carnet-etapes{background:#fff;border-bottom:1.5px solid var(--border);}
 .carnet-pill{border:1.5px solid var(--border);font-family:'Syne',sans-serif;font-size:.62rem;}
 .carnet-pill.done{background:rgba(0,212,160,.08);border-color:rgba(0,212,160,.25);color:#009978;}
@@ -1694,11 +1720,19 @@ body::before{background:radial-gradient(ellipse 60% 50% at 85% 5%,rgba(62,212,24
     <div class="carnet-col-preview">
       <div class="carnet-etapes" id="carnet-etapes"></div>
       <iframe class="carnet-iframe" id="vitrine-rendu"></iframe>
-      <div class="carnet-mini-chat">
-        <div class="carnet-mini-msgs" id="carnet-mini-msgs"><span style="color:var(--light);font-style:italic;">Décris ce que tu veux modifier dans ta vitrine et SPARK mettra à jour le code.</span></div>
-        <div class="carnet-mini-input-row">
-          <textarea class="carnet-mini-input" id="carnet-mini-input" placeholder="Ex : Ajoute une section avec notre problématique… (Entrée pour envoyer, Maj+Entrée pour un saut de ligne)" rows="2" onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();envoyerPromptVitrine();}"></textarea>
-          <button class="carnet-mini-send" id="carnet-mini-send" onclick="envoyerPromptVitrine()">Envoyer ✨</button>
+      <div class="carnet-coach" id="carnet-coach">
+        <div class="coach-hdr">
+          <div class="coach-hdr-dot"></div>
+          <span class="coach-hdr-lbl">Coach Vitrine</span>
+          <span class="coach-hdr-mode">Mode&nbsp;:&nbsp;<span class="coach-hdr-badge" id="coach-mode-badge">GUIDE</span></span>
+        </div>
+        <div class="coach-msgs" id="coach-msgs"></div>
+        <div class="coach-choices" id="coach-choices"></div>
+        <div class="coach-input-row">
+          <textarea class="coach-input" id="carnet-mini-input" rows="1"
+            placeholder="Ou décris ta demande librement…"
+            onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();envoyerPromptVitrine();}"></textarea>
+          <button class="coach-send" id="carnet-mini-send" onclick="envoyerPromptVitrine()">Envoyer ✨</button>
         </div>
       </div>
     </div>
@@ -3670,6 +3704,7 @@ function ouvrirCarnet(){
   document.getElementById('notif-dot').style.display='none';
   document.querySelector('.eleve-workspace')?.classList.add('drawer-open');
   chargerCarnet();
+  initCoachVitrine();
 }
 
 function fermerCarnet(){
@@ -3684,60 +3719,331 @@ function fermerCarnet(){
     setTimeout(() => showStepOverlay(from, to), 2000);
   }
 }
-async function envoyerPromptVitrine(){
-  if(!currentEquipe) return;
-  const input = document.getElementById('carnet-mini-input');
-  const sendBtn = document.getElementById('carnet-mini-send');
-  const msgsEl = document.getElementById('carnet-mini-msgs');
-  const prompt = (input?.value || '').trim();
-  if(!prompt) return;
+/* ════════════════════════════════════════════════════
+   COACH VITRINE — pédagogique + action directe
+════════════════════════════════════════════════════ */
+const _coachScenarios = {
+  'accueil': {
+    mode: 'guide',
+    msgs: [{ role:'spark', html:`Ta vitrine est prête 🎉<br>Qu'est-ce que tu voudrais améliorer aujourd'hui ?` }],
+    choices: [
+      { emoji:'✏️', label:'Changer un texte',      key:'choix-texte'       },
+      { emoji:'🎨', label:'Changer une couleur',    key:'choix-couleur'     },
+      { emoji:'📦', label:'Déplacer un élément',    key:'choix-deplacement' },
+      { emoji:'➕', label:'Ajouter une section',    key:'choix-ajout'       },
+      { emoji:'🔄', label:'Tout refaire le style',  key:'tache-complexe',   cls:'do-it' },
+    ]
+  },
+  'choix-texte': {
+    mode: 'guide',
+    msgs: [{ role:'spark', html:`Quel texte veux-tu changer ?` }],
+    choices: [
+      { emoji:'🏷️', label:'Le titre principal (h1)', key:'guide-h1' },
+      { emoji:'📝', label:'Un paragraphe',            key:'guide-p'  },
+    ]
+  },
+  'guide-h1': {
+    mode: 'guide',
+    msgs: [{ role:'spark', html:`Ok ! Dans le code à droite, trouve :<br><code style="font-size:.65rem;background:rgba(0,0,0,.08);padding:2px 6px;border-radius:4px">&lt;h1&gt;ForestGuard&lt;/h1&gt;</code><br><br>Remplace <strong>ForestGuard</strong> par le nom de ton projet, puis clique <em>Sauvegarder</em> ✅` }],
+    choices: [
+      { emoji:'✅', label:'Fait, ça marche !',       key:'accueil'          },
+      { emoji:'😕', label:'Je ne trouve pas…',       key:'guide-h1-help'    },
+      { emoji:'⚡', label:'SPARK le fait',           key:'_action_h1',      cls:'do-it' },
+    ]
+  },
+  'guide-h1-help': {
+    mode: 'guide',
+    msgs: [{ role:'spark', html:`Utilise <b>Ctrl+F</b> dans le code à droite et cherche <em>ForestGuard</em>.<br>C'est dans la balise <code>&lt;h1&gt;</code>, au début du &lt;body&gt;.` }],
+    choices: [
+      { emoji:'👍', label:'Trouvé, merci !',  key:'guide-h1'  },
+      { emoji:'⚡', label:'SPARK le fait',    key:'_action_h1', cls:'do-it' },
+    ]
+  },
+  'guide-p': {
+    mode: 'guide',
+    msgs: [{ role:'spark', html:`Dans le code, trouve le texte dans les balises <code>&lt;p&gt;…&lt;/p&gt;</code>.<br>Remplace le texte <em>entre</em> les balises par ta propre description de projet.` }],
+    choices: [
+      { emoji:'✅', label:'Fait !',            key:'accueil'    },
+      { emoji:'⚡', label:'SPARK le fait',    key:'_action_p',  cls:'do-it' },
+    ]
+  },
+  'choix-couleur': {
+    mode: 'guide',
+    msgs: [{ role:'spark', html:`Quelle couleur veux-tu changer ?` }],
+    choices: [
+      { emoji:'🟢', label:'Couleur du titre h1',  key:'guide-couleur-h1' },
+      { emoji:'🎨', label:'Couleur de fond',       key:'guide-couleur-bg' },
+    ]
+  },
+  'guide-couleur-h1': {
+    mode: 'guide',
+    msgs: [{ role:'spark', html:`Dans le CSS du code, cherche :<br><code style="font-size:.65rem;background:rgba(0,0,0,.08);padding:2px 6px;border-radius:4px">h1 { color: <span style="color:#7ab648">#7ab648</span> …</code><br><br>Remplace <strong>#7ab648</strong> par un code couleur :<br>🔴 <code>#ef4444</code> · 🔵 <code>#3b82f6</code> · 🟠 <code>#f97316</code>` }],
+    choices: [
+      { emoji:'✅', label:'Fait !',                              key:'accueil'              },
+      { emoji:'❓', label:"C'est quoi un code couleur ?",        key:'guide-couleur-expliq' },
+      { emoji:'⚡', label:'SPARK le fait',                       key:'_action_couleur',     cls:'do-it' },
+    ]
+  },
+  'guide-couleur-bg': {
+    mode: 'guide',
+    msgs: [{ role:'spark', html:`Dans le CSS, cherche <code>background: #faf7f2</code> dans la règle <code>body {…}</code>.<br>Remplace la valeur par la couleur de fond que tu veux.` }],
+    choices: [
+      { emoji:'✅', label:'Fait !',            key:'accueil'          },
+      { emoji:'⚡', label:'SPARK le fait',    key:'_action_couleur',  cls:'do-it' },
+    ]
+  },
+  'guide-couleur-expliq': {
+    mode: 'guide',
+    msgs: [{ role:'spark', html:`Un code couleur commence par <b>#</b> suivi de 6 chiffres/lettres.<br><br><span style="display:inline-flex;align-items:center;gap:5px;margin:1px 0"><span style="width:11px;height:11px;border-radius:50%;background:#ef4444;flex-shrink:0;border:1px solid rgba(0,0,0,.1)"></span><code>#ef4444</code> Rouge</span><br><span style="display:inline-flex;align-items:center;gap:5px;margin:1px 0"><span style="width:11px;height:11px;border-radius:50%;background:#3b82f6;flex-shrink:0;border:1px solid rgba(0,0,0,.1)"></span><code>#3b82f6</code> Bleu</span><br><span style="display:inline-flex;align-items:center;gap:5px;margin:1px 0"><span style="width:11px;height:11px;border-radius:50%;background:#f97316;flex-shrink:0;border:1px solid rgba(0,0,0,.1)"></span><code>#f97316</code> Orange</span>` }],
+    choices: [
+      { emoji:'👍', label:'Compris, je teste !',  key:'guide-couleur-h1' },
+      { emoji:'⚡', label:'SPARK le fait',        key:'_action_couleur',  cls:'do-it' },
+    ]
+  },
+  'choix-deplacement': {
+    mode: 'guide',
+    msgs: [{ role:'spark', html:`Pour déplacer un bloc, c'est du couper-coller :<br><br><b>1.</b> Sélectionne le bloc entier (de <code>&lt;h2&gt;</code> jusqu'au <code>&lt;/p&gt;</code> suivant).<br><b>2.</b> <b>Ctrl+X</b> pour couper, puis <b>Ctrl+V</b> là où tu veux.` }],
+    choices: [
+      { emoji:'✅', label:'Compris !',         key:'accueil'          },
+      { emoji:'⚡', label:'SPARK le fait',    key:'_action_direct',   cls:'do-it' },
+    ]
+  },
+  'choix-ajout': {
+    mode: 'guide',
+    msgs: [{ role:'spark', html:`Pour ajouter une section, colle ce code avant <code>&lt;/body&gt;</code> dans le code à droite :<br><br><code style="font-size:.63rem;background:rgba(0,0,0,.07);padding:4px 8px;border-radius:4px;display:block;line-height:1.8">&lt;h2&gt;Titre de ta section&lt;/h2&gt;<br>&lt;p&gt;Ton texte ici.&lt;/p&gt;</code>` }],
+    choices: [
+      { emoji:'🔬', label:'Ajoute : Technologies',  key:'_action_section_tech', cls:'do-it' },
+      { emoji:'🎯', label:'Ajoute : Nos objectifs', key:'_action_section_obj',  cls:'do-it' },
+      { emoji:'✅', label:"Je l'écris moi-même",   key:'accueil'                            },
+    ]
+  },
+  'tache-complexe': {
+    mode: 'action',
+    msgs: [{ role:'system', html:'⚡ SPARK génère une nouvelle vitrine…' }],
+    directAction: 'refonte'
+  },
+};
 
-  const addMsg = (who, txt, color) => {
-    if(!msgsEl) return;
-    const d = document.createElement('div');
-    d.style.cssText = `margin-bottom:5px;color:${color};`;
-    d.innerHTML = `<b>${who} :</b> ${txt}`;
-    msgsEl.appendChild(d);
-    msgsEl.scrollTop = msgsEl.scrollHeight;
+let _coachRetries = 0;
+
+function _coachEl(id){ return document.getElementById(id); }
+
+function _coachAddMsg(role, html) {
+  const msgsEl = _coachEl('coach-msgs');
+  if (!msgsEl) return;
+  const d = document.createElement('div');
+  if (role === 'spark') {
+    d.className = 'coach-msg-spark';
+    d.innerHTML = `<span class="coach-sender">SPARK ⚡</span>${html}`;
+  } else if (role === 'user') {
+    d.className = 'coach-msg-user';
+    d.textContent = html;
+  } else {
+    d.className = 'coach-msg-system';
+    d.innerHTML = html;
+  }
+  msgsEl.appendChild(d);
+  msgsEl.scrollTop = msgsEl.scrollHeight;
+}
+
+function _coachShowChoices(choices) {
+  const el = _coachEl('coach-choices');
+  if (!el) return;
+  el.innerHTML = '';
+  (choices || []).forEach(c => {
+    const btn = document.createElement('button');
+    btn.className = 'coach-choice' + (c.cls ? ' ' + c.cls : '');
+    btn.innerHTML = `${c.emoji} ${c.label}`;
+    btn.onclick = () => _coachHandleChoice(c);
+    el.appendChild(btn);
+  });
+}
+
+function _coachSetMode(mode) {
+  const badge = _coachEl('coach-mode-badge');
+  if (!badge) return;
+  if (mode === 'action') {
+    badge.textContent = 'ACTION';
+    badge.className = 'coach-hdr-badge action';
+  } else {
+    badge.textContent = 'GUIDE';
+    badge.className = 'coach-hdr-badge';
+  }
+}
+
+function _coachTypingStart() {
+  const msgsEl = _coachEl('coach-msgs');
+  if (!msgsEl) return;
+  const d = document.createElement('div');
+  d.className = 'coach-msg-spark';
+  d.id = '_coach-typing-bubble';
+  d.innerHTML = `<span class="coach-sender">SPARK ⚡</span><span class="coach-typing"><span></span><span></span><span></span></span>`;
+  msgsEl.appendChild(d);
+  msgsEl.scrollTop = msgsEl.scrollHeight;
+}
+
+function _coachTypingStop() {
+  document.getElementById('_coach-typing-bubble')?.remove();
+}
+
+async function _coachHandleChoice(choice) {
+  const key = choice.key;
+  // Affiche le choix comme message utilisateur
+  _coachAddMsg('user', `${choice.emoji} ${choice.label}`);
+  const el = _coachEl('coach-choices');
+  if (el) el.innerHTML = '';
+  // Actions directes
+  if (key.startsWith('_action_')) {
+    await _coachDirectAction(key, choice.label);
+    return;
+  }
+  const sc = _coachScenarios[key];
+  if (!sc) { _coachLoadScenario('accueil'); return; }
+  if (sc.directAction) {
+    _coachSetMode('action');
+    (sc.msgs || []).forEach(m => _coachAddMsg(m.role, m.html));
+    await _coachDirectAction(sc.directAction, choice.label);
+    return;
+  }
+  _coachLoadScenario(key);
+}
+
+function _coachLoadScenario(key) {
+  const sc = _coachScenarios[key];
+  if (!sc) return;
+  _coachSetMode(sc.mode || 'guide');
+  (sc.msgs || []).forEach(m => _coachAddMsg(m.role, m.html));
+  _coachShowChoices(sc.choices || []);
+}
+
+async function _coachDirectAction(actionKey, label) {
+  if (!currentEquipe) return;
+  _coachSetMode('action');
+  const sendBtn = _coachEl('carnet-mini-send');
+  const inputEl = _coachEl('carnet-mini-input');
+  if (sendBtn) sendBtn.disabled = true;
+  if (inputEl) inputEl.disabled = true;
+  _coachTypingStart();
+  const currentHtml = document.getElementById('carnet-code-edit')?.value || '';
+  const prompts = {
+    'refonte':              'Fais une refonte visuelle complète de cette vitrine. Modernise le style (couleurs, typographie, layout) tout en gardant le contenu.',
+    '_action_h1':           'Change le titre h1 pour quelque chose de plus accrocheur et adapté au projet.',
+    '_action_p':            'Améliore les textes des paragraphes pour qu\'ils soient plus clairs et plus engageants.',
+    '_action_couleur':      'Change les couleurs de la vitrine pour un rendu plus professionnel.',
+    '_action_section_tech': 'Ajoute une section "Technologies utilisées" avec un contenu fictif cohérent.',
+    '_action_section_obj':  'Ajoute une section "Nos objectifs" avec un contenu fictif cohérent.',
   };
-
-  addMsg('Toi', prompt.replace(/</g,'&lt;'), 'var(--moss)');
-  input.value = '';
-  if(input) input.disabled = true;
-  if(sendBtn) sendBtn.disabled = true;
-
+  const prompt = prompts[actionKey] || label || 'Améliore la vitrine.';
   try {
-    const currentHtml = document.getElementById('carnet-code-edit')?.value || '';
+    const r = await callMistral(currentEquipe.id, currentEquipe.etape_courante, {
+      forceHtml: true,
+      latestUserRequest: prompt + (currentHtml ? '\n\nHTML actuel :\n' + currentHtml : ''),
+      strictHtmlOnly: true
+    });
+    const blocs = [];
+    const rxMark = /SPARK_HTML_START([\s\S]*?)SPARK_HTML_END/gi;
+    const rxFence = /```html\s*([\s\S]*?)```/gi;
+    let m;
+    while ((m = rxMark.exec(r)) !== null) blocs.push(m[1]);
+    if (!blocs.length) while ((m = rxFence.exec(r)) !== null) blocs.push(m[1]);
+    const newHtml = blocs.length > 0 ? normaliserBlocVitrine(blocs[blocs.length - 1]) : '';
+    _coachTypingStop();
+    if (newHtml) {
+      const edit = document.getElementById('carnet-code-edit');
+      if (edit) edit.value = newHtml;
+      renderVitrine(newHtml);
+      _coachAddMsg('spark', `C'est fait ! 🌿 Tu vois le résultat dans l'aperçu.<br><small style="color:var(--light)">N'oublie pas de <b>Sauvegarder</b> 💾</small>`);
+    } else {
+      _coachAddMsg('spark', 'Je n\'ai pas pu générer de HTML valide. Essaie une demande plus précise.');
+    }
+  } catch (e) {
+    _coachTypingStop();
+    _coachAddMsg('spark', `Oups, erreur : ${(e.message || 'Appel SPARK échoué.').replace(/</g,'&lt;')}`);
+  }
+  _coachSetMode('guide');
+  if (sendBtn) sendBtn.disabled = false;
+  if (inputEl) inputEl.disabled = false;
+  _coachShowChoices([
+    { emoji:'✏️', label:'Modifier autre chose', key:'accueil'         },
+    { emoji:'🔄', label:'Tout refaire',          key:'tache-complexe', cls:'do-it' },
+  ]);
+}
+
+function initCoachVitrine() {
+  const msgsEl = _coachEl('coach-msgs');
+  if (!msgsEl) return;
+  msgsEl.innerHTML = '';
+  const choicesEl = _coachEl('coach-choices');
+  if (choicesEl) choicesEl.innerHTML = '';
+  _coachRetries = 0;
+  _coachLoadScenario('accueil');
+}
+
+async function envoyerPromptVitrine() {
+  if (!currentEquipe) return;
+  const inputEl = _coachEl('carnet-mini-input');
+  const sendBtn = _coachEl('carnet-mini-send');
+  const prompt = (inputEl?.value || '').trim();
+  if (!prompt) return;
+
+  const choicesEl = _coachEl('coach-choices');
+  if (choicesEl) choicesEl.innerHTML = '';
+  _coachAddMsg('user', prompt.replace(/</g, '&lt;'));
+  inputEl.value = '';
+
+  // Détection d'intention simple → orienter vers le guide si possible
+  const lc = prompt.toLowerCase();
+  if (lc.includes('texte') || lc.includes('titre') || lc.includes('nom')) {
+    _coachLoadScenario('choix-texte'); return;
+  }
+  if (lc.includes('couleur') || lc.includes('color') || lc.includes('fond')) {
+    _coachLoadScenario('choix-couleur'); return;
+  }
+  if (lc.includes('déplacer') || lc.includes('déplace') || lc.includes('bouger')) {
+    _coachLoadScenario('choix-deplacement'); return;
+  }
+  if (lc.includes('ajouter') || lc.includes('ajoute') || lc.includes('section')) {
+    _coachLoadScenario('choix-ajout'); return;
+  }
+
+  // Cas général → appel direct Mistral
+  if (sendBtn) sendBtn.disabled = true;
+  if (inputEl) inputEl.disabled = true;
+  _coachSetMode('action');
+  _coachTypingStart();
+  const currentHtml = document.getElementById('carnet-code-edit')?.value || '';
+  try {
     const r = await callMistral(currentEquipe.id, currentEquipe.etape_courante, {
       forceHtml: true,
       latestUserRequest: prompt + (currentHtml ? '\n\nVoici le HTML actuel de la vitrine :\n' + currentHtml : ''),
       strictHtmlOnly: true
     });
-
-    // Extraire le HTML de la réponse (marqueurs ou fenced code block)
     const blocs = [];
     const rxMark = /SPARK_HTML_START([\s\S]*?)SPARK_HTML_END/gi;
     const rxFence = /```html\s*([\s\S]*?)```/gi;
     let matchR;
-    while((matchR = rxMark.exec(r)) !== null) blocs.push(matchR[1]);
-    if(!blocs.length) while((matchR = rxFence.exec(r)) !== null) blocs.push(matchR[1]);
-
+    while ((matchR = rxMark.exec(r)) !== null) blocs.push(matchR[1]);
+    if (!blocs.length) while ((matchR = rxFence.exec(r)) !== null) blocs.push(matchR[1]);
     const newHtml = blocs.length > 0 ? normaliserBlocVitrine(blocs[blocs.length - 1]) : '';
-    if(newHtml){
+    _coachTypingStop();
+    _coachSetMode('guide');
+    if (newHtml) {
       const edit = document.getElementById('carnet-code-edit');
-      if(edit) edit.value = newHtml;
+      if (edit) edit.value = newHtml;
       renderVitrine(newHtml);
-      addMsg('SPARK ⚡', 'Vitrine mise à jour ! Sauvegarde quand tu es prêt·e 💾', 'var(--sage)');
+      _coachAddMsg('spark', 'Vitrine mise à jour ! Sauvegarde quand tu es prêt·e 💾');
     } else {
-      addMsg('SPARK ⚡', 'Je n\'ai pas pu générer de HTML valide. Essaie une demande plus précise.', '#e57373');
+      _coachAddMsg('spark', 'Je n\'ai pas pu générer de HTML valide. Essaie une demande plus précise.');
     }
-  } catch(e){
-    addMsg('Erreur', (e.message || 'Appel SPARK échoué.').replace(/</g,'&lt;'), '#e57373');
+  } catch (e) {
+    _coachTypingStop();
+    _coachSetMode('guide');
+    _coachAddMsg('spark', `Erreur : ${(e.message || 'Appel SPARK échoué.').replace(/</g,'&lt;')}`);
   }
-
-  if(input) input.disabled = false;
-  if(sendBtn) sendBtn.disabled = false;
-  input?.focus();
+  if (sendBtn) sendBtn.disabled = false;
+  if (inputEl) inputEl.disabled = false;
+  inputEl?.focus();
+  _coachShowChoices([{ emoji:'✏️', label:'Modifier autre chose', key:'accueil' }]);
 }
 
 async function sauvegarderCarnet(){
