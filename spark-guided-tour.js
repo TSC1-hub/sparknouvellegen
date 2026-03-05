@@ -945,15 +945,21 @@
     if (!sEleve || !sEleve.classList.contains('on')) return;
     const msgs = document.getElementById('chat-messages');
     if (!msgs) return;
-    // On attend que sparkGreet (bulle d'accueil) soit rendue
     const userMsgs = msgs.querySelectorAll('.eleve-msg');
-    if (userMsgs.length === 0) {
-      // Aucun message élève = conversation fraîche
+    if (userMsgs.length > 0) return; // messages présents dès le 1er check → tout va bien
+
+    // Premier check vide : loadConversation() (async Supabase) n'a peut-être pas fini.
+    // On attend 2500 ms de plus (total ~4 s) avant de conclure que la conv est vraiment vide.
+    setTimeout(() => {
+      const sEleve2 = document.getElementById('s-eleve');
+      if (!sEleve2 || !sEleve2.classList.contains('on')) return;
+      if (msgs.querySelectorAll('.eleve-msg').length > 0) return; // messages chargés entretemps
+      // Toujours vide après 4 s → reset FAC entre sessions ou vraie 1ère fois
       try { localStorage.removeItem('spark_onboarding_done'); } catch (e) {}
       if (!document.getElementById('gt-overlay')) {
         SparkTour.start();
       }
-    }
+    }, 2500);
   }
 
   /**
