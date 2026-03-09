@@ -2016,6 +2016,8 @@ let resetEquipeId = null;
 let mentorVitrineChannel = null;
 let mentorConversationChannel = null;
 let mentorTeamMessagesChannel = null;
+let mentorAllTeamsChannels = [];
+let mentorSidebarUnread = {};
 let mentorVitrinesData = [];
 let mentorEtapeAffichee = null;
 let mentorEtapeCourante = 0;
@@ -3470,11 +3472,13 @@ async function initMentor(){
       const eq=x.equipes;
       const div=document.createElement('div');
       div.className='ms-team'+(i===0?' sel':'');
-      div.innerHTML=`<div class="ms-team-av" style="background:linear-gradient(135deg,#7ab648,#3d5c3a);">🌿</div><div><div class="ms-team-name">${eq.nom||eq.code_equipe}</div><div class="ms-team-day">Jour ${eq.etape_courante}/5</div></div>`;
+      div.dataset.equipeId=String(eq.id);
+      div.innerHTML=`<div class="ms-team-av" style="background:linear-gradient(135deg,#7ab648,#3d5c3a);">🌿</div><div><div class="ms-team-name">${eq.nom||eq.code_equipe}</div><div class="ms-team-day">Jour ${eq.etape_courante}/5</div></div><span class="ms-notif" style="display:none"></span>`;
       div.onclick=()=>loadMentorTeam(eq,div);
       list.appendChild(div);
     });
     loadMentorTeam(a[0].equipes,list.firstChild);
+    listenAllMentorTeams(a.map(x=>x.equipes));
   }
   go('mentor');
 }
@@ -3483,6 +3487,10 @@ async function loadMentorTeam(eq,el){
   document.querySelectorAll('.ms-team').forEach(t=>t.classList.remove('sel'));
   el.classList.add('sel');
   selectedEquipeId=eq.id;
+  // Effacer le badge sidebar de l'équipe que l'on sélectionne
+  mentorSidebarUnread[eq.id] = 0;
+  const selNotif = el.querySelector?.('.ms-notif');
+  if(selNotif) selNotif.style.display='none';
   mentorConvUnread = 0;
   const convBadge=document.getElementById('mentor-conv-notif');
   if(convBadge) convBadge.style.display='none';
@@ -3587,6 +3595,30 @@ function listenVitrinesMentor(eqId){
       }
     })
     .subscribe();
+}
+
+function listenAllMentorTeams(equipes){
+  mentorAllTeamsChannels.forEach(ch=>{ try{ sb.removeChannel(ch); }catch(_){ } });
+  mentorAllTeamsChannels=[];
+  equipes.forEach(eq=>{
+    const ch=sb.channel('mentor-all-'+eq.id)
+      .on('postgres_changes',{event:'INSERT',schema:'public',table:'conversations',filter:`equipe_id=eq.${eq.id}`},payload=>{
+        const m=payload?.new;
+        if(m?.role!=='team_to_mentor') return;
+        // Equipe active : déjà gérée par listenMentorTeamMessages
+        if(eq.id===selectedEquipeId) return;
+        mentorSidebarUnread[eq.id]=(mentorSidebarUnread[eq.id]||0)+1;
+        const card=document.querySelector(`.ms-team[data-equipe-id="${eq.id}"]`);
+        const notif=card?.querySelector('.ms-notif');
+        if(notif){
+          notif.textContent=String(mentorSidebarUnread[eq.id]);
+          notif.style.display='inline-block';
+        }
+        showToast(`👥 Message de ${eq.nom||eq.code_equipe}`,'success');
+      })
+      .subscribe();
+    mentorAllTeamsChannels.push(ch);
+  });
 }
 
 function listenMentorTeamMessages(eqId){
