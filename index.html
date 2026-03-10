@@ -2812,11 +2812,17 @@ async function validerEtape(fromEtape, toEtape) {
 (function(){
   const CV_COLORS = ['#22c55e','#4ade80','#f09433','#fbbf24','#dc2743','#fff','#7ab648','#38bdf8'];
   let _cvPieces = [], _cvFrame = null;
-  const _cv = document.getElementById('ov-canvas-confetti');
-  const _ctx = _cv ? _cv.getContext('2d') : null;
-  function _cvResize(){ if(_cv){ _cv.width=window.innerWidth; _cv.height=window.innerHeight; } }
-  window.addEventListener('resize', _cvResize); _cvResize();
+  let _cv = null, _ctx = null;
+  function _init(){
+    if(_cv) return;
+    _cv = document.getElementById('ov-canvas-confetti');
+    if(!_cv) return;
+    _ctx = _cv.getContext('2d');
+    _cv.width = window.innerWidth; _cv.height = window.innerHeight;
+    window.addEventListener('resize', function(){ if(_cv){ _cv.width=window.innerWidth; _cv.height=window.innerHeight; } });
+  }
   window._ovLaunchConfetti = function(){
+    _init();
     if(!_cv||!_ctx) return;
     _cv.classList.add('show');
     _cvPieces = [];
