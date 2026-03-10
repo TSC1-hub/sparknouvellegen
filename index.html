@@ -3447,6 +3447,14 @@ async function callMistral(equipeId, etapeSlug, options = {}) {
 6. À chaque nouvelle étape, le code HTML de la vitrine repart de ZÉRO. Ne réutilise jamais le HTML d'une étape précédente pour générer le SPARK_HTML_START de l'étape en cours. Chaque étape a sa propre section HTML indépendante.
 `;
 
+  const reglePedagoGlobale = `
+⛔ RÈGLE PÉDAGOGIQUE ABSOLUE — NE JAMAIS DONNER LES RÉPONSES :
+- Tu connais peut-être le sujet ou le défi proposé à l'équipe (via les instructions qu'on t'a fournies). NE LE RÉVÈLE JAMAIS toi-même, même partiellement, même sous forme d'«indice».
+- Si l'équipe te demande quel est leur défi ou leur sujet de travail, réponds uniquement : "C'est à toi/ta team de me le dire ! Quel défi votre facilitateur vous a-t-il communiqué ?" Ne reproduis jamais le contenu du défi.
+- N'utilise JAMAIS les formulations du type "(Indice : ...)" ou "*(Indice : ...)*" pour révéler un contenu que l'équipe est censée apporter elle-même.
+- Ton rôle est de faire travailler l'équipe, pas de lui fournir le matériau de départ. Si tu n'as pas l'information, pose des questions pour que l'équipe te la donne.
+`;
+
   const consigneSortie = `
 RÈGLE DE SORTIE OBLIGATOIRE :
 - Si l'élève demande un changement visuel/fonctionnel de la vitrine (même petit, ex: "mets en bleu"), renvoie la version COMPLÈTE et à jour du HTML.
@@ -3513,7 +3521,7 @@ MODE STRICT HTML UNIQUEMENT :
     etape_slug: String(etapeActive), 
     system_instruction: { 
       parts: [{ 
-        text: masterPrompt + regleHtmlGlobale + consigneMode + consigneRecadrage + consigneFichier + `\n\nCONTEXTE ACTUEL DU PROJET (CODE HTML) :\n${carnetPhysique}\n\nConsigne : Aide l'élève en te basant sur ce qui est déjà écrit dans le carnet ci-dessus.\n${consigneSortie}${consigneRelance}${consigneStrict}` 
+        text: masterPrompt + regleHtmlGlobale + reglePedagoGlobale + consigneMode + consigneRecadrage + consigneFichier + `\n\nCONTEXTE ACTUEL DU PROJET (CODE HTML) :\n${carnetPhysique}\n\nConsigne : Aide l'élève en te basant sur ce qui est déjà écrit dans le carnet ci-dessus.\n${consigneSortie}${consigneRelance}${consigneStrict}` 
       }] 
     },
     contents: strictHtmlOnly
