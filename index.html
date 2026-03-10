@@ -3521,7 +3521,7 @@ MODE STRICT HTML UNIQUEMENT :
     etape_slug: String(etapeActive), 
     system_instruction: { 
       parts: [{ 
-        text: masterPrompt + regleHtmlGlobale + reglePedagoGlobale + consigneMode + consigneRecadrage + consigneFichier + `\n\nCONTEXTE ACTUEL DU PROJET (CODE HTML) :\n${carnetPhysique}\n\nConsigne : Aide l'élève en te basant sur ce qui est déjà écrit dans le carnet ci-dessus.\n${consigneSortie}${consigneRelance}${consigneStrict}` 
+        text: masterPrompt + reglePedagoGlobale + consigneMode + consigneRecadrage + consigneFichier + `\n\nCONTEXTE ACTUEL DU PROJET (CODE HTML) :\n${carnetPhysique}\n\nConsigne : Aide l'élève en te basant sur ce qui est déjà écrit dans le carnet ci-dessus.\n` + regleHtmlGlobale + consigneSortie + consigneRelance + consigneStrict
       }] 
     },
     contents: strictHtmlOnly
