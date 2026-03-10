@@ -1,0 +1,823 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mockup — Carnet Coach Vitrine</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Fraunces:wght@700;900&display=swap" rel="stylesheet">
+<style>
+  /* ── Reset & variables ── */
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --moss:  #3d5c3a;
+    --sage:  #7ab648;
+    --sun:   #f5f0e8;
+    --warm:  #f9f6f1;
+    --border: rgba(61,92,58,.15);
+    --mid:   #5a6b54;
+    --light: #9aab94;
+    --text:  #2c3a28;
+  }
+  body {
+    font-family: 'DM Sans', system-ui, sans-serif;
+    background: #e8ede6;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    padding: 20px;
+  }
+
+  /* ── Carnet drawer (simulation) ── */
+  .carnet-drawer {
+    width: 960px;
+    height: 600px;
+    background: var(--warm);
+    border-radius: 18px;
+    box-shadow: 0 24px 80px rgba(0,0,0,.22);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+
+  /* Header */
+  .carnet-hdr {
+    background: var(--moss);
+    padding: 12px 20px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-shrink: 0;
+  }
+  .carnet-hdr-title { font-family: 'Fraunces', serif; font-weight: 700; font-size: 1rem; color: var(--sun); }
+  .carnet-hdr-sub   { font-size: .65rem; color: rgba(245,240,232,.5); font-style: italic; margin-top: 1px; }
+  .btn-close {
+    background: rgba(245,240,232,.1); border: 1px solid rgba(245,240,232,.18);
+    border-radius: 8px; padding: 5px 12px; color: rgba(245,240,232,.7);
+    cursor: pointer; font-family: 'DM Sans', sans-serif; font-size: .75rem;
+    transition: all .2s;
+  }
+  .btn-close:hover { background: rgba(245,240,232,.2); color: white; }
+
+  /* Split */
+  .carnet-split { flex: 1; display: flex; overflow: hidden; }
+
+  /* ── Colonne gauche : aperçu + coach ── */
+  .carnet-col-preview {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    border-right: 1px solid var(--border);
+    overflow: hidden;
+    background: white;
+  }
+
+  /* Étapes */
+  .carnet-etapes {
+    display: flex;
+    gap: 5px;
+    padding: 8px 14px;
+    flex-shrink: 0;
+    border-bottom: 1px solid rgba(0,0,0,.07);
+    background: #f8fafc;
+  }
+  .carnet-pill {
+    padding: 3px 11px; border-radius: 20px; font-size: .64rem; font-weight: 600;
+    cursor: pointer; background: white; border: 1px solid rgba(61,92,58,.2);
+    color: var(--mid); transition: all .2s;
+  }
+  .carnet-pill.done   { background: rgba(122,182,72,.1); border-color: rgba(122,182,72,.35); color: var(--sage); }
+  .carnet-pill.active { background: var(--moss); color: white; border-color: var(--moss); }
+
+  /* Iframe */
+  .carnet-iframe {
+    flex: 1;
+    border: none;
+    background: #faf7f2;
+  }
+
+  /* ── COACH : nouveau mini-chat vitrine ── */
+  .carnet-coach {
+    flex-shrink: 0;
+    background: #f4f7f3;
+    border-top: 1.5px solid var(--border);
+    display: flex;
+    flex-direction: column;
+    /* hauteur variable selon l'état */
+    max-height: 260px;
+    min-height: 140px;
+  }
+
+  /* Barre titre coach */
+  .coach-hdr {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    padding: 6px 14px 5px;
+    background: #ebf2e8;
+    border-bottom: 1px solid var(--border);
+    flex-shrink: 0;
+  }
+  .coach-hdr-dot {
+    width: 7px; height: 7px; border-radius: 50%;
+    background: #7ab648;
+    animation: pulse 2s ease-in-out infinite;
+  }
+  @keyframes pulse {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50%       { opacity: .5; transform: scale(.75); }
+  }
+  .coach-hdr-lbl {
+    font-size: .62rem; font-weight: 700; color: var(--moss);
+    letter-spacing: .04em; text-transform: uppercase;
+    flex: 1;
+  }
+  .coach-hdr-mode {
+    font-size: .58rem; color: var(--light); font-style: italic;
+    display: flex; align-items: center; gap: 4px;
+  }
+  .coach-hdr-mode-badge {
+    background: rgba(122,182,72,.15); border: 1px solid rgba(122,182,72,.3);
+    border-radius: 20px; padding: 1px 7px; font-style: normal;
+    font-weight: 600; color: var(--sage); font-size: .56rem;
+  }
+
+  /* Zone messages */
+  .coach-msgs {
+    flex: 1;
+    overflow-y: auto;
+    padding: 8px 14px 6px;
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+  }
+  .coach-msgs::-webkit-scrollbar { width: 3px; }
+  .coach-msgs::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+
+  /* Bulles */
+  .msg-spark, .msg-user, .msg-system {
+    max-width: 88%;
+    font-size: .70rem;
+    line-height: 1.55;
+    padding: 6px 10px;
+    border-radius: 10px;
+    animation: fadeUp .25s ease-out;
+  }
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(6px); }
+    to   { opacity: 1; transform: none; }
+  }
+  .msg-spark {
+    background: white;
+    border: 1px solid var(--border);
+    color: var(--text);
+    align-self: flex-start;
+    border-radius: 4px 10px 10px 10px;
+  }
+  .msg-spark .sender {
+    font-size: .57rem; font-weight: 700; color: var(--sage);
+    text-transform: uppercase; letter-spacing: .06em; margin-bottom: 2px;
+    display: block;
+  }
+  .msg-user {
+    background: var(--moss);
+    color: white;
+    align-self: flex-end;
+    border-radius: 10px 4px 10px 10px;
+  }
+  .msg-system {
+    background: rgba(122,182,72,.08);
+    border: 1px dashed rgba(122,182,72,.3);
+    color: var(--mid);
+    align-self: center;
+    font-size: .62rem;
+    font-style: italic;
+    max-width: 100%;
+  }
+
+  /* Boutons de choix rapide (propositions du coach) */
+  .coach-choices {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 5px;
+    padding: 0 14px 7px;
+    flex-shrink: 0;
+  }
+  .choice-btn {
+    display: inline-flex; align-items: center; gap: 4px;
+    padding: 4px 10px; border-radius: 20px;
+    background: white; border: 1px solid var(--border);
+    cursor: pointer; font-size: .65rem; font-weight: 500;
+    color: var(--moss); font-family: 'DM Sans', sans-serif;
+    transition: all .18s; white-space: nowrap;
+  }
+  .choice-btn:hover {
+    background: rgba(122,182,72,.1); border-color: rgba(122,182,72,.4);
+    transform: translateY(-1px);
+  }
+  .choice-btn.do-it {
+    background: rgba(244,162,97,.1); border-color: rgba(244,162,97,.4);
+    color: #b36b2e;
+  }
+  .choice-btn.do-it:hover { background: rgba(244,162,97,.2); }
+
+  /* Zone saisie */
+  .coach-input-row {
+    display: flex; gap: 6px;
+    padding: 6px 10px 8px;
+    border-top: 1px solid var(--border);
+    background: white;
+    flex-shrink: 0;
+    align-items: flex-end;
+  }
+  .coach-input {
+    flex: 1; border: 1.5px solid var(--border); border-radius: 8px;
+    padding: 6px 10px; font-size: .71rem; resize: none;
+    font-family: 'DM Sans', sans-serif; outline: none; line-height: 1.4;
+    background: #fafaf9; max-height: 72px; overflow-y: auto;
+    color: var(--text);
+    transition: border-color .2s;
+  }
+  .coach-input:focus { border-color: var(--sage); background: white; }
+  .coach-input::placeholder { color: var(--light); }
+  .coach-send {
+    padding: 6px 14px; background: var(--moss); color: white;
+    border: none; border-radius: 8px; cursor: pointer;
+    font-size: .71rem; font-weight: 600; font-family: 'DM Sans', sans-serif;
+    white-space: nowrap; transition: background .2s; flex-shrink: 0;
+    align-self: flex-end;
+  }
+  .coach-send:hover { background: var(--sage); }
+  .coach-send:disabled { opacity: .4; cursor: not-allowed; }
+
+  /* Indicateur "typing" */
+  .typing-dots {
+    display: inline-flex; gap: 3px; align-items: center; padding: 2px 0;
+  }
+  .typing-dots span {
+    width: 5px; height: 5px; border-radius: 50%; background: var(--light);
+    animation: dotBounce .9s ease-in-out infinite;
+  }
+  .typing-dots span:nth-child(2) { animation-delay: .15s; }
+  .typing-dots span:nth-child(3) { animation-delay: .30s; }
+  @keyframes dotBounce {
+    0%, 80%, 100% { transform: translateY(0); opacity: .4; }
+    40%            { transform: translateY(-4px); opacity: 1; }
+  }
+
+  /* ── Colonne droite : éditeur code ── */
+  .carnet-col-code {
+    flex: 1; display: flex; flex-direction: column;
+    overflow: hidden; background: #1e1e2e;
+  }
+  /* étapes édition */
+  .carnet-edit-etapes {
+    display: flex; gap: 5px; flex-wrap: wrap;
+    padding: 8px 14px; border-bottom: 1px solid rgba(255,255,255,.07); flex-shrink: 0;
+  }
+  .carnet-edit-pill {
+    padding: 3px 10px; border-radius: 20px; font-size: .63rem; font-weight: 700;
+    cursor: pointer; background: #273341; border: 1px solid rgba(255,255,255,.14);
+    color: #aeb9c7; transition: all .2s;
+  }
+  .carnet-edit-pill.active {
+    background: rgba(122,182,72,.2); border-color: rgba(122,182,72,.45); color: #d9f0c8;
+  }
+  .carnet-edit-lbl { margin-left: auto; font-size: .6rem; color: #8ea1b8; }
+
+  /* textarea */
+  .carnet-code {
+    flex: 1; overflow-y: auto; padding: 14px;
+    background: #1e1e2e; font-family: monospace;
+    font-size: .7rem; color: #cdd6f4;
+    white-space: pre-wrap; word-break: break-all; line-height: 1.6;
+    border: none; outline: none; resize: none;
+  }
+
+  /* footer code */
+  .carnet-code-footer {
+    padding: 7px 14px; background: #1e1e2e;
+    border-top: 1px solid rgba(255,255,255,.07);
+    flex-shrink: 0; display: flex; align-items: center; justify-content: space-between;
+  }
+  .carnet-edit-note { font-size: .6rem; color: #9ca3af; }
+  .btn-save {
+    padding: 6px 16px; background: #7ab648; border: none; border-radius: 8px;
+    color: white; font-family: 'DM Sans', sans-serif; font-size: .72rem;
+    font-weight: 600; cursor: pointer; transition: background .2s;
+  }
+  .btn-save:hover { background: #5a9a38; }
+
+  /* ── Switcher scénarios (UI de démo uniquement) ── */
+  .demo-bar {
+    position: fixed; bottom: 16px; left: 50%; transform: translateX(-50%);
+    background: #1e1e2e; border-radius: 30px;
+    padding: 7px 16px; display: flex; gap: 8px; align-items: center;
+    box-shadow: 0 8px 32px rgba(0,0,0,.35);
+    z-index: 999;
+  }
+  .demo-bar span { font-size: .62rem; color: #8ea1b8; white-space: nowrap; }
+  .demo-btn {
+    padding: 4px 12px; border-radius: 20px; border: 1px solid rgba(255,255,255,.15);
+    background: rgba(255,255,255,.06); color: #cdd6f4; cursor: pointer;
+    font-size: .63rem; font-family: 'DM Sans', sans-serif; transition: all .18s;
+    white-space: nowrap;
+  }
+  .demo-btn:hover { background: rgba(255,255,255,.12); }
+  .demo-btn.active { background: rgba(122,182,72,.25); border-color: rgba(122,182,72,.5); color: #a6e3a1; }
+
+  /* highlight diff dans textarea */
+  .code-highlight { background: rgba(122,182,72,.25); }
+
+</style>
+</head>
+<body>
+
+<!-- ═══════════════════════════════════════════════
+     CARNET DRAWER (simulation)
+═══════════════════════════════════════════════ -->
+<div class="carnet-drawer">
+
+  <!-- Header -->
+  <div class="carnet-hdr">
+    <div>
+      <div class="carnet-hdr-title">📓 Carnet de Terrain</div>
+      <div class="carnet-hdr-sub">ForestGuard · Jour 0/5</div>
+    </div>
+    <button class="btn-close">✕ Fermer</button>
+  </div>
+
+  <div class="carnet-split">
+
+    <!-- ═══ COL GAUCHE : aperçu + coach ═══ -->
+    <div class="carnet-col-preview">
+
+      <!-- Onglets étapes -->
+      <div class="carnet-etapes">
+        <div class="carnet-pill active">Étape 0</div>
+        <div class="carnet-pill done">Jour 1</div>
+        <div class="carnet-pill">Jour 2</div>
+        <div class="carnet-pill">Jour 3</div>
+      </div>
+
+      <!-- Iframe aperçu -->
+      <iframe class="carnet-iframe" id="vitrine-iframe" srcdoc=""></iframe>
+
+      <!-- ══ COACH CHAT (nouveau) ══ -->
+      <div class="carnet-coach" id="coachPanel">
+
+        <!-- Barre titre -->
+        <div class="coach-hdr">
+          <div class="coach-hdr-dot"></div>
+          <span class="coach-hdr-lbl">Coach Vitrine</span>
+          <span class="coach-hdr-mode">
+            Mode : <span class="coach-hdr-mode-badge" id="modeLabel">GUIDE</span>
+          </span>
+        </div>
+
+        <!-- Messages -->
+        <div class="coach-msgs" id="coachMsgs"></div>
+
+        <!-- Boutons de choix rapide -->
+        <div class="coach-choices" id="coachChoices"></div>
+
+        <!-- Saisie libre -->
+        <div class="coach-input-row">
+          <textarea class="coach-input" id="coachInput" rows="1"
+            placeholder="Ou tape ta demande directement…"
+            onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendUserMsg();}"
+          ></textarea>
+          <button class="coach-send" id="coachSend" onclick="sendUserMsg()">Envoyer ✨</button>
+        </div>
+
+      </div>
+    </div><!-- /col-preview -->
+
+    <!-- ═══ COL DROITE : éditeur code ═══ -->
+    <div class="carnet-col-code">
+      <div class="carnet-edit-etapes">
+        <div class="carnet-edit-pill active">Étape 0</div>
+        <div class="carnet-edit-pill">Jour 1</div>
+        <div class="carnet-edit-lbl">✍️ Étape à éditer</div>
+      </div>
+      <textarea class="carnet-code" id="codeEdit" spellcheck="false"></textarea>
+      <div class="carnet-code-footer">
+        <span class="carnet-edit-note">Les changements seront enregistrés sur Étape 0/5.</span>
+        <button class="btn-save">💾 Sauvegarder</button>
+      </div>
+    </div>
+
+  </div><!-- /split -->
+</div><!-- /drawer -->
+
+<!-- ═══════════════════════════════════════════════
+     BARRE DE SCÉNARIOS (DÉMO)
+═══════════════════════════════════════════════ -->
+<div class="demo-bar">
+  <span>Scénario :</span>
+  <button class="demo-btn active" onclick="loadScenario('init')">① Accueil coach</button>
+  <button class="demo-btn" onclick="loadScenario('choix-texte')">② Choix : modifier texte</button>
+  <button class="demo-btn" onclick="loadScenario('guide-texte')">③ Guide pas-à-pas</button>
+  <button class="demo-btn" onclick="loadScenario('choix-couleur')">④ Choix : couleur</button>
+  <button class="demo-btn" onclick="loadScenario('impatient')">⑤ Élève impatient</button>
+  <button class="demo-btn" onclick="loadScenario('tache-complexe')">⑥ Tâche complexe</button>
+</div>
+
+<script>
+// ═══════════════════════════════════════════════
+//  DONNÉES DE DÉMO
+// ═══════════════════════════════════════════════
+const DEMO_HTML = `<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<style>
+  body { font-family: 'Georgia', serif; background: #faf7f2; color: #2c3a28; margin: 0; padding: 24px; }
+  h1   { color: #7ab648; font-size: 1.6rem; margin-bottom: 6px; }
+  h2   { color: #3d5c3a; font-size: 1.1rem; margin: 16px 0 6px; }
+  p    { font-size: .92rem; line-height: 1.7; }
+  .badge { display:inline-block; background:#e8f5d6; border:1px solid #7ab648; border-radius:20px; padding:3px 12px; font-size:.78rem; color:#3d5c3a; margin-bottom:14px; }
+</style>
+</head>
+<body>
+<span class="badge">🌿 Étape 0 — Découvrir</span>
+<h1>ForestGuard</h1>
+<p>Notre projet vise à protéger la biodiversité locale grâce à des capteurs connectés.</p>
+<h2>Notre équipe</h2>
+<p>Nous sommes 4 élèves passionnés par l'écologie et la technologie.</p>
+<h2>Problématique</h2>
+<p>Comment détecter et prévenir la déforestation illégale en temps réel ?</p>
+</body>
+</html>`;
+
+const DEMO_HTML_MODIFIED = `<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<style>
+  body { font-family: 'Georgia', serif; background: #faf7f2; color: #2c3a28; margin: 0; padding: 24px; }
+  h1   { color: #ef4444; font-size: 1.6rem; margin-bottom: 6px; }
+  h2   { color: #3d5c3a; font-size: 1.1rem; margin: 16px 0 6px; }
+  p    { font-size: .92rem; line-height: 1.7; }
+  .badge { display:inline-block; background:#e8f5d6; border:1px solid #7ab648; border-radius:20px; padding:3px 12px; font-size:.78rem; color:#3d5c3a; margin-bottom:14px; }
+</style>
+</head>
+<body>
+<span class="badge">🌿 Étape 0 — Découvrir</span>
+<h1>EcoSentinel</h1>
+<p>Notre projet vise à protéger la biodiversité locale grâce à des capteurs connectés.</p>
+<h2>Notre équipe</h2>
+<p>Nous sommes 4 élèves passionnés par l'écologie et la technologie.</p>
+<h2>Problématique</h2>
+<p>Comment détecter et prévenir la déforestation illégale en temps réel ?</p>
+</body>
+</html>`;
+
+const DEMO_HTML_FULL_REFONTE = `<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<style>
+  * { box-sizing:border-box; margin:0; padding:0; }
+  body { font-family:'DM Sans',system-ui,sans-serif; background:#0f172a; color:#e2e8f0; }
+  .hero { background:linear-gradient(135deg,#064e3b,#065f46); padding:48px 32px; text-align:center; }
+  .hero h1 { font-size:2rem; color:#6ee7b7; margin-bottom:8px; }
+  .hero p  { font-size:1rem; color:#a7f3d0; max-width:480px; margin:0 auto 20px; }
+  .hero .cta { background:#10b981; color:white; padding:10px 24px; border-radius:8px; display:inline-block; font-weight:600; }
+  section { padding:32px; border-bottom:1px solid rgba(255,255,255,.07); }
+  section h2 { color:#6ee7b7; font-size:1rem; margin-bottom:10px; text-transform:uppercase; letter-spacing:.05em; }
+  section p  { font-size:.9rem; line-height:1.75; color:#94a3b8; }
+</style>
+</head>
+<body>
+<div class="hero">
+  <h1>🌲 EcoSentinel</h1>
+  <p>Surveillance de la biodiversité par capteurs IA en temps réel.</p>
+  <span class="cta">Découvrir le projet</span>
+</div>
+<section>
+  <h2>Notre équipe</h2>
+  <p>4 élèves passionnés par l'écologie et la technologie embarquée.</p>
+</section>
+<section>
+  <h2>Problématique</h2>
+  <p>Comment détecter et prévenir la déforestation illégale en temps réel ?</p>
+</section>
+</body>
+</html>`;
+
+// ═══════════════════════════════════════════════
+//  SCÉNARIOS DE DÉMONSTRATION
+// ═══════════════════════════════════════════════
+const SCENARIOS = {
+
+  'init': {
+    mode: 'GUIDE',
+    html: DEMO_HTML,
+    msgs: [
+      { role: 'spark', text: `Ta vitrine ForestGuard est prête 🎉<br>Qu'est-ce que tu voudrais améliorer aujourd'hui ?` },
+    ],
+    choices: [
+      { emoji:'✏️', label:'Changer un texte',    next:'choix-texte'   },
+      { emoji:'🎨', label:'Changer une couleur', next:'choix-couleur' },
+      { emoji:'📦', label:'Déplacer un élément', next:'choix-deplacement' },
+      { emoji:'➕', label:'Ajouter une section',  next:'choix-ajout'  },
+      { emoji:'🔄', label:'Tout refaire le style',next:'tache-complexe' },
+      { emoji:'💡', label:'Surprise-moi !',       next:'tache-complexe' },
+    ]
+  },
+
+  'choix-texte': {
+    mode: 'GUIDE',
+    html: DEMO_HTML,
+    msgs: [
+      { role:'user',  text:'Changer un texte' },
+      { role:'spark', text:`Super ! Quel texte veux-tu changer ?` },
+    ],
+    choices: [
+      { emoji:'🏷️', label:'Le titre principal (h1)',  next:'guide-texte' },
+      { emoji:'📝', label:'Un paragraphe',            next:'guide-texte' },
+      { emoji:'📌', label:'Le badge en haut',         next:'guide-texte' },
+    ]
+  },
+
+  'guide-texte': {
+    mode: 'GUIDE',
+    html: DEMO_HTML,
+    msgs: [
+      { role:'user',  text:'Le titre principal (h1)' },
+      { role:'spark', text:`OK ! Voici comment faire :<br><br>
+        <b>1.</b> Dans le code à droite, trouve la ligne :<br>
+        <code style="background:rgba(0,0,0,.07);padding:2px 5px;border-radius:4px;font-size:.67rem">&lt;h1&gt;ForestGuard&lt;/h1&gt;</code><br><br>
+        <b>2.</b> Remplace <b>ForestGuard</b> par le nom de ton choix.<br><br>
+        L'aperçu se met à jour dès que tu sauvegardes 👉 j'attends !` },
+    ],
+    choices: [
+      { emoji:'✅', label:'J\'ai fait, ça marche !',  next:'init', class:'do-it' },
+      { emoji:'😕', label:'Je ne trouve pas…',        next:'guide-texte-help' },
+      { emoji:'⚡', label:'Fais-le pour moi',        next:'guide-texte-done', class:'do-it' },
+    ]
+  },
+
+  'guide-texte-help': {
+    mode: 'GUIDE',
+    html: DEMO_HTML,
+    msgs: [
+      { role:'user',  text:'Je ne trouve pas…' },
+      { role:'spark', text:`Pas de souci 🙂 La balise h1 est à la <b>ligne 19</b> dans le code.<br>
+        Elle ressemble à ça :<br><br>
+        <code style="font-size:.66rem;background:rgba(0,0,0,.07);padding:3px 7px;border-radius:4px;display:inline-block">&lt;h1&gt;<span style="color:#ef4444">ForestGuard</span>&lt;/h1&gt;</code><br><br>
+        Clique sur le code à droite et utilise <b>Ctrl+F</b> pour chercher <em>ForestGuard</em>.` },
+    ],
+    choices: [
+      { emoji:'✅', label:'Trouvé, merci !',   next:'guide-texte' },
+      { emoji:'⚡', label:'Fais-le pour moi',  next:'guide-texte-done', class:'do-it' },
+    ]
+  },
+
+  'guide-texte-done': {
+    mode: 'ACTION',
+    html: DEMO_HTML_MODIFIED,
+    msgs: [
+      { role:'user',  text:'Fais-le pour moi' },
+      { role:'system',text:'⚡ SPARK modifie le code…' },
+      { role:'spark', text:`Voilà ! J'ai renommé ton projet en <b>EcoSentinel</b> 🌿<br>
+        Tu vois la différence dans l'aperçu ?<br>La prochaine fois, essaie toi-même — c'est juste 2 mots à changer !` },
+    ],
+    choices: [
+      { emoji:'🎨', label:'Changer la couleur maintenant',  next:'choix-couleur' },
+      { emoji:'🏠', label:'Retour au menu',                 next:'init' },
+    ]
+  },
+
+  'choix-couleur': {
+    mode: 'GUIDE',
+    html: DEMO_HTML,
+    msgs: [
+      { role:'user',  text:'Changer une couleur' },
+      { role:'spark', text:`Quelle couleur veux-tu toucher ?` },
+    ],
+    choices: [
+      { emoji:'🟢', label:'La couleur du titre h1',    next:'guide-couleur-h1'  },
+      { emoji:'🟤', label:'La couleur de fond (body)', next:'guide-couleur-bg'  },
+      { emoji:'🔵', label:'La couleur des sous-titres',next:'guide-couleur-h2'  },
+    ]
+  },
+
+  'guide-couleur-h1': {
+    mode: 'GUIDE',
+    html: DEMO_HTML,
+    msgs: [
+      { role:'user',  text:'La couleur du titre h1' },
+      { role:'spark', text:`Dans le code, cherche :<br>
+        <code style="font-size:.66rem;background:rgba(0,0,0,.07);padding:2px 6px;border-radius:4px">h1 { color: <span style="color:#7ab648">#7ab648</span>; … }</code><br><br>
+        Remplace <b>#7ab648</b> par un code couleur de ton choix.<br>
+        Tu peux utiliser : <b>#ef4444</b> (rouge), <b>#3b82f6</b> (bleu), <b>#f97316</b> (orange)…<br><br>
+        Essaie — l'aperçu se met à jour après sauvegarde 👇` },
+    ],
+    choices: [
+      { emoji:'✅', label:'Fait !',            next:'init', class:'do-it' },
+      { emoji:'⚡', label:'Fais-le pour moi', next:'guide-texte-done', class:'do-it' },
+      { emoji:'❓', label:'C\'est quoi un code couleur ?', next:'guide-couleur-expliq' },
+    ]
+  },
+
+  'guide-couleur-expliq': {
+    mode: 'GUIDE',
+    html: DEMO_HTML,
+    msgs: [
+      { role:'user',  text:"C'est quoi un code couleur ?" },
+      { role:'spark', text:`Un code couleur HTML commence par <b>#</b> suivi de 6 caractères (chiffres 0-9 ou lettres a-f).<br><br>
+        Exemples :<br>
+        <span style="display:inline-flex;align-items:center;gap:5px;margin:2px 0">
+          <span style="width:12px;height:12px;border-radius:50%;background:#ef4444;flex-shrink:0"></span> <code>#ef4444</code> → Rouge
+        </span><br>
+        <span style="display:inline-flex;align-items:center;gap:5px;margin:2px 0">
+          <span style="width:12px;height:12px;border-radius:50%;background:#3b82f6;flex-shrink:0"></span> <code>#3b82f6</code> → Bleu
+        </span><br>
+        <span style="display:inline-flex;align-items:center;gap:5px;margin:2px 0">
+          <span style="width:12px;height:12px;border-radius:50%;background:#f97316;flex-shrink:0"></span> <code>#f97316</code> → Orange
+        </span><br><br>
+        Tu peux en chercher sur <b>coolors.co</b> ou Google "color picker".` },
+    ],
+    choices: [
+      { emoji:'👍', label:'Compris, je teste !',  next:'guide-couleur-h1' },
+      { emoji:'⚡', label:'Fais-le pour moi',    next:'guide-texte-done', class:'do-it' },
+    ]
+  },
+
+  'impatient': {
+    mode: 'COACH → ACTION',
+    html: DEMO_HTML,
+    msgs: [
+      { role:'user',  text:'Je ne veux plus chercher, change tout toi-même' },
+      { role:'spark', text:`D'accord, je prends le relais ! 🙂<br>
+        Dis-moi juste ce que tu veux modifier et je le fais — mais je t'explique ce que je fais en même temps, pour que tu puisses le faire seul·e la prochaine fois.<br><br>
+        Qu'est-ce qu'on change ?` },
+    ],
+    choices: [
+      { emoji:'🏷️', label:'Changer le titre',     next:'guide-texte-done', class:'do-it' },
+      { emoji:'🎨', label:'Changer les couleurs',  next:'guide-texte-done', class:'do-it' },
+      { emoji:'🔄', label:'Refaire tout le style', next:'tache-complexe',   class:'do-it' },
+    ]
+  },
+
+  'tache-complexe': {
+    mode: 'ACTION',
+    html: DEMO_HTML_FULL_REFONTE,
+    msgs: [
+      { role:'user',   text:'Tout refaire le style' },
+      { role:'system', text:'⚡ SPARK génère une nouvelle vitrine…' },
+      { role:'spark',  text:`Voilà une refonte complète 🚀<br>
+        J'ai appliqué un thème sombre moderne avec une section hero, des titres en vert émeraude, et une typographie épurée.<br><br>
+        Tu peux maintenant <b>personnaliser les détails</b> toi-même : textes, couleurs, contenu… ou me demander d'autres ajustements !` },
+    ],
+    choices: [
+      { emoji:'✏️', label:'Changer un texte',    next:'choix-texte' },
+      { emoji:'🎨', label:'Changer une couleur', next:'choix-couleur' },
+      { emoji:'💾', label:'Sauvegarder',          next:'init' },
+    ]
+  },
+
+  'choix-deplacement': {
+    mode: 'GUIDE',
+    html: DEMO_HTML,
+    msgs: [
+      { role:'user',  text:'Déplacer un élément' },
+      { role:'spark', text:`Déplacer des éléments, c'est couper-coller une balise HTML.<br><br>
+        <b>1.</b> Sélectionne tout le bloc que tu veux déplacer (ex : la section "Problématique", de <code>&lt;h2&gt;</code> jusqu'au <code>&lt;/p&gt;</code> suivant).<br><br>
+        <b>2.</b> Coupe-le (<b>Ctrl+X</b>) puis colle-le (<b>Ctrl+V</b>) à l'endroit voulu.<br><br>
+        Tu veux déplacer quoi exactement ?` },
+    ],
+    choices: [
+      { emoji:'✅', label:'Compris, je fais ça !', next:'init' },
+      { emoji:'⚡', label:'Fais-le pour moi',     next:'guide-texte-done', class:'do-it' },
+    ]
+  },
+
+  'choix-ajout': {
+    mode: 'GUIDE',
+    html: DEMO_HTML,
+    msgs: [
+      { role:'user',  text:'Ajouter une section' },
+      { role:'spark', text:`Bonne idée ! Pour ajouter une section, il faut écrire ça dans le code :<br><br>
+        <code style="font-size:.66rem;background:rgba(0,0,0,.07);padding:4px 8px;border-radius:4px;display:block;line-height:1.8">
+          &lt;h2&gt;Titre de ta section&lt;/h2&gt;<br>
+          &lt;p&gt;Ton texte ici.&lt;/p&gt;
+        </code><br>
+        Colle ça avant <code>&lt;/body&gt;</code> dans le code à droite.<br><br>
+        C'est quoi le sujet de la nouvelle section ?` },
+    ],
+    choices: [
+      { emoji:'🔬', label:'Nos matériaux/technologies', next:'guide-texte-done', class:'do-it' },
+      { emoji:'🎯', label:'Nos objectifs concrets',     next:'guide-texte-done', class:'do-it' },
+      { emoji:'✅', label:'Je l\'écris moi-même',       next:'init' },
+    ]
+  }
+
+};
+
+// ═══════════════════════════════════════════════
+//  MOTEUR DE DÉMONSTRATION
+// ═══════════════════════════════════════════════
+let currentScenario = 'init';
+
+function loadScenario(key) {
+  const sc = SCENARIOS[key];
+  if (!sc) return;
+  currentScenario = key;
+
+  // Update active button
+  document.querySelectorAll('.demo-btn').forEach(b => b.classList.remove('active'));
+  const btn = [...document.querySelectorAll('.demo-btn')].find(b => b.getAttribute('onclick') === `loadScenario('${key}')`);
+  if (btn) btn.classList.add('active');
+
+  // Mode badge
+  const modeColors = {
+    'GUIDE':         { bg:'rgba(122,182,72,.15)', border:'rgba(122,182,72,.3)', color:'#3d5c3a' },
+    'ACTION':        { bg:'rgba(244,162,97,.15)', border:'rgba(244,162,97,.4)', color:'#b36b2e' },
+    'COACH → ACTION':{ bg:'rgba(99,102,241,.12)', border:'rgba(99,102,241,.35)', color:'#4338ca' },
+  };
+  const ml = document.getElementById('modeLabel');
+  ml.textContent = sc.mode;
+  const mc = modeColors[sc.mode] || modeColors['GUIDE'];
+  ml.style.cssText = `background:${mc.bg};border:1px solid ${mc.border};border-radius:20px;padding:1px 8px;font-style:normal;font-weight:700;color:${mc.color};font-size:.56rem;`;
+
+  // HTML
+  document.getElementById('codeEdit').value = sc.html;
+  document.getElementById('vitrine-iframe').srcdoc = sc.html;
+
+  // Messages
+  const msgsEl = document.getElementById('coachMsgs');
+  msgsEl.innerHTML = '';
+  sc.msgs.forEach((m, i) => {
+    setTimeout(() => {
+      addMsg(m.role, m.text);
+    }, i * 60);
+  });
+
+  // Choices (après les messages)
+  const choicesEl = document.getElementById('coachChoices');
+  choicesEl.innerHTML = '';
+  if (sc.choices) {
+    setTimeout(() => {
+      sc.choices.forEach(c => {
+        const btn = document.createElement('button');
+        btn.className = 'choice-btn' + (c.class ? ' '+c.class : '');
+        btn.innerHTML = `${c.emoji} ${c.label}`;
+        btn.onclick = () => loadScenario(c.next);
+        choicesEl.appendChild(btn);
+      });
+    }, sc.msgs.length * 60 + 80);
+  }
+}
+
+function addMsg(role, text) {
+  const msgsEl = document.getElementById('coachMsgs');
+  const div = document.createElement('div');
+
+  if (role === 'spark') {
+    div.className = 'msg-spark';
+    div.innerHTML = `<span class="sender">SPARK ⚡</span>${text}`;
+  } else if (role === 'user') {
+    div.className = 'msg-user';
+    div.textContent = text;
+  } else if (role === 'system') {
+    div.className = 'msg-system';
+    div.innerHTML = text;
+  }
+
+  msgsEl.appendChild(div);
+  msgsEl.scrollTop = msgsEl.scrollHeight;
+}
+
+function sendUserMsg() {
+  const inp = document.getElementById('coachInput');
+  const val = inp.value.trim();
+  if (!val) return;
+  addMsg('user', val);
+  inp.value = '';
+
+  // Réponse générique (démo)
+  setTimeout(() => {
+    const dm = document.createElement('div');
+    dm.className = 'msg-spark';
+    dm.innerHTML = `<span class="sender">SPARK ⚡</span>
+      <span class="typing-dots"><span></span><span></span><span></span></span>`;
+    document.getElementById('coachMsgs').appendChild(dm);
+    document.getElementById('coachMsgs').scrollTop = 99999;
+
+    setTimeout(() => {
+      dm.innerHTML = `<span class="sender">SPARK ⚡</span>Super idée ! Dis-moi en plus sur ce que tu veux changer — ou choisis dans le menu ci-dessous 👇`;
+      document.getElementById('coachMsgs').scrollTop = 99999;
+    }, 1200);
+  }, 300);
+}
+
+// ── Init ──
+loadScenario('init');
+</script>
+</body>
+</html>

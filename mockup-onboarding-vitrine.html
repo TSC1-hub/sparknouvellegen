@@ -306,6 +306,53 @@ body{padding-top:28px;}
   display:flex;align-items:center;justify-content:space-between;flex-shrink:0;
 }
 .carnet-code-note{font-size:.68rem;color:#7f849c;font-family:monospace;}
+
+/* ══ MEMBER PICKER BAR ══ */
+.mbr-bar{
+  display:flex;align-items:center;gap:8px;
+  background:white;border:1.5px solid var(--border);
+  border-radius:14px;padding:7px 12px;
+  box-shadow:0 2px 8px var(--shadow);
+  transition:border-color .2s;flex-shrink:0;
+}
+.mbr-bar-lbl{font-size:.57rem;font-weight:700;letter-spacing:.8px;text-transform:uppercase;
+  color:var(--light);white-space:nowrap;flex-shrink:0;}
+.mbr-pills{display:flex;gap:5px;flex-wrap:wrap;}
+.mbr-pill{
+  display:inline-flex;align-items:center;gap:5px;
+  padding:4px 11px;border-radius:999px;
+  border:1.5px solid var(--border);background:var(--warm);
+  color:var(--mid);font-size:.67rem;font-weight:700;cursor:pointer;
+  font-family:'DM Sans',sans-serif;transition:all .18s;white-space:nowrap;
+}
+.mbr-pill:hover{border-color:rgba(212,105,74,.35);color:var(--terra);}
+.mbr-pill.on{
+  background:linear-gradient(135deg,var(--terra),#c4504a);
+  border-color:var(--terra);color:white;
+  box-shadow:0 2px 8px rgba(212,105,74,.25);
+}
+.mbr-pill .mp-av{
+  width:16px;height:16px;border-radius:5px;
+  background:rgba(255,255,255,.25);
+  display:flex;align-items:center;justify-content:center;
+  font-size:.65rem;font-weight:800;flex-shrink:0;
+}
+.mbr-pill:not(.on) .mp-av{background:rgba(212,105,74,.12);color:var(--terra);}
+.mbr-live-dot{
+  width:6px;height:6px;border-radius:50%;background:#22c55e;flex-shrink:0;
+  animation:pulse-live 1.4s ease-in-out infinite;
+}
+@keyframes pulse-live{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.35;transform:scale(.65)}}
+.mbr-separator{width:1px;height:16px;background:var(--border);flex-shrink:0;margin:0 2px;}
+/* Badge speaker sur avatar élève */
+.msg.eleve-msg .msg-av{position:relative;}
+.spk-badge{
+  position:absolute;bottom:-4px;left:50%;transform:translateX(-50%);
+  background:var(--moss);border:1.5px solid white;
+  border-radius:5px;padding:0 5px;
+  font-size:.42rem;font-weight:800;color:white;
+  white-space:nowrap;line-height:1.5;
+}
 </style>
 </head>
 <body>
@@ -422,20 +469,19 @@ body{padding-top:28px;}
       </div>
 
       <!-- Messages -->
-      <div class="messages" id="chat-messages">
-        <!-- Message d'accueil SPARK (identique à sparkGreet() dans index.html) -->
-        <div class="msg spark-msg">
-          <div class="msg-av"><div class="msg-av-inner">⚡</div></div>
-          <div class="msg-col">
-            <div class="msg-who">SPARK ⚡</div>
-            <div class="msg-bubble">Bienvenue dans le programme The Schools Challenge, vous êtes la 10ème génération à découvrir ce programme ! 🥳 Vous allez lors de 6 prochains mois collaborer tous.tes ensemble dans la résolution d'un problème ! Etes-vous prêt.e.s? 💪</div>
-          </div>
-        </div>
-      </div>
+      <div class="messages" id="chat-messages"></div>
 
       <!-- Input -->
       <div class="input-zone">
         <div class="conv-etape-header" id="conv-etape-header">Étape 0 — Découvrir</div>
+        <!-- MEMBER PICKER BAR -->
+        <div class="mbr-bar" id="mbr-bar" style="display:none">
+          <span class="mbr-bar-lbl">✏️ Qui tape ?</span>
+          <div class="mbr-pills" id="mbr-pills"></div>
+          <div class="mbr-separator"></div>
+          <div class="mbr-live-dot"></div>
+          <span id="mbr-live-name" style="font-size:.62rem;font-weight:700;color:var(--sage)"></span>
+        </div>
         <div class="input-row">
           <textarea class="msg-input" id="msg-input"
             placeholder="Tapez votre message..."
@@ -493,31 +539,129 @@ const REPLIES=[
 ];
 let replyIdx=0;
 
+/* ── Onboarding member state ── */
+let _onboardingPhase = 'awaiting_nb'; // awaiting_nb | awaiting_names | done
+let _nbMembres = 0;
+let _collectedNames = [];
+let currentSpeaker = null;
+let _dynamicMembers = [];
+
+function renderMemberPicker(members) {
+  _dynamicMembers = members;
+  const bar   = document.getElementById('mbr-bar');
+  const pills = document.getElementById('mbr-pills');
+  bar.style.display = 'flex';
+  pills.innerHTML = members.map((m, i) =>
+    `<button class="mbr-pill${i === 0 ? ' on' : ''}" onclick="setSpeaker('${m.id}', true)" id="pill-${m.id}">
+      <span class="mp-av">${m.init}</span>${m.name}
+    </button>`
+  ).join('');
+  setSpeaker(members[0].id, false);
+}
+
+function setSpeaker(id, focus) {
+  const m = _dynamicMembers.find(x => x.id === id);
+  if (!m) return;
+  currentSpeaker = m;
+  document.querySelectorAll('.mbr-pill').forEach(b => b.classList.remove('on'));
+  const pill = document.getElementById('pill-' + id);
+  if (pill) pill.classList.add('on');
+  document.getElementById('mbr-live-name').textContent = m.name;
+  const inp = document.getElementById('msg-input');
+  inp.placeholder = `${m.name} écrit à SPARK…`;
+  if (focus) inp.focus();
+}
+
+function _sparkTypingThen(cb, delay) {
+  const msgs = document.getElementById('chat-messages');
+  const t = document.createElement('div');
+  t.className = 'msg spark-msg';
+  t.innerHTML = `<div class="msg-av"><div class="msg-av-inner">⚡</div></div>
+    <div class="msg-col"><div class="msg-who">SPARK ⚡</div>
+    <div class="typing-bubble"><div class="typing-dot"></div><div class="typing-dot"></div><div class="typing-dot"></div></div></div>`;
+  msgs.appendChild(t); msgs.scrollTop = msgs.scrollHeight;
+  setTimeout(() => { t.remove(); cb(); }, delay || 750);
+}
+
 function autoResize(ta){ta.style.height='auto';ta.style.height=Math.min(ta.scrollHeight,100)+'px';}
 function handleKey(e){if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();sendMessage();}}
 
 function sendMessage(){
-  const ta=document.getElementById('msg-input');
-  const text=ta.value.trim();
-  if(!text)return;
-  _appendMsg('eleve',text);
-  ta.value='';ta.style.height='auto';
-  _simulateTeamReply(text);
+  const ta  = document.getElementById('msg-input');
+  const txt = ta.value.trim();
+  if (!txt) return;
+  ta.value = ''; ta.style.height = 'auto';
+
+  if (_onboardingPhase === 'awaiting_nb') {
+    const n = parseInt(txt.match(/\d+/)?.[0]);
+    _appendMsg('eleve', txt);
+    if (n >= 1 && n <= 10) {
+      _nbMembres = n;
+      _onboardingPhase = 'awaiting_names';
+      _sparkTypingThen(() => {
+        const noms = n === 1 ? 'ton prénom ou pseudo !' : `les ${n} prénoms ou pseudos de votre équipe, séparés par des virgules !`;
+        _appendMsg('spark', `Super, une équipe de ${n} ! 🙌 Donnez-moi ${noms}`);
+      });
+    } else {
+      _sparkTypingThen(() => {
+        _appendMsg('spark', "Je n'ai pas bien compris — donnez-moi un nombre entre 1 et 10 🙂");
+      });
+    }
+    return;
+  }
+
+  if (_onboardingPhase === 'awaiting_names') {
+    _appendMsg('eleve', txt);
+    const parsed = txt.split(/[,\n\/;]+/).map(s => s.trim()).filter(Boolean);
+    _collectedNames.push(...parsed);
+    if (_collectedNames.length >= _nbMembres) {
+      const names = _collectedNames.slice(0, _nbMembres);
+      const dynamicMembers = names.map((name, i) => ({
+        id: name.toLowerCase().replace(/\s+/g,'_') + '_' + i,
+        init: name.charAt(0).toUpperCase(),
+        name,
+        emoji: ['🌿','🔥','💧','⚡','🌻','🧬','☀️','🔬'][i % 8]
+      }));
+      _onboardingPhase = 'done';
+      _collectedNames = [];
+      _sparkTypingThen(() => {
+        const listStr = names.length > 1
+          ? names.slice(0,-1).join(', ') + ' et ' + names[names.length-1]
+          : names[0];
+        _appendMsg('spark', `Bienvenue dans le programme The Schools Challenge, vous êtes la 10ème génération à découvrir ce programme ! 🥳 Vous allez lors des 6 prochains mois collaborer tous.tes ensemble dans la résolution d'un problème ! Êtes-vous prêt.e.s ${listStr} ? 💪`);
+        setTimeout(() => {
+          _appendMsg('spark', `Avant de démarrer — <strong>qui est au clavier là maintenant ?</strong>`);
+          renderMemberPicker(dynamicMembers);
+        }, 900);
+      });
+    } else {
+      const reste = _nbMembres - _collectedNames.length;
+      _sparkTypingThen(() => {
+        _appendMsg('spark', `👍 J'en ai ${_collectedNames.length} — encore ${reste} prénom${reste > 1 ? 's' : ''} !`);
+      });
+    }
+    return;
+  }
+
+  // Chat normal (onboarding terminé)
+  _appendMsg('eleve', txt, currentSpeaker);
+  _simulateTeamReply(txt);
 }
 
-function _appendMsg(who,text){
-  const msgs=document.getElementById('chat-messages');
-  const m=document.createElement('div');
-  m.className='msg '+(who==='eleve'?'eleve-msg':'spark-msg');
-  if(who==='eleve'){
-    /* Avatar jaune soleil, pseudo "La Team" — identique à index.html renderMsg('user',...) */
-    m.innerHTML=`<div class="msg-av">👥</div><div class="msg-col"><div class="msg-who">La Team</div><div class="msg-bubble">${text.replace(/</g,'&lt;')}</div></div>`;
+function _appendMsg(who, text, speakerMember) {
+  const msgs = document.getElementById('chat-messages');
+  const m = document.createElement('div');
+  m.className = 'msg ' + (who === 'eleve' ? 'eleve-msg' : 'spark-msg');
+  if (who === 'eleve') {
+    const badge    = speakerMember ? `<div class="spk-badge">${speakerMember.init}</div>` : '';
+    const whoLabel = speakerMember ? `${speakerMember.name} · Team` : 'La Team';
+    const emo      = speakerMember ? speakerMember.emoji : '👥';
+    m.innerHTML = `<div class="msg-av" style="position:relative">${emo}${badge}</div><div class="msg-col"><div class="msg-who">${whoLabel}</div><div class="msg-bubble">${text.replace(/</g,'&lt;')}</div></div>`;
   } else {
-    /* Avatar anneau instagram + ⚡ intérieur, pseudo "SPARK ⚡" — identique à index.html renderMsg('assistant',...) */
-    m.innerHTML=`<div class="msg-av"><div class="msg-av-inner">⚡</div></div><div class="msg-col"><div class="msg-who">SPARK ⚡</div><div class="msg-bubble">${text}</div></div>`;
+    m.innerHTML = `<div class="msg-av"><div class="msg-av-inner">⚡</div></div><div class="msg-col"><div class="msg-who">SPARK ⚡</div><div class="msg-bubble">${text}</div></div>`;
   }
   msgs.appendChild(m);
-  msgs.scrollTop=msgs.scrollHeight;
+  msgs.scrollTop = msgs.scrollHeight;
   return m;
 }
 
@@ -547,9 +691,30 @@ function _simulateTeamReply(userTxt){
 }
 
 function demoMsg(){
-  const samples=["Je suis passionné par la musique électronique","Mon projet porte sur la biodiversité en ville","Je veux créer une appli de troc entre étudiants"];
-  document.getElementById('msg-input').value=samples[Math.floor(Math.random()*samples.length)];
+  if (_onboardingPhase === 'awaiting_nb') {
+    document.getElementById('msg-input').value = '4';
+  } else if (_onboardingPhase === 'awaiting_names') {
+    document.getElementById('msg-input').value = 'Léa, Tom, Amira, Jules';
+  } else {
+    const samples=["Je suis passionné par la musique électronique","Mon projet porte sur la biodiversité en ville","Je veux créer une appli de troc entre étudiants"];
+    document.getElementById('msg-input').value=samples[Math.floor(Math.random()*samples.length)];
+  }
   sendMessage();
+}
+
+/* Protocole membres — déclenche après la fin du guided tour */
+function _startMemberProtocol() {
+  // Réinitialiser l'état pour permettre un relancement propre
+  _onboardingPhase = 'awaiting_nb';
+  _nbMembres = 0;
+  _collectedNames = [];
+  currentSpeaker = null;
+  _dynamicMembers = [];
+  document.getElementById('mbr-bar').style.display = 'none';
+  document.getElementById('chat-messages').innerHTML = '';
+  setTimeout(() => {
+    _appendMsg('spark', "Avant de commencer — vous êtes <strong>combien</strong> dans votre équipe ? 👥");
+  }, 500);
 }
 
 function ouvrirDemoCarnet() {
@@ -682,6 +847,14 @@ function _highlightCodeChange(preEl, color) {
 
 function resetTour(){
   try { localStorage.removeItem('spark_onboarding_done'); } catch(e){}
+  // Réinitialiser l'état du protocole membres
+  _onboardingPhase = 'awaiting_nb';
+  _nbMembres = 0;
+  _collectedNames = [];
+  currentSpeaker = null;
+  _dynamicMembers = [];
+  document.getElementById('mbr-bar').style.display = 'none';
+  document.getElementById('chat-messages').innerHTML = '';
   ['gt-overlay','gt-spotlight','gt-arrow','gt-card','gt-styles'].forEach(id=>{const e=document.getElementById(id);if(e)e.remove();});
   if(window.SparkTour) SparkTour.start();
 }
@@ -793,6 +966,8 @@ const SAMPLE_VITRINE_HTML = [
     const e=document.getElementById(id); if(e) e.remove();
   });
   try { localStorage.removeItem('spark_onboarding_done'); } catch(e){}
+  // Enregistrer le callback : protocole membres + action 0 après la fin du tour
+  window.SparkTourOnEnd = _startMemberProtocol;
   SparkTour.start();
 
   /* Debug : afficher un indicateur rouge si le tour ne démarre pas dans 1s */

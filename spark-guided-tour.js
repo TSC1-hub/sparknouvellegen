@@ -927,6 +927,10 @@
         const el = document.getElementById(id);
         if (el) el.remove();
       });
+      // Notifier la page que le tour est terminé (passer ou finir)
+      if (typeof window.SparkTourOnEnd === 'function') {
+        window.SparkTourOnEnd();
+      }
       // Re-armer le watcher : si le FAC reset plus tard, le tour se relancera
       setTimeout(watchForFacReset, 1000);
     },

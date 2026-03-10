@@ -366,42 +366,37 @@ function showState(btn, state) {
   if (state === 'nb') {
     _onboardingPhase = 'awaiting_nb';
     bubble('spark',
-      "Bienvenue dans le programme The Schools Challenge, vous êtes la 10ème génération à découvrir ce programme ! 🥳 Vous allez lors des 6 prochains mois collaborer tous.tes ensemble dans la résolution d'un problème ! Êtes-vous prêt.e.s ? 💪",
+      "Avant de commencer — vous êtes <strong>combien</strong> dans votre équipe ? 👥",
       'SPARK ⚡');
-    setTimeout(() => {
-      bubble('spark',
-        "Avant de commencer — vous êtes <strong>combien</strong> dans votre équipe ? 👥",
-        'SPARK ⚡');
-    }, 600);
   }
 
   if (state === 'names') {
     _onboardingPhase = 'awaiting_names';
     _nbMembres = 4;
-    bubble('spark',
-      "Bienvenue dans le programme The Schools Challenge ! 🥳 Êtes-vous prêt.e.s ? 💪",
-      'SPARK ⚡');
-    setTimeout(() => bubble('spark', "Avant de commencer — vous êtes <strong>combien</strong> dans votre équipe ? 👥", 'SPARK ⚡'), 400);
-    setTimeout(() => bubble('eleve', "4", 'La Team'), 900);
+    bubble('spark', "Avant de commencer — vous êtes <strong>combien</strong> dans votre équipe ? 👥", 'SPARK ⚡');
+    setTimeout(() => bubble('eleve', "4", 'La Team'), 500);
     setTimeout(() => {
       bubble('spark',
         "Super, une équipe de 4 ! 🙌 Donnez-moi les <strong>4 prénoms ou pseudos</strong> de votre équipe — séparés par des virgules ou un par message !",
         'SPARK ⚡');
-    }, 1400);
+    }, 1100);
   }
 
   if (state === 'picker') {
     _onboardingPhase = 'done';
-    bubble('spark', "Bienvenue [...] Êtes-vous prêt.e.s ? 💪", 'SPARK ⚡');
+    bubble('spark', "Avant de commencer — vous êtes <strong>combien</strong> dans votre équipe ? 👥", 'SPARK ⚡');
     bubble('eleve', "4", 'La Team');
     bubble('spark', "Super ! Donnez-moi les 4 prénoms de votre équipe 🙌", 'SPARK ⚡');
     bubble('eleve', "Léa, Tom, Amira, Jules", 'La Team');
     setTimeout(() => {
       bubble('spark',
-        "Parfait ! Bienvenue <strong>Léa, Tom, Amira et Jules</strong> 👋<br><br>Avant de démarrer — <strong>qui est au clavier là maintenant ?</strong>",
+        "Bienvenue dans le programme The Schools Challenge, vous êtes la 10ème génération à découvrir ce programme ! 🥳 Vous allez lors des 6 prochains mois collaborer tous.tes ensemble dans la résolution d'un problème ! Êtes-vous prêt.e.s Léa, Tom, Amira et Jules ? 💪",
         'SPARK ⚡');
-      renderMemberPicker(MEMBERS);
-      document.getElementById('spark-mode-bar').style.display = 'flex';
+      setTimeout(() => {
+        bubble('spark', "Avant de démarrer — <strong>qui est au clavier là maintenant ?</strong>", 'SPARK ⚡');
+        renderMemberPicker(MEMBERS);
+        document.getElementById('spark-mode-bar').style.display = 'flex';
+      }, 900);
     }, 600);
   }
 
@@ -511,10 +506,13 @@ function sendMsg() {
         hideTyping();
         const listStr = names.slice(0,-1).join(', ') + (names.length > 1 ? ' et ' + names[names.length-1] : names[0]);
         bubble('spark',
-          `Parfait ! Bienvenue <strong>${listStr}</strong> 👋<br><br>Avant de démarrer — <strong>qui est au clavier là maintenant ?</strong>`,
+          `Bienvenue dans le programme The Schools Challenge, vous êtes la 10ème génération à découvrir ce programme ! 🥳 Vous allez lors des 6 prochains mois collaborer tous.tes ensemble dans la résolution d'un problème ! Êtes-vous prêt.e.s ${listStr} ? 💪`,
           'SPARK ⚡');
-        renderMemberPicker(dynamicMembers);
-        document.getElementById('spark-mode-bar').style.display = 'flex';
+        setTimeout(() => {
+          bubble('spark', "Avant de démarrer — <strong>qui est au clavier là maintenant ?</strong>", 'SPARK ⚡');
+          renderMemberPicker(dynamicMembers);
+          document.getElementById('spark-mode-bar').style.display = 'flex';
+        }, 900);
       }, 800);
     } else {
       const reste = _nbMembres - _collectedNames.length;
