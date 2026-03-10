@@ -71,7 +71,12 @@ Intégration Mistral, prompts personnalisés, détection automatique de progress
 | Détection checkpoint dans la réponse SPARK | ✅ | `detecterCheckpoint(texte)` + regex |
 | Déblocage étape suivante | ✅ | `validerEtape()` — mise à jour `equipes.etape_courante` |
 | Génération HTML vitrine par SPARK | ✅ | `detecterCheckpoint(texte, forceVitrine=true)` |
-| Overlay level-up animé | ✅ | `showStepOverlay()` / `closeStepOverlay()` |
+| Overlay level-up animé | ✅ | `showStepOverlay()` / `closeStepOverlay()` — architecture data-driven `STEP_META[]` |
+| Confettis overlay (canvas) | ✅ | IIFE lazy-init (`_ovLaunchConfetti`) — canvas résolu au premier appel pour éviter `null` au chargement |
+| Bouton CTA overlay sur une ligne | ✅ | `white-space:nowrap` sur `.ov-cta-btn-app` |
+| Guided tour limité à l'étape 0 | ✅ | `window.currentEquipe` exposé depuis `initEleve()` — `spark-guided-tour.js` lit l'étape réelle |
+| Guardrail pédagogique anti-spoil | ✅ | `reglePedagoGlobale` injectée en tête du system prompt — SPARK ne révèle plus le défi en indice |
+| Ordre system prompt optimisé | ✅ | `reglePedagoGlobale` avant `regleHtmlGlobale` — évite que Mistral saute l'onboarding étape 0 |
 | Gestion des erreurs appel Mistral | ⚠️ | Pas de retry automatique — message d'erreur affiché |
 
 ---
