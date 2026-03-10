@@ -2693,6 +2693,7 @@ function doLogout() {
   // Remise à zéro de tout l'état applicatif
   currentUser = null;
   currentEquipe = null;
+  window.currentEquipe = null;
   conversationHistory = [];
   eleveMessagesCache = [];
   eleveVitrinesData = [];
@@ -2720,6 +2721,7 @@ function doLogout() {
 async function initEleve(){
   const{data:eq}=await sb.from('equipes').select('*').eq('code_equipe',currentUser.code).single();
   currentEquipe=eq;
+  window.currentEquipe=eq;
   eleveCanalActif='spark';
   eleveMentorUnread=0;
   eleveMessagesCache=[];
