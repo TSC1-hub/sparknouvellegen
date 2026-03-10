@@ -587,6 +587,39 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
 .attach-chip-rm{cursor:pointer;color:var(--light);margin-left:2px;font-size:.7rem;}
 .attach-chip-rm:hover{color:#ef4444;}
 .attach-preview-row{display:flex;gap:5px;flex-wrap:wrap;padding:0 2px 6px;}
+
+/* ── MEMBER PICKER BAR ── */
+.mbr-bar{display:flex;align-items:center;gap:8px;flex-wrap:wrap;
+  background:white;border:1.5px solid var(--border);
+  border-radius:14px;padding:6px 12px;
+  box-shadow:0 2px 8px var(--shadow);transition:border-color .2s;}
+.mbr-bar-lbl{font-size:.55rem;font-weight:700;letter-spacing:.8px;text-transform:uppercase;
+  color:var(--light);white-space:nowrap;flex-shrink:0;}
+.mbr-pills{display:flex;gap:5px;flex-wrap:wrap;}
+.mbr-pill{display:inline-flex;align-items:center;gap:5px;
+  padding:4px 11px;border-radius:999px;
+  border:1.5px solid var(--border);background:var(--warm);
+  color:var(--mid);font-size:.66rem;font-weight:700;cursor:pointer;
+  font-family:'DM Sans',sans-serif;transition:all .18s;white-space:nowrap;}
+.mbr-pill:hover{border-color:rgba(212,105,74,.35);color:var(--terra);}
+.mbr-pill.on{background:linear-gradient(135deg,var(--terra),#c4504a);
+  border-color:var(--terra);color:white;box-shadow:0 2px 8px rgba(212,105,74,.2);}
+.mbr-pill .mp-av{width:16px;height:16px;border-radius:5px;
+  display:flex;align-items:center;justify-content:center;
+  font-size:.62rem;font-weight:800;flex-shrink:0;
+  background:rgba(212,105,74,.12);color:var(--terra);}
+.mbr-pill.on .mp-av{background:rgba(255,255,255,.25);color:white;}
+.mbr-live-dot{width:6px;height:6px;border-radius:50%;background:#22c55e;flex-shrink:0;
+  animation:mbr-pulse 1.4s ease-in-out infinite;}
+@keyframes mbr-pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.3;transform:scale(.6)}}
+.mbr-sep{width:1px;height:16px;background:var(--border);flex-shrink:0;margin:0 2px;}
+.mbr-live-name{font-size:.62rem;font-weight:700;color:var(--sage);}
+/* Badge initial sur les bulles élève */
+.spk-badge{position:absolute;bottom:-4px;left:50%;transform:translateX(-50%);
+  background:var(--terra);border:1.5px solid white;border-radius:5px;
+  padding:0 5px;font-size:.42rem;font-weight:800;color:white;
+  white-space:nowrap;line-height:1.5;pointer-events:none;}
+
 /* Pip de mode dans les bulles SPARK */
 .spark-mode-pip{font-size:.54rem;font-weight:700;letter-spacing:.3px;text-transform:uppercase;
   color:var(--light);margin-bottom:2px;display:flex;align-items:center;gap:4px;}
@@ -1795,6 +1828,14 @@ body::before{background:radial-gradient(ellipse 60% 50% at 85% 5%,rgba(62,212,24
           <div class="spark-mbtn" data-mode="jury" onclick="toggleSparkMode('jury')">⚖️ Jury</div>
           <div class="spark-mbtn" data-mode="angles" onclick="toggleSparkMode('angles')">🕳️ Angles morts</div>
         </div>
+        <!-- Member picker (visible après onboarding membres) -->
+        <div class="mbr-bar" id="mbr-bar" style="display:none">
+          <span class="mbr-bar-lbl">✏️ Qui tape ?</span>
+          <div class="mbr-pills" id="mbr-pills"></div>
+          <div class="mbr-sep"></div>
+          <div class="mbr-live-dot"></div>
+          <span class="mbr-live-name" id="mbr-live-name">—</span>
+        </div>
         <!-- Chip du fichier joint (masqué par défaut) -->
         <div class="attach-preview-row" id="attach-preview-row" style="display:none"></div>
         <div class="input-row">
@@ -1988,6 +2029,75 @@ let eleveCanalActif = 'spark';
 let eleveMentorUnread = 0;
 let eleveConversationChannel = null;
 let masterPrompt = '';
+
+// ── Member picker ──
+let _onboardingPhase = null;  // null | 'awaiting_nb' | 'awaiting_names'
+let _nbMembresAttendus = 0;
+let _collectedMbrNames = [];
+let _teamMembers = [];        // [{id, init, name, emoji}]
+let currentSpeaker = null;    // membre actif
+
+const _MBR_EMOJIS = ['🌿','🔥','💧','⚡','🌻','🧬','☀️','🔬'];
+
+function _mbrKey() { return 'spark_mbr_' + (currentEquipe?.id || 'default'); }
+
+function _saveMembersToStorage() {
+  localStorage.setItem(_mbrKey(), JSON.stringify(_teamMembers));
+  // Persister aussi dans equipes.membres_pseudos
+  if (currentEquipe?.id) {
+    sb.from('equipes').update({ membres_pseudos: _teamMembers.map(m => m.name) })
+      .eq('id', currentEquipe.id).then(() => {});
+  }
+}
+
+function _loadMembersFromStorage() {
+  const raw = localStorage.getItem(_mbrKey());
+  if (raw) {
+    try {
+      const saved = JSON.parse(raw);
+      if (Array.isArray(saved) && saved.length > 0) {
+        _teamMembers = saved;
+        currentSpeaker = saved[0];
+        _onboardingPhase = null;
+        return true;
+      }
+    } catch(e) {}
+  }
+  return false;
+}
+
+function renderMemberPicker(members) {
+  const bar   = document.getElementById('mbr-bar');
+  const pills = document.getElementById('mbr-pills');
+  if (!bar || !pills) return;
+  _teamMembers = members;
+  bar.style.display = 'flex';
+  pills.innerHTML = members.map((m, i) =>
+    `<button class="mbr-pill ${i === 0 ? 'on' : ''}" onclick="setSpeaker('${m.id}',true)" id="mbr-pill-${m.id}">`+
+    `<span class="mp-av">${m.init}</span>${m.name}</button>`
+  ).join('');
+  setSpeaker(members[0].id, false);
+}
+
+function setSpeaker(id, focus) {
+  const m = _teamMembers.find(x => x.id === id);
+  if (!m) return;
+  currentSpeaker = m;
+  document.querySelectorAll('.mbr-pill').forEach(b => b.classList.remove('on'));
+  const pill = document.getElementById('mbr-pill-' + id);
+  if (pill) pill.classList.add('on');
+  const nameEl = document.getElementById('mbr-live-name');
+  if (nameEl) nameEl.textContent = m.name;
+  const inp = document.getElementById('msg-input');
+  if (inp) inp.placeholder = `${m.name} écrit à SPARK…`;
+  if (focus && inp) inp.focus();
+}
+
+function _loadOrRestorePicker() {
+  if (_loadMembersFromStorage()) {
+    renderMemberPicker(_teamMembers);
+  }
+}
 
 /* ── 5 modes SPARK questionneur ── */
 const SPARK_MODES = {
@@ -2732,6 +2842,7 @@ async function initEleve(){
   switchEleveCanal('spark', true);
   await loadConversation();
   if(conversationHistory.length===0) await sparkGreet();
+  else _loadOrRestorePicker(); // conversation existante → restaurer le picker si membres connus
   requestAnimationFrame(()=>scrollBot());
   listenEleveConversations();
   listenVitrine();
@@ -3049,6 +3160,16 @@ async function sparkGreet(){
   renderEleveConversation();
   conversationHistory.push({role:'model',parts:[{text:g}]});
   scrollBot();
+  // ── Onboarding membres : demander le nombre si pas encore connu ──
+  if (_teamMembers.length === 0) {
+    _onboardingPhase = 'awaiting_nb';
+    setTimeout(async () => {
+      const q = "Avant de commencer — vous êtes \u003cstrong\u003ecombien\u003c/strong\u003e dans votre équipe\u00a0? 👥";
+      await saveMsg('assistant', q, 'SPARK ⚡');
+      eleveMessagesCache.push({role:'assistant', message:q, pseudo:'SPARK ⚡', etape:0});
+      renderEleveConversation(); scrollBot();
+    }, 900);
+  }
 }
 
 // ─────────────────────────────────────────────────────────────────────
@@ -3198,6 +3319,73 @@ async function sendMessage(){
   const txt=inp.value.trim();
   if(!txt||!currentEquipe) return;
 
+  // ══ INTERCEPTEUR ONBOARDING MEMBRES ══
+  if (_onboardingPhase === 'awaiting_nb') {
+    inp.value=''; inp.style.height='auto';
+    eleveMessagesCache.push({role:'user',message:txt,pseudo:'La Team',etape:0});
+    renderEleveConversation(); scrollBot();
+    await saveMsg('user', txt, 'La Team');
+    const n = parseInt(txt.match(/\d+/)?.[0]);
+    if (n >= 1 && n <= 10) {
+      _nbMembresAttendus = n;
+      _onboardingPhase = 'awaiting_names';
+      // Mettre à jour nb_eleves dans la BDD
+      sb.from('equipes').update({nb_eleves: n}).eq('id', currentEquipe.id).then(()=>{});
+      currentEquipe.nb_eleves = n;
+      const noms = n === 1 ? 'ton prénom ou pseudo !' : `les ${n} prénoms ou pseudos de votre équipe, séparés par des virgules !`;
+      const q = `Super, une équipe de ${n} ! 🙌 Donnez-moi ${noms}`;
+      await saveMsg('assistant', q, 'SPARK ⚡');
+      eleveMessagesCache.push({role:'assistant',message:q,pseudo:'SPARK ⚡',etape:0});
+      renderEleveConversation(); scrollBot();
+    } else {
+      const q = "Je n'ai pas bien compris — donnez-moi un nombre entre 1 et 10 🙂";
+      await saveMsg('assistant', q, 'SPARK ⚡');
+      eleveMessagesCache.push({role:'assistant',message:q,pseudo:'SPARK ⚡',etape:0});
+      renderEleveConversation(); scrollBot();
+    }
+    return;
+  }
+
+  if (_onboardingPhase === 'awaiting_names') {
+    inp.value=''; inp.style.height='auto';
+    eleveMessagesCache.push({role:'user',message:txt,pseudo:'La Team',etape:0});
+    renderEleveConversation(); scrollBot();
+    await saveMsg('user', txt, 'La Team');
+    const parsed = txt.split(/[,\n\/;]+/).map(s=>s.trim()).filter(Boolean);
+    _collectedMbrNames.push(...parsed);
+    if (_collectedMbrNames.length >= _nbMembresAttendus) {
+      const names = _collectedMbrNames.slice(0, _nbMembresAttendus);
+      _collectedMbrNames = [];
+      _onboardingPhase = null;
+      _teamMembers = names.map((name, i) => ({
+        id: 'mbr_' + i,
+        init: name.charAt(0).toUpperCase(),
+        name,
+        emoji: _MBR_EMOJIS[i % _MBR_EMOJIS.length]
+      }));
+      _saveMembersToStorage();
+      renderMemberPicker(_teamMembers);
+      const listStr = names.length > 1
+        ? names.slice(0,-1).join(', ') + ' et ' + names[names.length-1]
+        : names[0];
+      // Enregistrer le contexte membres dans conversationHistory pour Mistral
+      conversationHistory.push({role:'user',parts:[{text:`Notre équipe est composée de : ${listStr}`}]});
+      const q = `Parfait ! Bienvenue \u003cstrong\u003e${listStr}\u003c/strong\u003e 👋\u003cbr\u003e\u003cbr\u003eOn est prêts ? Qui est au clavier maintenant ? Cliquez sur votre prénom ci-dessous, puis dites-moi ce que vous ressentez en démarrant ce challenge ! 🚀`;
+      await saveMsg('assistant', q, 'SPARK ⚡');
+      eleveMessagesCache.push({role:'assistant',message:q,pseudo:'SPARK ⚡',etape:0});
+      conversationHistory.push({role:'model',parts:[{text:q.replace(/<[^>]+>/g,'')}]});
+      renderEleveConversation(); scrollBot();
+    } else {
+      const reste = _nbMembresAttendus - _collectedMbrNames.length;
+      const q = `👍 J'en ai ${_collectedMbrNames.length} — encore ${reste} prénom${reste>1?'s':''} !`;
+      await saveMsg('assistant', q, 'SPARK ⚡');
+      eleveMessagesCache.push({role:'assistant',message:q,pseudo:'SPARK ⚡',etape:0});
+      renderEleveConversation(); scrollBot();
+    }
+    return;
+  }
+  // ══ FIN INTERCEPTEUR ══
+
   // ── Canal Mentor : message direct à mentore ──
   if(eleveCanalActif==='mentor'){
     inp.value=''; inp.style.height='auto';
@@ -3231,10 +3419,11 @@ async function sendMessage(){
 
   if (_intent === 'hors-sujet') {
     _sparkDeriveCount++;
+    const _pseudo = currentSpeaker?.name || 'La Team';
     // Sauvegarder le message utilisateur pour cohérence de l'historique affiché
-    eleveMessagesCache.push({role:'user',message:txt,pseudo:'La Team',etape:etapeMsg});
+    eleveMessagesCache.push({role:'user',message:txt,pseudo:_pseudo,etape:etapeMsg});
     renderEleveConversation();
-    await saveMsg('user',txt,'La Team');
+    await saveMsg('user',txt,_pseudo);
     // Réponse locale de recadrage (sans appel Mistral)
     const _metaEtape = STEP_META[etapeMsg] || {};
     const recadrage = `😊 Ma mission c'est de t'accompagner sur "${_metaEtape.name||'ton projet'}" ! `
@@ -3254,9 +3443,10 @@ async function sendMessage(){
   _sparkDeriveCount = 0;
   // ───────────────────────────────────────────────────────────────────
 
-  eleveMessagesCache.push({role:'user',message:txt,pseudo:'La Team',etape:etapeMsg});
+  const _speakerPseudo = currentSpeaker?.name || 'La Team';
+  eleveMessagesCache.push({role:'user',message:txt,pseudo:_speakerPseudo,etape:etapeMsg});
   renderEleveConversation();
-  await saveMsg('user',txt,'La Team');
+  await saveMsg('user',txt,_speakerPseudo);
   conversationHistory.push({role:'user',parts:[{text:txt}]});
   scrollBot(); showTyping();
 
