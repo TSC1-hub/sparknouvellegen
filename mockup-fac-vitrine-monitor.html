@@ -273,6 +273,32 @@ body{
 .ampl-n{font-size:.61rem;font-weight:700;color:#4a6b85;width:20px;text-align:right;flex-shrink:0;}
 .ampl-note{font-size:.57rem;color:#4a6b85;font-style:italic;margin-top:2px;margin-left:120px;}
 
+/* ── SÉLECTEUR MEMBRE ACTIF ── */
+.dwr-mbr-row{display:flex;align-items:center;gap:8px;margin-top:7px;flex-wrap:wrap;}
+.dwr-mbr-lbl{font-size:.58rem;color:#4a6b85;font-weight:600;white-space:nowrap;}
+.mbr-pick{display:flex;gap:4px;flex-wrap:wrap;}
+.mbr{padding:3px 10px;border-radius:999px;border:1.5px solid rgba(0,0,0,.1);
+  background:#f8fafc;color:#4a6b85;font-size:.62rem;font-weight:700;cursor:pointer;
+  font-family:'DM Sans',sans-serif;transition:all .18s;white-space:nowrap;}
+.mbr:hover{border-color:rgba(29,111,164,.35);color:var(--fac);}
+.mbr.on{background:var(--fac);border-color:var(--fac);color:white;}
+.mbr-live{display:inline-flex;align-items:center;gap:5px;
+  padding:3px 9px;border-radius:999px;
+  background:#dcfce7;border:1px solid #86efac;
+  font-size:.6rem;font-weight:700;color:#15803d;}
+.mbr-dot{width:6px;height:6px;border-radius:50%;background:#16a34a;
+  animation:pulse-dot 1.5s ease-in-out infinite;flex-shrink:0;}
+@keyframes pulse-dot{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.4;transform:scale(.7)}}
+/* Surbrillance de la ligne du membre actif dans contrib-card */
+.c-row-live{background:rgba(29,111,164,.05);border-radius:8px;
+  padding:4px 6px;margin:-4px -6px;
+  outline:1.5px solid rgba(29,111,164,.18);}
+.c-row-live .c-av{background:var(--fac);color:white;border-color:var(--fac);}
+.c-row-live .c-name{color:var(--fac);}
+.c-row-live .c-count{color:var(--fac);}
+.live-tag{padding:2px 6px;border-radius:999px;font-size:.52rem;font-weight:700;
+  background:var(--fac);color:white;white-space:nowrap;}
+
 /* ══════════════════════════════════════
    ONGLET QUALITÉ PROMPTS TEAM
 ══════════════════════════════════════ */
@@ -531,6 +557,16 @@ body{
             <span class="dwr-chip">CODE&nbsp;: FRT50</span>
             <span class="dwr-chip">🤖&nbsp;×5 · ✋&nbsp;×4</span>
           </div>
+          <div class="dwr-mbr-row">
+            <span class="dwr-mbr-lbl">👤 Qui travaille ?</span>
+            <div class="mbr-pick">
+              <button class="mbr on" onclick="pickMember(this,'lea')">L · Léa</button>
+              <button class="mbr" onclick="pickMember(this,'tom')">T · Tom</button>
+              <button class="mbr" onclick="pickMember(this,'amira')">A · Amira</button>
+              <button class="mbr" onclick="pickMember(this,'jules')">J · Jules</button>
+            </div>
+            <span class="mbr-live" id="mbr-live-badge"><span class="mbr-dot"></span><span id="mbr-live-name">Léa</span> en direct</span>
+          </div>
         </div>
         <button class="btn-close">✕</button>
       </div>
@@ -626,32 +662,32 @@ body{
         <!-- Contributions par membre -->
         <div class="contrib-card">
           <div class="ca-ttl">Contributions par membre de l'équipe</div>
-          <div class="c-row">
-            <div class="c-av">L</div>
-            <div class="c-name">Léa</div>
+          <div class="c-row c-row-live" id="mbr-row-lea">
+            <div class="c-av" id="c-av-lea">L</div>
+            <div class="c-name" id="c-name-lea">Léa</div>
             <div class="c-track"><div class="c-fill" style="width:100%"></div></div>
-            <div class="c-count">✋×3</div>
-            <div class="c-ampl"><span class="ap-md">🟡 §×2</span><span class="ap-sm">🔵 mot×1</span></div>
+            <div class="c-count" id="c-count-lea">✋×3</div>
+            <div class="c-ampl"><span class="ap-md">🟡 §×2</span><span class="ap-sm">🔵 mot×1</span><span class="live-tag">🟢 en direct</span></div>
           </div>
-          <div class="c-row">
-            <div class="c-av">T</div>
-            <div class="c-name">Tom</div>
+          <div class="c-row" id="mbr-row-tom">
+            <div class="c-av" id="c-av-tom">T</div>
+            <div class="c-name" id="c-name-tom">Tom</div>
             <div class="c-track"><div class="c-fill" style="width:33%"></div></div>
-            <div class="c-count">✋×1</div>
+            <div class="c-count" id="c-count-tom">✋×1</div>
             <div class="c-ampl"><span class="ap-sm">🔵 couleur×1</span></div>
           </div>
-          <div class="c-row">
-            <div class="c-av off">A</div>
-            <div class="c-name" style="color:#9ca3af">Amira</div>
+          <div class="c-row" id="mbr-row-amira">
+            <div class="c-av off" id="c-av-amira">A</div>
+            <div class="c-name" id="c-name-amira" style="color:#9ca3af">Amira</div>
             <div class="c-track"><div class="c-fill" style="width:0%"></div></div>
-            <div class="c-count off">×0</div>
+            <div class="c-count off" id="c-count-amira">×0</div>
             <div class="c-ampl"><span style="font-size:.57rem;color:#c0ccd8;font-style:italic">aucune modif</span></div>
           </div>
-          <div class="c-row">
-            <div class="c-av off">J</div>
-            <div class="c-name" style="color:#9ca3af">Jules</div>
+          <div class="c-row" id="mbr-row-jules">
+            <div class="c-av off" id="c-av-jules">J</div>
+            <div class="c-name" id="c-name-jules" style="color:#9ca3af">Jules</div>
             <div class="c-track"><div class="c-fill" style="width:0%"></div></div>
-            <div class="c-count off">×0</div>
+            <div class="c-count off" id="c-count-jules">×0</div>
             <div class="c-ampl"><span style="font-size:.57rem;color:#c0ccd8;font-style:italic">aucune modif</span></div>
           </div>
           <div class="alert-row" style="margin:8px 0 0;margin-left:0">⚠️ <span><strong>Amira et Jules</strong> n'ont fait aucune modification manuelle — penser à les interpeller directement en session.</span></div>
@@ -925,6 +961,46 @@ function switchTab(e, tabId) {
 function selectTeam(el) {
   document.querySelectorAll('.tc').forEach(c => c.classList.remove('active'));
   el.classList.add('active');
+}
+
+// Données membres (pour personnaliser le badge "en direct")
+const MEMBERS = {
+  lea:   { name:'Léa',   init:'L', hasEdits:true  },
+  tom:   { name:'Tom',   init:'T', hasEdits:true  },
+  amira: { name:'Amira', init:'A', hasEdits:false },
+  jules: { name:'Jules', init:'J', hasEdits:false },
+};
+
+function pickMember(btn, memberId) {
+  // 1) Sélectionner le bouton actif
+  btn.closest('.mbr-pick').querySelectorAll('.mbr').forEach(b => b.classList.remove('on'));
+  btn.classList.add('on');
+
+  // 2) Mettre à jour le badge header
+  const m = MEMBERS[memberId];
+  document.getElementById('mbr-live-name').textContent = m.name;
+
+  // 3) Retirer la surbrillance de toutes les lignes contrib
+  document.querySelectorAll('.c-row').forEach(r => {
+    r.classList.remove('c-row-live');
+    // retirer le tag "en direct" s'il existe
+    const tag = r.querySelector('.live-tag');
+    if (tag) tag.remove();
+  });
+
+  // 4) Mettre en surbrillance la ligne du membre sélectionné
+  const row = document.getElementById('mbr-row-' + memberId);
+  if (row) {
+    row.classList.add('c-row-live');
+    // ajouter le tag "en direct" dans c-ampl
+    const ampl = row.querySelector('.c-ampl');
+    if (ampl && !ampl.querySelector('.live-tag')) {
+      const tag = document.createElement('span');
+      tag.className = 'live-tag';
+      tag.textContent = '🟢 en direct';
+      ampl.appendChild(tag);
+    }
+  }
 }
 </script>
 </body>
