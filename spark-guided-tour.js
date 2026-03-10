@@ -1032,18 +1032,12 @@
   }
 
   function _doLaunch() {
-    let onboardingDone = false;
-    try { onboardingDone = !!localStorage.getItem('spark_onboarding_done'); } catch (e) {}
-
-    if (!onboardingDone) {
-      // Première fois ou localStorage effacé → lancer directement
-      SparkTour.start();
-    } else {
-      // Tour déjà fait → vérifier quand même si conv est vide (reset FAC)
-      // On attend 1500ms pour que loadConversation() + sparkGreet() soient rendus
-      setTimeout(_checkConvEmpty, 1500);
-    }
-    // Dans tous les cas, surveiller les resets FAC futurs
+    // On ne lance le tour que si la conversation est vraiment vide ET l'équipe est à l'étape 0.
+    // Ce chemin est unique quelle que soit la valeur du flag localStorage :
+    // cela évite de lancer le tour sur un nouvel appareil/navigateur alors que l'équipe
+    // a déjà un historique de messages chargé depuis Supabase.
+    setTimeout(_checkConvEmpty, 1500);
+    // Surveiller les resets FAC futurs dans tous les cas
     setTimeout(watchForFacReset, 2000);
   }
 
