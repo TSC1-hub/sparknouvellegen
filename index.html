@@ -4415,7 +4415,7 @@ const _coachScenarios = {
   },
   'guide-h1': {
     mode: 'guide',
-    msgs: [{ role:'spark', html:`Ok ! Dans le code à droite, trouve :<br><code style="font-size:.65rem;background:rgba(0,0,0,.08);padding:2px 6px;border-radius:4px">&lt;h1&gt;ForestGuard&lt;/h1&gt;</code><br><br>Remplace <strong>ForestGuard</strong> par le nom de ton projet, puis clique <em>Sauvegarder</em> ✅` }],
+    msgs: [{ role:'spark', html:`Ok ! Dans le code à droite, trouve la balise :<br><code style="font-size:.65rem;background:rgba(0,0,0,.08);padding:2px 6px;border-radius:4px">&lt;h1&gt;…&lt;/h1&gt;</code><br><br>Remplace le texte <em>entre</em> les balises par le vrai nom de ton projet, puis clique <em>Sauvegarder</em> ✅` }],
     choices: [
       { emoji:'✅', label:'Fait, ça marche !',       key:'accueil'          },
       { emoji:'😕', label:'Je ne trouve pas…',       key:'guide-h1-help'    },
@@ -4424,7 +4424,7 @@ const _coachScenarios = {
   },
   'guide-h1-help': {
     mode: 'guide',
-    msgs: [{ role:'spark', html:`Utilise <b>Ctrl+F</b> dans le code à droite et cherche <em>ForestGuard</em>.<br>C'est dans la balise <code>&lt;h1&gt;</code>, au début du &lt;body&gt;.` }],
+    msgs: [{ role:'spark', html:`Utilise <b>Ctrl+F</b> dans le code à droite et cherche <em>h1</em>.<br>La balise <code>&lt;h1&gt;</code> contient le titre principal de ta vitrine — c'est là que tu peux mettre le nom de ton projet.` }],
     choices: [
       { emoji:'👍', label:'Trouvé, merci !',  key:'guide-h1'  },
       { emoji:'⚡', label:'SPARK le fait',    key:'_action_h1', cls:'do-it' },
@@ -4597,12 +4597,12 @@ async function _coachDirectAction(actionKey, label) {
   _coachTypingStart();
   const currentHtml = document.getElementById('carnet-code-edit')?.value || '';
   const prompts = {
-    'refonte':              'Fais une refonte visuelle complète de cette vitrine. Modernise le style (couleurs, typographie, layout) tout en gardant le contenu.',
-    '_action_h1':           'Change le titre h1 pour quelque chose de plus accrocheur et adapté au projet.',
-    '_action_p':            'Améliore les textes des paragraphes pour qu\'ils soient plus clairs et plus engageants.',
-    '_action_couleur':      'Change les couleurs de la vitrine pour un rendu plus professionnel.',
-    '_action_section_tech': 'Ajoute une section "Technologies utilisées" avec un contenu fictif cohérent.',
-    '_action_section_obj':  'Ajoute une section "Nos objectifs" avec un contenu fictif cohérent.',
+    'refonte':              'Fais une refonte visuelle complète de cette vitrine. Modernise le style (couleurs, typographie, layout) tout en conservant EXACTEMENT tous les textes, noms et contenus existants du projet. Ne modifie, ne résume et n\'invente aucun contenu textuel.',
+    '_action_h1':           'Reformule le titre h1 de façon plus accrocheuse, en te basant UNIQUEMENT sur le nom du projet et les textes déjà présents dans ce HTML. Ne remplace pas le titre par un contenu inventé ou générique.',
+    '_action_p':            'Améliore la formulation des paragraphes pour les rendre plus clairs et engageants, en te basant UNIQUEMENT sur les informations déjà présentes dans ce HTML. Ne remplace jamais le contenu par du texte inventé.',
+    '_action_couleur':      'Change les couleurs de la vitrine pour un rendu plus professionnel, sans toucher aux textes ni au contenu existants.',
+    '_action_section_tech': 'Ajoute une section "Technologies envisagées" cohérente avec ce que l\'équipe a déjà écrit dans la vitrine. Base-toi uniquement sur le contenu existant du HTML ci-dessous et n\'invente pas de technologies non mentionnées.',
+    '_action_section_obj':  'Ajoute une section "Nos objectifs" en te basant sur le problème et le projet déjà décrits dans ce HTML. Utilise uniquement les informations déjà présentes dans la vitrine, sans inventer de contenu.',
   };
   const prompt = prompts[actionKey] || label || 'Améliore la vitrine.';
   try {
