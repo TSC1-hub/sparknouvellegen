@@ -265,45 +265,239 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
 @keyframes step-lock-fly{
   0%{opacity:1;transform:scale(1) rotate(0);}
   100%{opacity:0;transform:scale(0) rotate(25deg) translateY(-10px);}}
-/* ══ OVERLAY ÉTAPE DÉBLOQUÉE ══ */
-#step-unlock-overlay{display:none;position:fixed;inset:0;z-index:9999;
-  background:rgba(15,23,42,.78);backdrop-filter:blur(6px);
-  align-items:center;justify-content:center;}
-#step-unlock-overlay.show{display:flex;}
-.olu{background:linear-gradient(160deg,#fff,#edfaf4);
-  border:1.5px solid rgba(34,197,94,.28);border-radius:26px;
-  padding:30px 34px;display:flex;flex-direction:column;align-items:center;gap:13px;
-  max-width:310px;width:90%;position:relative;overflow:hidden;
-  animation:olu-in .55s cubic-bezier(.34,1.56,.64,1);}
-@keyframes olu-in{
-  from{transform:scale(.5) translateY(40px);opacity:0;}
-  to{transform:scale(1) translateY(0);opacity:1;}}
-.olu-halo{position:absolute;top:-40px;left:50%;transform:translateX(-50%);
-  width:200px;height:200px;border-radius:50%;
-  background:radial-gradient(circle,rgba(34,197,94,.11) 0%,transparent 70%);pointer-events:none;}
-.olu-icon{font-size:3.4rem;
-  animation:olu-icon-bounce .7s .1s cubic-bezier(.34,1.56,.64,1) both;}
-@keyframes olu-icon-bounce{
+/* ══ OVERLAY FIN D'ÉTAPE (plein écran) ══ */
+#step-unlock-overlay{
+  position:fixed;inset:0;z-index:9999;
+  display:flex;flex-direction:column;
+  align-items:center;justify-content:center;
+  overflow:hidden;
+  opacity:0;pointer-events:none;
+  transition:opacity .4s;
+}
+#step-unlock-overlay.show{opacity:1;pointer-events:all;}
+
+/* Canvas confettis (propre à l'overlay app) */
+#ov-canvas-confetti{
+  position:fixed;inset:0;z-index:10000;
+  pointer-events:none;
+  opacity:0;transition:opacity .3s;
+}
+#ov-canvas-confetti.show{opacity:1;}
+
+/* Fond dégradé overlay */
+.ov-bg-app{
+  position:fixed;inset:0;z-index:10001;
+  background:linear-gradient(180deg,rgba(4,8,15,.97) 0%,rgba(7,13,24,.99) 100%);
+  backdrop-filter:blur(8px);
+}
+
+/* Contenu scrollable */
+.ov-scroll-app{
+  position:relative;z-index:10002;
+  width:100%;max-width:480px;
+  max-height:100vh;
+  overflow-y:auto;
+  padding:20px 20px 24px;
+  display:flex;flex-direction:column;
+  align-items:center;
+  gap:0;
+}
+
+/* variables partagées dark overlay */
+:root{
+  --ov-green:#22c55e;--ov-green-dark:#16a34a;
+  --ov-orange:#f09433;--ov-red:#dc2743;
+  --ov-border:rgba(255,255,255,.07);
+}
+
+/* Héro */
+.ov-hero-app{
+  width:100%;text-align:center;
+  padding-bottom:16px;
+  display:flex;flex-direction:column;align-items:center;gap:8px;
+  transform:translateY(30px);opacity:0;
+  transition:transform .6s cubic-bezier(.34,1.56,.64,1), opacity .5s;
+  transition-delay:.1s;
+}
+#step-unlock-overlay.show .ov-hero-app{transform:translateY(0);opacity:1;}
+
+.ov-step-badge-app{
+  display:inline-flex;align-items:center;gap:8px;
+  background:rgba(34,197,94,.1);
+  border:1px solid rgba(34,197,94,.25);
+  border-radius:24px;padding:5px 14px;
+  font-size:.58rem;font-weight:800;letter-spacing:1.5px;
+  text-transform:uppercase;color:var(--ov-green);
+}
+.ov-step-badge-dot-app{
+  width:7px;height:7px;border-radius:50%;
+  background:var(--ov-green);
+  animation:ov-ping 1.4s ease-out infinite;
+}
+@keyframes ov-ping{
+  0%{box-shadow:0 0 0 0 rgba(34,197,94,.6);}
+  100%{box-shadow:0 0 0 10px rgba(34,197,94,0);}
+}
+.ov-emoji-app{
+  font-size:2.8rem;
+  filter:drop-shadow(0 0 18px rgba(34,197,94,.4));
+  animation:ov-emoji-in .7s .25s cubic-bezier(.34,1.56,.64,1) both;
+}
+@keyframes ov-emoji-in{
   from{transform:scale(0) rotate(-20deg);opacity:0;}
-  to{transform:scale(1) rotate(0);opacity:1;}}
-.olu-tag{background:rgba(34,197,94,.1);border:1px solid rgba(34,197,94,.28);
-  border-radius:20px;padding:3px 13px;
-  font-size:.58rem;font-weight:800;letter-spacing:2px;color:#16a34a;text-transform:uppercase;}
-.olu-title{font-size:1.35rem;font-weight:800;color:#1a1a2e;text-align:center;line-height:1.2;}
-.olu-desc{font-size:.7rem;color:#666;text-align:center;line-height:1.6;}
-.olu-progress{display:flex;gap:5px;align-items:center;}
-.olu-pip{width:24px;height:4px;border-radius:3px;background:#e5e7eb;}
-.olu-pip.done{background:#22c55e;}
-.olu-pip.next{background:linear-gradient(90deg,#f09433,#cc2366);
-  animation:olu-pip-glow 1.5s ease-in-out infinite alternate;}
-@keyframes olu-pip-glow{
-  from{box-shadow:0 0 3px rgba(240,148,51,.4);}
-  to{box-shadow:0 0 9px rgba(220,39,67,.5);}}
-.olu-btn{margin-top:4px;padding:10px 26px;border-radius:22px;border:none;cursor:pointer;
-  font-weight:800;font-size:.76rem;letter-spacing:.5px;
-  background:linear-gradient(135deg,#22c55e,#16a34a);color:#fff;
-  box-shadow:0 5px 14px rgba(34,197,94,.28);transition:transform .15s;}
-.olu-btn:hover{transform:scale(1.04);}
+  to{transform:scale(1) rotate(0);opacity:1;}
+}
+.ov-title-app{
+  font-family:'Syne',sans-serif;font-size:1.55rem;font-weight:800;
+  color:#fff;line-height:1.1;
+}
+.ov-title-app span{
+  background:linear-gradient(135deg,var(--ov-green),#4ade80);
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;
+}
+.ov-subtitle-app{
+  font-size:.72rem;color:rgba(255,255,255,.4);
+  max-width:300px;line-height:1.5;margin:0 auto;
+}
+
+/* Journey tracker */
+.ov-journey-app{
+  width:100%;
+  display:flex;align-items:center;justify-content:center;
+  padding:0 0 14px;
+  transform:translateY(20px);opacity:0;
+  transition:transform .5s cubic-bezier(.34,1.56,.64,1), opacity .5s;
+  transition-delay:.3s;
+}
+#step-unlock-overlay.show .ov-journey-app{transform:translateY(0);opacity:1;}
+
+.ov-jp{display:flex;flex-direction:column;align-items:center;gap:5px;flex:0 0 auto;}
+.ov-jp-orb{
+  width:44px;height:44px;border-radius:50%;
+  display:flex;align-items:center;justify-content:center;
+  font-size:1.1rem;position:relative;
+}
+.ov-jp-orb.done{
+  background:linear-gradient(135deg,var(--ov-green),var(--ov-green-dark));
+  box-shadow:0 0 0 3px rgba(34,197,94,.2);
+}
+.ov-jp-orb.done::after{
+  content:'✓';position:absolute;inset:0;border-radius:50%;
+  background:rgba(22,163,74,.85);
+  display:flex;align-items:center;justify-content:center;
+  font-size:.85rem;font-weight:900;color:#fff;
+}
+.ov-jp-orb.current{
+  background:linear-gradient(135deg,var(--ov-orange),var(--ov-red));
+  box-shadow:0 0 0 3px rgba(240,148,51,.25),0 0 16px rgba(240,148,51,.2);
+  animation:ov-orb-glow 2s ease-in-out infinite alternate;
+}
+@keyframes ov-orb-glow{
+  from{box-shadow:0 0 0 3px rgba(240,148,51,.2),0 0 12px rgba(240,148,51,.15);}
+  to{box-shadow:0 0 0 4px rgba(240,148,51,.35),0 0 24px rgba(240,148,51,.25);}
+}
+.ov-jp-orb.locked{background:#1a2740;opacity:.4;}
+.ov-jp-label{font-size:.45rem;font-weight:700;letter-spacing:.3px;color:rgba(255,255,255,.3);text-align:center;max-width:46px;}
+.ov-jp-label.done{color:rgba(34,197,94,.65);}
+.ov-jp-label.current{color:rgba(255,255,255,.8);}
+.ov-jc{width:28px;height:2px;flex-shrink:0;background:rgba(255,255,255,.08);border-radius:2px;margin-bottom:20px;}
+.ov-jc.lit{background:linear-gradient(90deg,var(--ov-green),var(--ov-green-dark));}
+
+/* Bloc central */
+.ov-mid-app{
+  width:100%;
+  display:grid;grid-template-columns:1fr 1fr;gap:8px;
+  margin-bottom:10px;
+  transform:translateY(20px);opacity:0;
+  transition:transform .5s cubic-bezier(.34,1.56,.64,1), opacity .5s;
+  transition-delay:.45s;
+}
+#step-unlock-overlay.show .ov-mid-app{transform:translateY(0);opacity:1;}
+
+.ov-mid-obj-app{
+  background:rgba(14,24,44,.7);
+  border:1px solid rgba(34,197,94,.15);
+  border-radius:16px;padding:12px;
+  display:flex;flex-direction:column;gap:8px;
+}
+.ov-mid-title-app{font-size:.52rem;font-weight:800;letter-spacing:1.2px;text-transform:uppercase;color:rgba(255,255,255,.25);}
+.ov-obj-app{display:flex;align-items:flex-start;gap:7px;}
+.ov-obj-check-app{
+  width:16px;height:16px;border-radius:50%;flex-shrink:0;
+  background:var(--ov-green);
+  display:flex;align-items:center;justify-content:center;
+  font-size:.5rem;font-weight:900;color:#fff;margin-top:1px;
+}
+.ov-obj-text-app{font-size:.64rem;color:rgba(255,255,255,.6);line-height:1.45;}
+.ov-obj-text-app strong{color:rgba(255,255,255,.88);}
+
+.ov-mid-eco-app{
+  background:rgba(14,24,44,.7);
+  border:1px solid rgba(122,182,72,.15);
+  border-radius:16px;padding:12px;
+  display:flex;flex-direction:column;gap:8px;
+}
+.ov-eco-row-app{display:flex;align-items:center;gap:7px;}
+.ov-eco-ico-app{font-size:.9rem;width:18px;text-align:center;flex-shrink:0;}
+.ov-eco-val-app{font-size:.68rem;font-weight:800;color:#fff;}
+.ov-eco-lbl-app{font-size:.52rem;color:rgba(255,255,255,.28);margin-left:2px;}
+.ov-eco-note-app{
+  font-size:.56rem;color:rgba(122,182,72,.5);
+  font-style:italic;line-height:1.4;
+  border-top:1px solid rgba(122,182,72,.08);padding-top:7px;
+}
+
+/* Bloc prochaine étape */
+.ov-next-app{
+  width:100%;
+  background:linear-gradient(135deg,rgba(240,148,51,.06),rgba(220,39,67,.06));
+  border:1px solid rgba(240,148,51,.18);
+  border-radius:16px;padding:14px 16px;
+  display:flex;align-items:center;gap:14px;
+  margin-bottom:16px;
+  transform:translateY(20px);opacity:0;
+  transition:transform .5s cubic-bezier(.34,1.56,.64,1), opacity .5s;
+  transition-delay:.6s;
+}
+#step-unlock-overlay.show .ov-next-app{transform:translateY(0);opacity:1;}
+
+.ov-next-orb-app{
+  width:40px;height:40px;border-radius:50%;flex-shrink:0;
+  background:linear-gradient(135deg,var(--ov-orange),var(--ov-red));
+  display:flex;align-items:center;justify-content:center;
+  font-size:1.1rem;box-shadow:0 0 14px rgba(240,148,51,.2);
+}
+.ov-next-col-app{display:flex;flex-direction:column;gap:2px;}
+.ov-next-eyebrow-app{font-size:.52rem;font-weight:800;letter-spacing:1px;text-transform:uppercase;color:rgba(240,148,51,.6);}
+.ov-next-title-app{font-family:'Syne',sans-serif;font-size:.95rem;font-weight:800;color:#fff;}
+.ov-next-desc-app{font-size:.63rem;color:rgba(255,255,255,.38);line-height:1.45;}
+
+/* CTA */
+.ov-cta-app{
+  width:100%;
+  display:flex;flex-direction:column;align-items:center;gap:10px;
+  transform:translateY(20px);opacity:0;
+  transition:transform .5s cubic-bezier(.34,1.56,.64,1), opacity .5s;
+  transition-delay:.75s;
+}
+#step-unlock-overlay.show .ov-cta-app{transform:translateY(0);opacity:1;}
+
+.ov-cta-btn-app{
+  width:100%;max-width:320px;
+  padding:16px 32px;border-radius:28px;border:none;cursor:pointer;
+  font-family:'Syne',sans-serif;font-size:.85rem;font-weight:800;
+  letter-spacing:.5px;color:#fff;
+  background:linear-gradient(135deg,var(--ov-orange),var(--ov-red));
+  box-shadow:0 8px 28px rgba(220,39,67,.3);
+  transition:transform .15s,box-shadow .15s;
+  display:flex;align-items:center;justify-content:center;gap:8px;
+}
+.ov-cta-btn-app:hover{transform:scale(1.03);box-shadow:0 12px 32px rgba(220,39,67,.4);}
+.ov-cta-ghost-app{
+  font-size:.65rem;color:rgba(255,255,255,.2);
+  cursor:pointer;padding:4px;transition:color .15s;
+}
+.ov-cta-ghost-app:hover{color:rgba(255,255,255,.45);}
 .spark-id{margin:auto 10px 10px;padding:10px 12px;background:rgba(122,182,72,.07);
   border:1px solid rgba(122,182,72,.18);border-radius:12px;display:flex;align-items:center;gap:10px;position:relative;z-index:3;}
 .spark-id-av{width:36px;height:36px;border-radius:50%;background:var(--moss);
@@ -1400,47 +1594,7 @@ body::before{background:radial-gradient(ellipse 60% 50% at 85% 5%,rgba(62,212,24
   border-left:3px solid #22c55e;
 }
 
-/* Bilan éco dans l'overlay de fin d'étape */
-.olu-eco{
-  width:100%;background:rgba(255,255,255,.03);
-  border:1px solid rgba(255,255,255,.07);border-radius:14px;
-  padding:12px 14px;display:flex;flex-direction:column;gap:9px;margin-top:4px;
-}
-.olu-eco-ttl{
-  font-size:.65rem;font-weight:700;color:rgba(255,255,255,.45);
-  text-transform:uppercase;letter-spacing:1.2px;text-align:center;
-}
-.olu-eco-m-trio{
-  display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;
-}
-.olu-eco-m-col{
-  display:flex;flex-direction:column;align-items:center;gap:3px;
-  padding:8px 6px;background:rgba(255,255,255,.04);
-  border:1px solid rgba(255,255,255,.07);border-radius:10px;
-}
-.olu-eco-m-ico{font-size:1rem;}
-.olu-eco-m-val{font-size:.72rem;font-weight:700;color:#fff;}
-.olu-eco-m-lbl{font-size:.52rem;color:rgba(255,255,255,.3);letter-spacing:.4px;}
-.olu-eco-m-badge{
-  font-size:.52rem;font-weight:700;padding:1px 7px;border-radius:20px;white-space:nowrap;
-}
-.olu-eco-m-bottom{display:flex;align-items:center;gap:8px;margin-top:2px;}
-.olu-eco-bar-track{
-  flex:1;height:4px;background:rgba(255,255,255,.06);border-radius:3px;overflow:hidden;
-}
-.olu-eco-bar-fill{
-  height:100%;border-radius:3px;background:var(--bar-col,#22c55e);transition:width .6s ease;
-}
-.olu-eco-m-ref{font-size:.57rem;color:rgba(255,255,255,.25);white-space:nowrap;}
-.olu-eco-equiv{
-  font-size:.62rem;color:rgba(255,255,255,.3);text-align:center;
-  line-height:1.5;font-style:italic;
-}
-.olu-eco-pedagogy{
-  font-size:.68rem;color:rgba(255,255,255,.55);text-align:center;
-  line-height:1.4;padding:5px 8px;
-  background:rgba(255,255,255,.03);border-radius:8px;border:1px solid rgba(255,255,255,.06);
-}
+
 </style>
 </head>
 <body>
@@ -2654,29 +2808,154 @@ async function validerEtape(fromEtape, toEtape) {
   }, 1650);
 }
 
+/* ─── Confettis overlay app ─── */
+(function(){
+  const CV_COLORS = ['#22c55e','#4ade80','#f09433','#fbbf24','#dc2743','#fff','#7ab648','#38bdf8'];
+  let _cvPieces = [], _cvFrame = null;
+  const _cv = document.getElementById('ov-canvas-confetti');
+  const _ctx = _cv ? _cv.getContext('2d') : null;
+  function _cvResize(){ if(_cv){ _cv.width=window.innerWidth; _cv.height=window.innerHeight; } }
+  window.addEventListener('resize', _cvResize); _cvResize();
+  window._ovLaunchConfetti = function(){
+    if(!_cv||!_ctx) return;
+    _cv.classList.add('show');
+    _cvPieces = [];
+    for(let i=0;i<120;i++) _cvPieces.push({
+      x:Math.random()*_cv.width, y:-10-Math.random()*300,
+      w:6+Math.random()*8, h:5+Math.random()*5,
+      color:CV_COLORS[Math.floor(Math.random()*CV_COLORS.length)],
+      vx:(Math.random()-.5)*3, vy:2.5+Math.random()*4,
+      rot:Math.random()*360, vrot:(Math.random()-.5)*8,
+      opacity:1, shape:Math.random()>.5?'rect':'circle'
+    });
+    if(_cvFrame) cancelAnimationFrame(_cvFrame);
+    (function _anim(){
+      _ctx.clearRect(0,0,_cv.width,_cv.height);
+      let alive=false;
+      _cvPieces.forEach(p=>{
+        p.x+=p.vx; p.y+=p.vy; p.rot+=p.vrot; p.vy+=.04;
+        if(p.y>_cv.height*.75) p.opacity-=.025;
+        p.opacity=Math.max(0,p.opacity); if(p.opacity>0) alive=true;
+        _ctx.save(); _ctx.globalAlpha=p.opacity;
+        _ctx.translate(p.x+p.w/2,p.y+p.h/2); _ctx.rotate(p.rot*Math.PI/180);
+        _ctx.fillStyle=p.color;
+        if(p.shape==='circle'){ _ctx.beginPath(); _ctx.arc(0,0,p.w/2,0,Math.PI*2); _ctx.fill(); }
+        else _ctx.fillRect(-p.w/2,-p.h/2,p.w,p.h);
+        _ctx.restore();
+      });
+      if(alive) _cvFrame=requestAnimationFrame(_anim);
+      else { _cv.classList.remove('show'); _ctx.clearRect(0,0,_cv.width,_cv.height); }
+    })();
+  };
+  window._ovStopConfetti = function(){
+    if(_cvFrame){ cancelAnimationFrame(_cvFrame); _cvFrame=null; }
+    if(_cv) _cv.classList.remove('show');
+    if(_ctx&&_cv) _ctx.clearRect(0,0,_cv.width,_cv.height);
+  };
+})();
+
+function _ovResetEmojiAnim(){
+  const el = document.getElementById('ov-emoji');
+  if(!el) return;
+  el.style.animation='none'; el.offsetHeight; el.style.animation='';
+}
+
 function showStepOverlay(fromEtape, toEtape) {
-  const s     = STEP_META[toEtape]   || {};
   const sFrom = STEP_META[fromEtape] || {};
-  const iconEl  = document.getElementById('olu-icon');
-  const titleEl = document.getElementById('olu-title');
-  const descEl  = document.getElementById('olu-desc');
-  if (iconEl)  iconEl.textContent  = s.icon || '🔍';
-  if (titleEl) titleEl.textContent = (toEtape < 5 ? 'Jour ' + toEtape + ' — ' : '') + (s.name || '');
-  if (descEl)  descEl.textContent  = 'Votre équipe a complété "' + (sFrom.name || '') + '" ✓ La prochaine étape est débloquée !';
-  // Afficher le bilan éco de l'étape terminée dans l'overlay
-  showEcoBilanInOverlay('etape' + fromEtape);
-  for (let i = 0; i <= 5; i++) {
-    const pip = document.getElementById('olu-pip-' + i);
-    if (!pip) continue;
-    pip.className = i < toEtape ? 'olu-pip done' : i === toEtape ? 'olu-pip next' : 'olu-pip';
+  const sTo   = STEP_META[toEtape]   || {};
+
+  // Héro
+  document.getElementById('ov-badge').innerHTML =
+    '<div class="ov-step-badge-dot-app"></div> Étape ' + fromEtape + ' complétée !';
+  document.getElementById('ov-emoji').textContent = '🎉';
+  document.getElementById('ov-title').innerHTML =
+    'Bien joué,<br><span>vous avancez !</span>';
+  document.getElementById('ov-subtitle').innerHTML =
+    'Votre équipe a validé <strong style="color:rgba(255,255,255,.7)">"' +
+    (sFrom.name || 'cette étape') + '"</strong> avec succès. L\'étape suivante est débloquée.';
+
+  // Journey tracker — 6 orbes + 5 connecteurs
+  const journeyEl = document.getElementById('ov-journey');
+  if(journeyEl){
+    const orbs = [
+      {icon:'🌱',label:'Découvrir'},
+      {icon:'🔍',label:'Problématiser'},
+      {icon:'✏️',label:'Imaginer'},
+      {icon:'🔨',label:'Créer'},
+      {icon:'📢',label:'Pitcher'},
+      {icon:'🏆',label:'Finale'},
+    ];
+    let html = '';
+    orbs.forEach(function(o, i){
+      const state = i < toEtape ? 'done' : i === toEtape ? 'current' : 'locked';
+      html += '<div class="ov-jp">' +
+        '<div class="ov-jp-orb ' + state + '">' + o.icon + '</div>' +
+        '<div class="ov-jp-label ' + (state !== 'locked' ? state : '') + '">' + o.label + '</div>' +
+        '</div>';
+      if(i < 5) html += '<div class="ov-jc' + (state === 'done' ? ' lit' : '') + '"></div>';
+    });
+    journeyEl.innerHTML = html;
   }
+
+  // Objectifs — issus du bilan éco réel ou placeholder
+  const objCol = document.getElementById('ov-obj-col');
+  if(objCol){
+    objCol.innerHTML = '<div class="ov-mid-title-app">✦ Accompli</div>' +
+      '<div class="ov-obj-app"><div class="ov-obj-check-app">✓</div>' +
+      '<div class="ov-obj-text-app"><strong>Étape ' + fromEtape + ' — ' + (sFrom.name||'') + '</strong> validée par SPARK</div></div>' +
+      '<div class="ov-obj-app"><div class="ov-obj-check-app">✓</div>' +
+      '<div class="ov-obj-text-app">Progression sauvegardée · étape ' + toEtape + ' débloquée</div></div>';
+  }
+
+  // Éco — données réelles localStorage
+  _ovPopulateEco(fromEtape);
+
+  // Prochaine étape
+  document.getElementById('ov-next-orb-app').textContent  = sTo.icon || '🔍';
+  document.getElementById('ov-next-title-app').textContent =
+    (toEtape < 5 ? 'Étape ' + toEtape + ' — ' : '') + (sTo.name || '');
+  document.getElementById('ov-next-desc-app').textContent =
+    'Prochaine mission : ' + (sTo.name || 'étape suivante') + '. Bonne chance !';
+
+  // CTA → ferme l'overlay et bascule vers la nouvelle étape
+  const ctaBtn = document.getElementById('ov-cta-btn');
+  if(ctaBtn){
+    ctaBtn.innerHTML = '<span>' + (sTo.icon||'🚀') + '</span> Commencer l\'étape ' + toEtape;
+    ctaBtn.onclick = closeStepOverlay;
+  }
+
+  _ovResetEmojiAnim();
+  setTimeout(window._ovLaunchConfetti, 150);
   const ov = document.getElementById('step-unlock-overlay');
-  if (ov) ov.classList.add('show');
+  setTimeout(function(){ if(ov) ov.classList.add('show'); }, 300);
+}
+
+function _ovPopulateEco(fromEtape){
+  // Tente de remplir les chiffres éco depuis localStorage (même clé que showEcoBilanInOverlay)
+  try {
+    const data = JSON.parse(localStorage.getItem(ECO_KEY) || '{}');
+    const step = (data.byStep || {})['etape' + fromEtape] || { wh: 0, co2: 0 };
+    const wh  = step.wh  || 0;
+    const co2 = step.co2 || 0;
+    const ml  = wh * 17.86; // approximation eau : 17.86 ml/Wh Mistral
+    const s = (id, txt) => { const el = document.getElementById(id); if(el) el.textContent = txt; };
+    s('ov-eco-title', '🌿 Éco · étape ' + fromEtape);
+    s('ov-eco-wh',  wh  < 0.001 ? (wh*1000).toFixed(1)+' mWh' : wh.toFixed(3));
+    s('ov-eco-ml',  ml  < 0.01  ? (ml*1000).toFixed(0)+' μl'  : ml.toFixed(2));
+    s('ov-eco-co2', co2 < 0.001 ? (co2*1000).toFixed(2)+' mg' : co2.toFixed(4));
+    const equiv = (typeof ecoEquivCo2 === 'function') ? ecoEquivCo2(co2) : '';
+    s('ov-eco-note', equiv || '≈ conversation SPARK complète');
+  } catch(e) {
+    ['ov-eco-wh','ov-eco-ml','ov-eco-co2'].forEach(id=>{ const el=document.getElementById(id); if(el) el.textContent='—'; });
+  }
 }
 
 function closeStepOverlay() {
   const ov = document.getElementById('step-unlock-overlay');
-  if (ov) ov.classList.remove('show');
+  if(ov){
+    ov.classList.remove('show');
+  }
+  window._ovStopConfetti && window._ovStopConfetti();
   // Basculer vers la nouvelle étape débloquée
   const newEtape = getEtapeActiveEquipe();
   if (newEtape !== eleveEtapeAfficheeConversation) {
@@ -5159,53 +5438,6 @@ function ecoEquivCo2(gCo2) {
   return `≈ ${(m/1000).toFixed(3)} km en voiture thermique`;
 }
 
-function showEcoBilanInOverlay(stepId) {
-  const data  = JSON.parse(localStorage.getItem(ECO_KEY) || '{}');
-  const step  = (data.byStep || {})[stepId] || { wh: 0, co2: 0 };
-  const ecoEl = document.getElementById('olu-eco');
-  if (!ecoEl) return;
-
-  if (step.wh < 0.0001 && step.co2 < 0.0001) {
-    ecoEl.style.display = 'none';
-    return;
-  }
-
-  const wh    = step.wh  || 0;
-  const co2   = step.co2 || 0;
-  const car_m = co2 / ECO_CAR_GCO2_PER_KM * 1000;
-  const lvl      = ecoLevel(wh);
-  const lvlLabel = ECO_LEVEL_LABELS[lvl];
-  const lvlColor = ECO_LEVEL_COLORS[lvl];
-
-  const s = (id, txt) => { const el = document.getElementById(id); if (el) el.textContent = txt; };
-  s('olu-eco-wh',  wh  < 0.001 ? (wh*1000).toFixed(1)+' mWh'      : wh.toFixed(3)+' Wh');
-  s('olu-eco-ml',  co2 < 1e-3  ? (co2*1e3).toFixed(2)+' µgCO₂eq'  : co2.toFixed(4)+' gCO₂eq');
-  s('olu-eco-co2', car_m < 1   ? Math.round(car_m*100)+' cm'       : car_m.toFixed(1)+' m');
-
-  ['olu-eco-badge-wh', 'olu-eco-badge-ml', 'olu-eco-badge-co2'].forEach(id => {
-    const el = document.getElementById(id);
-    if (!el) return;
-    el.textContent        = lvlLabel;
-    el.style.background   = lvlColor + '22';
-    el.style.border       = '1px solid ' + lvlColor + '55';
-    el.style.color        = lvlColor;
-  });
-
-  const sessionCo2 = data.sessionCo2 || 0;
-  const barPct     = sessionCo2 > 0 ? Math.min(100, (co2 / sessionCo2) * 100) : 2;
-  const barEl = document.getElementById('olu-eco-bar');
-  if (barEl) {
-    barEl.style.setProperty('--bar-col', lvlColor);
-    barEl.style.width = Math.max(barPct, 0.5) + '%';
-  }
-  const refEl = document.getElementById('olu-eco-ref');
-  if (refEl) refEl.textContent = sessionCo2 > 0 ? `/ ${sessionCo2.toFixed(3)} gCO₂ session` : '';
-
-  s('olu-eco-equiv',    ecoEquivCo2(co2));
-  s('olu-eco-pedagogy', ecoEquivPedago(wh));
-  ecoEl.style.display = '';
-}
-
 // ── TOAST ──
 let tTimer=null;
 function showToast(msg,type='success'){
@@ -5216,54 +5448,70 @@ function showToast(msg,type='success'){
 }
 </script>
 
-<!-- ── Overlay étape débloquée ── -->
-<div id="step-unlock-overlay" onclick="closeStepOverlay()">
-  <div class="olu" onclick="event.stopPropagation()">
-    <div class="olu-halo"></div>
-    <div class="olu-icon" id="olu-icon">🔍</div>
-    <div class="olu-tag">Étape débloquée !</div>
-    <div class="olu-title" id="olu-title">...</div>
-    <div class="olu-desc" id="olu-desc">...</div>
-    <div class="olu-eco" id="olu-eco" style="display:none">
-      <div class="olu-eco-ttl">Votre impact pour cette étape</div>
-      <div class="olu-eco-m-trio">
-        <div class="olu-eco-m-col">
-          <span class="olu-eco-m-ico">⚡</span>
-          <span class="olu-eco-m-val" id="olu-eco-wh">—</span>
-          <span class="olu-eco-m-lbl">Énergie</span>
-          <span class="olu-eco-m-badge" id="olu-eco-badge-wh"></span>
-        </div>
-        <div class="olu-eco-m-col">
-          <span class="olu-eco-m-ico">🌍</span>
-          <span class="olu-eco-m-val" id="olu-eco-ml">—</span>
-          <span class="olu-eco-m-lbl">CO₂eq</span>
-          <span class="olu-eco-m-badge" id="olu-eco-badge-ml"></span>
-        </div>
-        <div class="olu-eco-m-col">
-          <span class="olu-eco-m-ico">🚗</span>
-          <span class="olu-eco-m-val" id="olu-eco-co2">—</span>
-          <span class="olu-eco-m-lbl">Voiture</span>
-          <span class="olu-eco-m-badge" id="olu-eco-badge-co2"></span>
-        </div>
+<!-- Canvas confettis overlay fin d'étape -->
+<canvas id="ov-canvas-confetti"></canvas>
+
+<!-- ── Overlay fin d'étape (plein écran) ── -->
+<div id="step-unlock-overlay">
+  <div class="ov-bg-app"></div>
+  <div class="ov-scroll-app">
+
+    <!-- Héro -->
+    <div class="ov-hero-app">
+      <div class="ov-step-badge-app" id="ov-badge">
+        <div class="ov-step-badge-dot-app"></div>
+        Étape complétée !
       </div>
-      <div class="olu-eco-m-bottom">
-        <div class="olu-eco-bar-track">
-          <div class="olu-eco-bar-fill" id="olu-eco-bar"></div>
-        </div>
-        <span class="olu-eco-m-ref" id="olu-eco-ref"></span>
+      <div class="ov-emoji-app" id="ov-emoji">🎉</div>
+      <div class="ov-title-app" id="ov-title">Bien joué !</div>
+      <div class="ov-subtitle-app" id="ov-subtitle">Votre équipe a validé cette étape avec succès.</div>
+    </div>
+
+    <!-- Journey tracker -->
+    <div class="ov-journey-app" id="ov-journey"></div>
+
+    <!-- Bloc objectifs + éco -->
+    <div class="ov-mid-app">
+      <div class="ov-mid-obj-app" id="ov-obj-col">
+        <div class="ov-mid-title-app">✦ Accompli</div>
       </div>
-      <div class="olu-eco-equiv" id="olu-eco-equiv"></div>
-      <div class="olu-eco-pedagogy" id="olu-eco-pedagogy"></div>
+      <div class="ov-mid-eco-app" id="ov-eco-col">
+        <div class="ov-mid-title-app" id="ov-eco-title">🌿 Éco · étape</div>
+        <div class="ov-eco-row-app">
+          <div class="ov-eco-ico-app">⚡</div>
+          <div class="ov-eco-val-app" id="ov-eco-wh">—</div>
+          <div class="ov-eco-lbl-app">Wh</div>
+        </div>
+        <div class="ov-eco-row-app">
+          <div class="ov-eco-ico-app">💧</div>
+          <div class="ov-eco-val-app" id="ov-eco-ml">—</div>
+          <div class="ov-eco-lbl-app">ml</div>
+        </div>
+        <div class="ov-eco-row-app">
+          <div class="ov-eco-ico-app">💨</div>
+          <div class="ov-eco-val-app" id="ov-eco-co2">—</div>
+          <div class="ov-eco-lbl-app">gCO₂</div>
+        </div>
+        <div class="ov-eco-note-app" id="ov-eco-note"></div>
+      </div>
     </div>
-    <div class="olu-progress">
-      <div class="olu-pip" id="olu-pip-0"></div>
-      <div class="olu-pip" id="olu-pip-1"></div>
-      <div class="olu-pip" id="olu-pip-2"></div>
-      <div class="olu-pip" id="olu-pip-3"></div>
-      <div class="olu-pip" id="olu-pip-4"></div>
-      <div class="olu-pip" id="olu-pip-5"></div>
+
+    <!-- Prochaine étape -->
+    <div class="ov-next-app" id="ov-next-app">
+      <div class="ov-next-orb-app" id="ov-next-orb-app">🔍</div>
+      <div class="ov-next-col-app">
+        <div class="ov-next-eyebrow-app">→ Étape suivante débloquée</div>
+        <div class="ov-next-title-app" id="ov-next-title-app">...</div>
+        <div class="ov-next-desc-app" id="ov-next-desc-app"></div>
+      </div>
     </div>
-    <button class="olu-btn" onclick="closeStepOverlay()">On continue ! 🚀</button>
+
+    <!-- CTA -->
+    <div class="ov-cta-app">
+      <button class="ov-cta-btn-app" id="ov-cta-btn">On continue ! 🚀</button>
+      <div class="ov-cta-ghost-app" onclick="closeStepOverlay()">Rester sur cette étape</div>
+    </div>
+
   </div>
 </div>
 
