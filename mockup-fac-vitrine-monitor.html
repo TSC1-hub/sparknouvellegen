@@ -4,706 +4,817 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>SPARK — Moniteur Vitrine FAC</title>
-<link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,700;9..144,900&family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600&display=swap" rel="stylesheet">
 <style>
 *{box-sizing:border-box;margin:0;padding:0;}
 :root{
-  --bg:#f5f7fb;
-  --ink:#171a2b;
-  --muted:#7a87a3;
-  --line:#e4e9f2;
-  --card:#fff;
-  --green:#22c55e;
-  --green-soft:#f0fdf4;
-  --orange:#f09433;
-  --red:#dc2743;
-  --violet:#7c3aed;
-  --violet-soft:#f5f0ff;
-  --blue:#2563eb;
-  --blue-soft:#eff6ff;
-  --shadow:0 4px 24px rgba(23,26,43,.08);
-  --shadow-lg:0 12px 48px rgba(23,26,43,.14);
+  --moss:#3d5c3a;--sage:#5a7a5a;--leaf:#7ab648;
+  --warm:#faf7f2;--terra:#d4694a;--sun:#f0c040;
+  --text:#2c3a28;--mid:#5a6b54;--light:#8fa085;
+  --fac:#1d6fa4;--fac-l:rgba(29,111,164,.09);--fac-b:rgba(29,111,164,.22);
 }
 body{
-  font-family:'Inter',sans-serif;
-  background:var(--bg);
-  color:var(--ink);
-  min-height:100vh;
-}
-
-/* ── Layout principal ── */
-.layout{
-  display:grid;
-  grid-template-columns:320px 1fr;
-  grid-template-rows:60px 1fr;
-  height:100vh;
-  overflow:hidden;
-}
-
-/* ── Topbar ── */
-.topbar{
-  grid-column:1/-1;
-  background:#fff;
-  border-bottom:1px solid var(--line);
-  display:flex;align-items:center;justify-content:space-between;
-  padding:0 24px;
-}
-.topbar-brand{
-  font-family:'Syne',sans-serif;font-size:1.1rem;font-weight:800;
-  display:flex;align-items:center;gap:10px;
-}
-.topbar-brand span{
-  font-size:.65rem;font-weight:600;letter-spacing:1.2px;text-transform:uppercase;
-  color:var(--muted);padding:3px 8px;background:var(--bg);border-radius:999px;
-  border:1px solid var(--line);
-}
-.topbar-right{
-  display:flex;align-items:center;gap:12px;
-  font-size:.78rem;color:var(--muted);
-}
-.fac-pill{
-  background:var(--violet-soft);
-  color:var(--violet);
-  font-weight:700;font-size:.72rem;
-  padding:5px 12px;border-radius:999px;
-  border:1px solid rgba(124,58,237,.15);
-}
-
-/* ── Sidebar équipes ── */
-.sidebar{
-  background:#fff;
-  border-right:1px solid var(--line);
+  font-family:'DM Sans',sans-serif;
+  background:#0a1929;
+  color:#1a2e3a;
+  height:100vh;overflow:hidden;
   display:flex;flex-direction:column;
-  overflow:hidden;
-}
-.sidebar-header{
-  padding:16px 16px 12px;
-  border-bottom:1px solid var(--line);
-}
-.sidebar-title{
-  font-size:.62rem;font-weight:700;letter-spacing:1.4px;text-transform:uppercase;
-  color:var(--muted);margin-bottom:10px;
-}
-.search{
-  display:flex;align-items:center;gap:8px;
-  background:var(--bg);border:1px solid var(--line);border-radius:10px;
-  padding:8px 12px;font-size:.8rem;color:var(--muted);
-}
-.sidebar-list{
-  flex:1;overflow-y:auto;padding:8px;
-  display:flex;flex-direction:column;gap:4px;
 }
 
-/* ── Card équipe (sidebar) ── */
-.eq-card{
-  padding:12px 14px;border-radius:14px;
-  border:1px solid transparent;
-  cursor:pointer;
-  transition:background .15s, border-color .15s;
-  display:flex;align-items:center;justify-content:space-between;gap:8px;
+/* ── HEADER ── */
+.hdr{
+  height:52px;background:#0a1929;
+  border-bottom:1px solid rgba(29,111,164,.15);
+  padding:0 20px;
+  display:flex;align-items:center;justify-content:space-between;
+  flex-shrink:0;
 }
-.eq-card:hover{background:var(--bg);}
-.eq-card.active{
-  background:var(--violet-soft);
-  border-color:rgba(124,58,237,.2);
-}
-.eq-card-left{display:flex;flex-direction:column;gap:3px;flex:1;min-width:0;}
-.eq-name{font-weight:700;font-size:.85rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-.eq-meta{font-size:.68rem;color:var(--muted);display:flex;align-items:center;gap:6px;}
-.eq-step-dot{
-  width:6px;height:6px;border-radius:50%;
-  background:var(--green);
-  display:inline-block;
-}
+.h-logo{font-family:'Fraunces',serif;font-weight:900;font-size:1.15rem;
+  letter-spacing:1px;color:#93c5e8;display:flex;align-items:center;gap:8px;}
+.h-logo-sub{font-size:.55rem;font-style:italic;font-weight:400;opacity:.35;margin-left:2px;}
+.h-right{display:flex;align-items:center;gap:10px;}
+.h-pill{display:flex;align-items:center;gap:6px;padding:5px 13px;border-radius:20px;
+  background:rgba(29,111,164,.2);border:1px solid rgba(29,111,164,.3);
+  color:#93c5e8;font-size:.7rem;font-weight:500;}
+.h-av{width:24px;height:24px;border-radius:7px;background:var(--fac);
+  display:flex;align-items:center;justify-content:center;font-size:.8rem;flex-shrink:0;}
+.h-promo{font-size:.67rem;color:rgba(147,197,232,.28);}
 
-/* ── Badge niveau ── */
-.level-badge{
-  display:inline-flex;align-items:center;gap:5px;
-  padding:4px 9px;border-radius:999px;
-  font-size:.66rem;font-weight:700;
-  white-space:nowrap;flex-shrink:0;
-}
-.level-1{background:#f0fdf4;color:#15803d;border:1px solid #bbf7d0;}
-.level-2{background:#eff6ff;color:#1d4ed8;border:1px solid #bfdbfe;}
-.level-3{background:#fff7ed;color:#c2410c;border:1px solid #fed7aa;}
-.level-4{background:#fdf4ff;color:#7e22ce;border:1px solid #e9d5ff;}
-.level-badge .lv-ico{font-size:.75rem;}
+/* ── SHELL ── */
+.shell{flex:1;display:flex;overflow:hidden;}
 
-/* ── Panneau principal (drawer-like) ── */
-.main{
+/* ── SIDEBAR DARK ── */
+.sidebar{
+  width:210px;flex-shrink:0;
+  background:linear-gradient(180deg,#0d2137 0%,#071422 100%);
+  border-right:1px solid rgba(29,111,164,.12);
+  display:flex;flex-direction:column;
+}
+.sb-title{font-size:.54rem;font-weight:700;letter-spacing:2.5px;text-transform:uppercase;
+  color:rgba(147,197,232,.2);padding:14px 14px 8px;}
+.sb-nav{display:flex;align-items:center;gap:9px;padding:9px 14px;cursor:pointer;
+  font-size:.75rem;color:rgba(147,197,232,.42);border-left:3px solid transparent;transition:all .2s;}
+.sb-nav:hover{background:rgba(29,111,164,.07);color:rgba(147,197,232,.68);}
+.sb-nav.sel{background:rgba(29,111,164,.14);border-left-color:var(--fac);color:white;font-weight:500;}
+.sb-nav-ico{width:18px;text-align:center;font-size:.85rem;flex-shrink:0;}
+.sb-badge{margin-left:auto;background:var(--terra);color:white;font-size:.56rem;font-weight:700;padding:2px 6px;border-radius:20px;}
+.sb-new{margin-left:auto;background:var(--leaf);color:white;font-size:.54rem;font-weight:700;padding:2px 6px;border-radius:20px;}
+.sb-identity{margin:auto 10px 12px;padding:10px 12px;
+  background:rgba(29,111,164,.1);border:1px solid rgba(29,111,164,.16);
+  border-radius:12px;display:flex;align-items:center;gap:9px;}
+.sb-id-av{width:30px;height:30px;border-radius:8px;background:var(--fac);
+  display:flex;align-items:center;justify-content:center;font-size:.95rem;flex-shrink:0;}
+.sb-id-name{font-family:'Fraunces',serif;font-size:.78rem;font-weight:700;color:#93c5e8;}
+.sb-id-role{font-size:.57rem;color:rgba(29,111,164,.55);margin-top:1px;}
+
+/* ── DRAWER LAYOUT ── */
+.drawer-layout{flex:1;display:flex;overflow:hidden;}
+
+/* ── TEAMS COLUMN ── */
+.teams-col{
+  width:292px;flex-shrink:0;
+  padding:16px;
+  display:flex;flex-direction:column;gap:11px;
   overflow-y:auto;
-  background:var(--bg);
-  padding:24px;
-  display:flex;flex-direction:column;gap:20px;
+  border-right:1px solid rgba(29,111,164,.12);
+  background:linear-gradient(180deg,#eef4f9 0%,#f7fafc 100%);
 }
+.teams-col::-webkit-scrollbar{width:3px;}
+.teams-col::-webkit-scrollbar-thumb{background:rgba(29,111,164,.15);border-radius:2px;}
+.page-head{background:white;border:1px solid rgba(29,111,164,.14);border-radius:14px;
+  padding:13px 15px;box-shadow:0 6px 20px rgba(10,25,41,.06);}
+.page-title{font-family:'Fraunces',serif;font-weight:900;font-size:.95rem;color:#0a1929;
+  display:flex;align-items:center;gap:7px;}
+.page-sub{font-size:.69rem;color:#4a6b85;margin-top:3px;}
 
-/* ── En-tête équipe ── */
-.eq-header{
-  background:var(--card);
-  border:1px solid var(--line);
-  border-radius:20px;
-  padding:20px 24px;
-  display:flex;align-items:flex-start;justify-content:space-between;gap:20px;
-  box-shadow:var(--shadow);
-}
-.eq-header-left{display:flex;flex-direction:column;gap:6px;}
-.eq-header-tag{
-  font-size:.6rem;font-weight:700;letter-spacing:1.4px;text-transform:uppercase;
-  color:var(--muted);
-}
-.eq-header-name{
-  font-family:'Syne',sans-serif;font-size:1.5rem;font-weight:800;
-}
-.eq-header-meta{
-  display:flex;align-items:center;gap:10px;flex-wrap:wrap;
-  font-size:.75rem;color:var(--muted);
-}
-.h-chip{
-  padding:3px 9px;border-radius:999px;background:var(--bg);
-  border:1px solid var(--line);font-size:.7rem;color:#4b5675;font-weight:600;
-}
+/* ── TEAM CARD ── */
+.tc{background:white;border-radius:14px;border:1px solid rgba(29,111,164,.12);
+  box-shadow:0 5px 14px rgba(10,25,41,.06);overflow:hidden;cursor:pointer;
+  transition:transform .22s,box-shadow .22s,border-color .22s;}
+.tc:hover{transform:translateY(-2px);box-shadow:0 10px 24px rgba(10,25,41,.1);border-color:rgba(29,111,164,.28);}
+.tc.active{border-color:var(--fac);box-shadow:0 0 0 2px rgba(29,111,164,.15);}
+.tc-hdr{padding:11px 13px 7px;display:flex;align-items:flex-start;gap:9px;}
+.tc-av{width:32px;height:32px;border-radius:9px;display:flex;align-items:center;
+  justify-content:center;font-size:1rem;flex-shrink:0;}
+.tc-info{flex:1;min-width:0;}
+.tc-name{font-family:'Fraunces',serif;font-weight:700;font-size:.8rem;color:#0a1929;}
+.tc-meta{font-size:.6rem;color:#4a6b85;margin-top:1px;}
+.tc-day{padding:2px 7px;border-radius:20px;font-size:.57rem;font-weight:700;flex-shrink:0;}
+.tc-day-on{background:rgba(240,192,64,.15);color:#8a6a00;}
+.tc-day-done{background:rgba(122,182,72,.1);color:var(--sage);}
+.tc-prog{padding:0 13px 10px;}
+.prog-bg{height:5px;background:rgba(0,0,0,.06);border-radius:999px;overflow:hidden;}
+.prog-fill{height:100%;border-radius:4px;}
+.tc-foot{border-top:1px solid rgba(0,0,0,.05);padding:7px 13px;
+  display:flex;align-items:center;justify-content:space-between;}
+.tc-members{font-size:.6rem;color:#4a6b85;}
+.tc-lv{padding:3px 9px;border-radius:999px;font-size:.59rem;font-weight:700;white-space:nowrap;}
+.lv1{background:#f0fdf4;color:#15803d;border:1px solid #bbf7d0;}
+.lv2{background:#eff6ff;color:#1d4ed8;border:1px solid #bfdbfe;}
+.lv3{background:#fff7ed;color:#c2410c;border:1px solid #fed7aa;}
+.lv4{background:#fdf4ff;color:#7e22ce;border:1px solid #e9d5ff;}
 
-/* ── Niveau global synthèse hero ── */
-.level-hero{
-  background:linear-gradient(135deg,#7c3aed,#a855f7);
-  border-radius:16px;
-  padding:18px 22px;
-  color:#fff;
-  min-width:220px;
-  display:flex;flex-direction:column;gap:8px;
-  box-shadow:0 8px 28px rgba(124,58,237,.3);
-}
-.lh-eyebrow{font-size:.58rem;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;opacity:.7;}
-.lh-level{font-family:'Syne',sans-serif;font-size:1.6rem;font-weight:800;display:flex;align-items:center;gap:8px;}
-.lh-desc{font-size:.7rem;opacity:.8;line-height:1.4;}
-.lh-bar{
-  height:4px;background:rgba(255,255,255,.2);border-radius:4px;margin-top:2px;
-  position:relative;
-}
-.lh-bar-fill{
-  position:absolute;left:0;top:0;bottom:0;border-radius:4px;
-  background:rgba(255,255,255,.8);
-  transition:width .6s cubic-bezier(.34,1.56,.64,1);
-}
-.lh-bar-labels{
-  display:flex;justify-content:space-between;
-  font-size:.52rem;opacity:.55;margin-top:3px;
-}
+/* ── CONV DRAWER ── */
+.conv-drawer{flex:1;display:flex;flex-direction:column;background:white;overflow:hidden;}
 
-/* ── Phrase diagnostic ── */
-.diag-card{
-  background:var(--card);
-  border:1px solid var(--line);
-  border-radius:16px;
-  padding:16px 20px;
-  display:flex;align-items:flex-start;gap:14px;
-  box-shadow:var(--shadow);
+/* ── DRAWER HEADER ── */
+.dwr-hdr{
+  padding:13px 18px;border-bottom:1px solid rgba(0,0,0,.07);
+  display:flex;align-items:flex-start;justify-content:space-between;gap:12px;
+  background:white;flex-shrink:0;
 }
-.diag-ico{
-  font-size:1.4rem;flex-shrink:0;
-  width:40px;height:40px;border-radius:12px;
-  background:var(--violet-soft);
-  display:flex;align-items:center;justify-content:center;
-}
-.diag-content{display:flex;flex-direction:column;gap:4px;}
-.diag-title{font-size:.62rem;font-weight:700;letter-spacing:1.2px;text-transform:uppercase;color:var(--muted);}
-.diag-text{font-size:.85rem;line-height:1.55;color:var(--ink);}
-.diag-text strong{color:var(--violet);}
-.diag-hint{font-size:.72rem;color:var(--muted);font-style:italic;}
+.dwr-hdr-info{display:flex;flex-direction:column;gap:3px;}
+.dwr-title{font-family:'Fraunces',serif;font-weight:700;font-size:.9rem;color:#0a1929;
+  display:flex;align-items:center;gap:8px;}
+.dwr-sub{font-size:.62rem;color:#4a6b85;}
+.dwr-chips{display:flex;gap:5px;flex-wrap:wrap;margin-top:4px;}
+.dwr-chip{padding:2px 8px;border-radius:20px;
+  background:var(--fac-l);border:1px solid var(--fac-b);font-size:.58rem;font-weight:600;color:var(--fac);}
+.btn-close{width:27px;height:27px;border-radius:8px;border:none;cursor:pointer;
+  background:rgba(0,0,0,.05);color:#4a6b85;font-size:.75rem;
+  display:flex;align-items:center;justify-content:center;transition:all .2s;flex-shrink:0;}
+.btn-close:hover{background:rgba(212,105,74,.1);color:var(--terra);}
 
-/* ── KPIs globaux ── */
-.kpi-row{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;}
-.kpi{
-  background:var(--card);border:1px solid var(--line);border-radius:16px;
-  padding:16px 18px;box-shadow:var(--shadow);
-  display:flex;flex-direction:column;gap:4px;
-}
-.kpi-val{font-family:'Syne',sans-serif;font-size:1.6rem;font-weight:800;}
-.kpi-label{font-size:.7rem;color:var(--muted);}
-.kpi-sub{display:flex;align-items:center;gap:6px;margin-top:4px;}
-.kpi-tag{
-  padding:2px 7px;border-radius:999px;font-size:.62rem;font-weight:700;
-}
-.tag-green{background:#dcfce7;color:#15803d;}
-.tag-blue{background:#dbeafe;color:#1e40af;}
-.tag-orange{background:#ffedd5;color:#c2410c;}
-.tag-purple{background:#ede9fe;color:#6d28d9;}
+/* ── TABS ── */
+.dwr-tabs{display:flex;gap:6px;padding:10px 16px 9px;
+  border-bottom:1px solid rgba(0,0,0,.06);background:#fff;flex-shrink:0;}
+.dwr-tab{padding:6px 13px;border-radius:999px;
+  border:1.5px solid rgba(29,111,164,.18);background:#fff;
+  color:#4a6b85;font-size:.66rem;font-weight:700;cursor:pointer;
+  font-family:'DM Sans',sans-serif;transition:all .18s;}
+.dwr-tab:hover{border-color:rgba(29,111,164,.35);color:var(--fac);}
+.dwr-tab.on{background:var(--fac-l);border-color:rgba(29,111,164,.3);color:var(--fac);}
 
-/* ── Section par étape ── */
-.section-title{
-  font-size:.62rem;font-weight:700;letter-spacing:1.4px;text-transform:uppercase;
-  color:var(--muted);padding:0 2px;
-}
-.etapes-grid{display:flex;flex-direction:column;gap:10px;}
+/* ── TAB PANELS ── */
+.tab-panel{display:none;flex:1;overflow-y:auto;padding:16px 18px;
+  flex-direction:column;gap:14px;
+  background:linear-gradient(180deg,#f6f9fc 0%,#fff 40%);}
+.tab-panel.on{display:flex;}
+.tab-panel::-webkit-scrollbar{width:3px;}
+.tab-panel::-webkit-scrollbar-thumb{background:rgba(29,111,164,.15);border-radius:2px;}
 
-.etape-row{
-  background:var(--card);border:1px solid var(--line);border-radius:16px;
-  padding:16px 20px;box-shadow:var(--shadow);
-  display:grid;grid-template-columns:28px 1fr auto;gap:14px;align-items:center;
+/* ── LEVEL HERO (vitrine) ── */
+.lv-hero{
+  background:linear-gradient(135deg,#1d6fa4 0%,#0f5b8c 100%);
+  border-radius:14px;padding:16px 18px;color:#fff;
+  display:flex;align-items:center;gap:18px;
+  box-shadow:0 8px 22px rgba(15,91,140,.22);
 }
-.etape-row.locked{opacity:.4;}
-.etape-num{
-  width:28px;height:28px;border-radius:50%;
-  background:var(--bg);border:1px solid var(--line);
-  display:flex;align-items:center;justify-content:center;
-  font-size:.72rem;font-weight:800;color:var(--muted);
-  flex-shrink:0;
-}
-.etape-num.done{background:#dcfce7;border-color:#86efac;color:#15803d;}
-.etape-num.active{background:linear-gradient(135deg,#f09433,#dc2743);border:none;color:#fff;}
-.etape-center{display:flex;flex-direction:column;gap:6px;}
-.etape-name{font-weight:700;font-size:.85rem;}
-.etape-bars{display:flex;align-items:center;gap:8px;}
-.bar-group{display:flex;align-items:center;gap:5px;font-size:.72rem;}
-.bar-track{
-  width:64px;height:6px;background:var(--bg);border-radius:999px;
-  overflow:hidden;border:1px solid var(--line);
-}
-.bar-fill{height:100%;border-radius:999px;}
-.bar-ia{background:linear-gradient(90deg,#818cf8,#7c3aed);}
-.bar-manual{background:linear-gradient(90deg,#34d399,#059669);}
-.bar-label{color:var(--muted);}
-.etape-events{
-  display:flex;gap:4px;flex-wrap:wrap;
-}
-.ev{
-  padding:2px 7px;border-radius:999px;font-size:.6rem;font-weight:700;
-}
-.ev-ia{background:#ede9fe;color:#6d28d9;}
-.ev-dem{background:#dbeafe;color:#1e40af;}
-.ev-man{background:#dcfce7;color:#15803d;}
-.etape-right{
-  display:flex;flex-direction:column;align-items:flex-end;gap:6px;
-}
-.etape-score{
-  font-family:'Syne',sans-serif;font-size:1.1rem;font-weight:800;
-}
-.etape-score-label{font-size:.6rem;color:var(--muted);}
-.etape-ts{font-size:.62rem;color:var(--muted);}
+.lvh-left{flex:1;}
+.lvh-eye{font-size:.54rem;font-weight:700;letter-spacing:1.8px;text-transform:uppercase;opacity:.62;}
+.lvh-name{font-family:'Fraunces',serif;font-size:1.35rem;font-weight:900;margin-top:3px;}
+.lvh-desc{font-size:.67rem;opacity:.78;line-height:1.45;margin-top:4px;max-width:260px;}
+.lvh-right{display:flex;flex-direction:column;gap:4px;min-width:155px;}
+.lvh-bar-lbl{font-size:.54rem;opacity:.58;text-transform:uppercase;letter-spacing:.5px;}
+.lvh-bar{height:5px;background:rgba(255,255,255,.18);border-radius:4px;position:relative;margin-top:4px;}
+.lvh-bar-fill{position:absolute;left:0;top:0;bottom:0;border-radius:4px;background:rgba(255,255,255,.78);}
+.lvh-ticks{display:flex;justify-content:space-between;font-size:.5rem;opacity:.44;margin-top:3px;}
 
-/* ── Timeline micro ── */
-.timeline{
-  display:flex;gap:3px;align-items:center;
-  margin-top:4px;
-}
-.tl-dot{
-  width:8px;height:8px;border-radius:50%;
-  flex-shrink:0;
-}
-.tl-dot.ia{background:#818cf8;}
-.tl-dot.dem{background:#60a5fa;}
-.tl-dot.man{background:#34d399;}
-.tl-connector{flex:1;height:1px;background:var(--line);}
+/* ── DIAGNOSTIC ── */
+.diag{background:white;border:1px solid rgba(29,111,164,.12);border-radius:13px;
+  padding:13px 15px;display:flex;gap:12px;box-shadow:0 3px 12px rgba(10,25,41,.05);}
+.diag-ico{width:34px;height:34px;border-radius:9px;background:var(--fac-l);
+  display:flex;align-items:center;justify-content:center;font-size:1.1rem;flex-shrink:0;}
+.diag-body{flex:1;}
+.diag-ttl{font-size:.57rem;font-weight:700;letter-spacing:1.2px;text-transform:uppercase;color:#4a6b85;margin-bottom:4px;}
+.diag-txt{font-size:.77rem;line-height:1.6;color:#172336;}
+.diag-txt strong{color:var(--fac);}
+.diag-hint{font-size:.67rem;color:var(--terra);font-style:italic;margin-top:5px;}
 
-/* ── Section signal low ── */
-.alert-card{
-  background:#fffbeb;border:1px solid #fde68a;border-radius:14px;
-  padding:14px 18px;display:flex;align-items:flex-start;gap:12px;
-}
-.alert-ico{font-size:1.1rem;flex-shrink:0;}
-.alert-text{font-size:.78rem;line-height:1.5;color:#92400e;}
-.alert-text strong{color:#78350f;}
+/* ── KPIs ── */
+.kpi-grid{display:grid;grid-template-columns:1fr 1fr;gap:9px;}
+.kpi{background:white;border:1px solid rgba(29,111,164,.1);border-radius:12px;
+  padding:12px 14px;box-shadow:0 3px 10px rgba(10,25,41,.04);}
+.kpi-val{font-family:'Fraunces',serif;font-size:1.45rem;font-weight:900;color:#0a1929;}
+.kpi-lbl{font-size:.66rem;color:#4a6b85;margin-top:1px;}
+.kpi-sub{display:flex;gap:5px;flex-wrap:wrap;margin-top:6px;}
+.ktag{padding:2px 7px;border-radius:999px;font-size:.58rem;font-weight:700;}
+.kt-g{background:#dcfce7;color:#15803d;}
+.kt-b{background:#dbeafe;color:#1e40af;}
+.kt-o{background:#ffedd5;color:#c2410c;}
+.kt-f{background:var(--fac-l);color:var(--fac);}
 
-/* ── Tabs navigation ── */
-.tabs{
-  display:flex;gap:6px;
-  background:var(--card);border:1px solid var(--line);border-radius:14px;
-  padding:6px;align-self:flex-start;box-shadow:var(--shadow);
-}
-.tab{
-  padding:7px 14px;border-radius:10px;font-size:.75rem;font-weight:600;
-  color:var(--muted);cursor:pointer;transition:background .15s,color .15s;
-  border:none;background:transparent;
-}
-.tab.on{background:var(--violet);color:#fff;}
+/* ── SECTION TITLE ── */
+.sec-hdr{display:flex;align-items:center;justify-content:space-between;gap:10px;}
+.sec-ttl{font-size:.58rem;font-weight:700;letter-spacing:1.6px;text-transform:uppercase;color:#4a6b85;}
+.legend{display:flex;gap:10px;flex-wrap:wrap;}
+.leg{display:flex;align-items:center;gap:4px;font-size:.61rem;color:#4a6b85;}
+.ldot{width:7px;height:7px;border-radius:50%;}
 
-/* ── Légende sources ── */
-.legend{
-  display:flex;align-items:center;gap:14px;
-  font-size:.7rem;color:var(--muted);flex-wrap:wrap;
-}
-.leg-item{display:flex;align-items:center;gap:5px;}
-.leg-dot{width:8px;height:8px;border-radius:50%;}
+/* ── ÉTAPES ── */
+.etapes{display:flex;flex-direction:column;gap:8px;}
+.er{background:white;border:1px solid rgba(29,111,164,.1);border-radius:12px;
+  padding:12px 14px;box-shadow:0 3px 10px rgba(10,25,41,.04);
+  display:grid;grid-template-columns:25px 1fr auto;gap:11px;align-items:center;}
+.er.locked{opacity:.35;}
+.er.cur{border-color:rgba(29,111,164,.32);background:#f5faff;}
+.enum{width:25px;height:25px;border-radius:50%;display:flex;align-items:center;
+  justify-content:center;font-size:.68rem;font-weight:800;flex-shrink:0;}
+.e-d{background:#dcfce7;border:1px solid #86efac;color:#15803d;}
+.e-a{background:linear-gradient(135deg,var(--fac),#0f5b8c);color:#fff;border:none;}
+.e-p{background:rgba(0,0,0,.05);border:1px solid rgba(0,0,0,.09);color:#9ca3af;}
+.ectr{display:flex;flex-direction:column;gap:5px;min-width:0;}
+.ename{font-weight:600;font-size:.78rem;color:#0a1929;display:flex;align-items:center;gap:6px;}
+.etag{font-size:.54rem;font-weight:700;padding:2px 6px;border-radius:999px;
+  background:rgba(29,111,164,.09);color:var(--fac);}
+.ebars{display:flex;align-items:center;gap:8px;}
+.bg{display:flex;align-items:center;gap:4px;font-size:.67rem;}
+.bt{width:50px;height:4px;background:rgba(0,0,0,.06);border-radius:999px;overflow:hidden;}
+.bf{height:100%;border-radius:999px;}
+.bf-ia{background:linear-gradient(90deg,#60a5fa,#1d6fa4);}
+.bf-mn{background:linear-gradient(90deg,#4ade80,#16a34a);}
+.tl{display:flex;gap:3px;align-items:center;margin-top:3px;}
+.td{width:7px;height:7px;border-radius:50%;flex-shrink:0;}
+.td.ia{background:#60a5fa;}
+.td.dm{background:#a78bfa;}
+.td.mn{background:#4ade80;}
+.tl-ln{flex:1;height:1px;background:rgba(0,0,0,.08);}
+.eright{display:flex;flex-direction:column;align-items:flex-end;gap:4px;}
+.elv{padding:3px 9px;border-radius:999px;font-size:.57rem;font-weight:700;white-space:nowrap;}
+.eevs{display:flex;gap:3px;flex-wrap:wrap;justify-content:flex-end;}
+.ev{padding:2px 6px;border-radius:999px;font-size:.56rem;font-weight:700;}
+.ev-ia{background:rgba(29,111,164,.1);color:var(--fac);}
+.ev-dm{background:#ede9fe;color:#6d28d9;}
+.ev-mn{background:#dcfce7;color:#15803d;}
+.ets{font-size:.57rem;color:#4a6b85;}
+.alert-row{background:#fffbeb;border:1px solid #fde68a;border-radius:10px;
+  padding:9px 13px;display:flex;gap:8px;margin-top:-4px;margin-left:36px;
+  font-size:.69rem;color:#92400e;line-height:1.5;}
 
-/* ── Score ring ── */
-.score-ring-wrap{
-  position:relative;width:56px;height:56px;flex-shrink:0;
+/* ══════════════════════════════════════
+   ONGLET QUALITÉ PROMPTS TEAM
+══════════════════════════════════════ */
+
+/* Hero score qualité */
+.pq-hero{
+  background:linear-gradient(135deg,#3d5c3a 0%,#5a7a5a 100%);
+  border-radius:14px;padding:15px 18px;color:#fff;
+  display:flex;align-items:center;gap:16px;
+  box-shadow:0 8px 22px rgba(61,92,58,.2);
 }
-.score-ring-wrap svg{transform:rotate(-90deg);}
-.score-ring-label{
-  position:absolute;inset:0;display:flex;flex-direction:column;
-  align-items:center;justify-content:center;
-  font-family:'Syne',sans-serif;font-size:.72rem;font-weight:800;
-}
+.pqh-ico{font-size:1.7rem;flex-shrink:0;}
+.pqh-left{flex:1;}
+.pqh-eye{font-size:.53rem;font-weight:700;letter-spacing:1.8px;text-transform:uppercase;opacity:.58;}
+.pqh-name{font-family:'Fraunces',serif;font-size:1.25rem;font-weight:900;margin-top:3px;
+  display:flex;align-items:center;gap:8px;}
+.pqh-desc{font-size:.66rem;opacity:.76;line-height:1.45;margin-top:3px;max-width:255px;}
+.pqh-score{background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.2);
+  border-radius:11px;padding:10px 14px;text-align:center;flex-shrink:0;min-width:76px;}
+.pqh-sv{font-family:'Fraunces',serif;font-size:1.7rem;font-weight:900;}
+.pqh-sl{font-size:.53rem;opacity:.6;text-transform:uppercase;letter-spacing:.5px;margin-top:1px;}
+
+/* Stats 2×2 */
+.pq-stats{display:grid;grid-template-columns:1fr 1fr;gap:9px;}
+.pq-stat{background:white;border:1px solid rgba(44,58,40,.1);border-radius:12px;
+  padding:11px 13px;box-shadow:0 3px 10px rgba(10,25,41,.04);}
+.pqs-val{font-family:'Fraunces',serif;font-size:1.3rem;font-weight:900;color:#0a1929;}
+.pqs-lbl{font-size:.63rem;color:#4a6b85;margin-top:1px;line-height:1.4;}
+.pqs-bar{height:4px;background:rgba(0,0,0,.07);border-radius:999px;margin-top:8px;overflow:hidden;}
+.pqs-fill{height:100%;border-radius:999px;}
+
+/* Évolution par étape */
+.pq-evol{background:white;border:1px solid rgba(44,58,40,.1);border-radius:12px;
+  padding:13px 15px;box-shadow:0 3px 10px rgba(10,25,41,.04);}
+.pq-evol-ttl{font-size:.57rem;font-weight:700;letter-spacing:1.3px;text-transform:uppercase;
+  color:#4a6b85;margin-bottom:10px;}
+.pq-evol-row{display:flex;align-items:center;gap:9px;margin-bottom:7px;}
+.pq-ev-lbl{font-size:.63rem;color:#4a6b85;width:78px;flex-shrink:0;}
+.pq-ev-track{flex:1;height:6px;background:rgba(0,0,0,.06);border-radius:999px;overflow:hidden;}
+.pq-ev-fill{height:100%;border-radius:999px;}
+.pq-ev-score{font-size:.61rem;font-weight:700;color:#0a1929;width:28px;text-align:right;flex-shrink:0;}
+.pq-ev-ico{width:17px;flex-shrink:0;text-align:center;font-size:.7rem;}
+
+/* Exemples annotés */
+.pq-ex-ttl{font-size:.58rem;font-weight:700;letter-spacing:1.4px;text-transform:uppercase;color:#4a6b85;}
+.pq-ex{background:white;border:1px solid rgba(0,0,0,.08);border-radius:12px;
+  padding:10px 13px;box-shadow:0 2px 8px rgba(10,25,41,.04);}
+.pq-ex-hdr{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:5px;}
+.pq-ex-meta{font-size:.58rem;color:#4a6b85;}
+.pq-ql{padding:2px 8px;border-radius:999px;font-size:.57rem;font-weight:700;}
+.ql-red{background:#fef2f2;color:#991b1b;border:1px solid #fecaca;}
+.ql-ylw{background:#fffbeb;color:#92400e;border:1px solid #fde68a;}
+.ql-grn{background:#f0fdf4;color:#15803d;border:1px solid #bbf7d0;}
+.ql-blu{background:#eff6ff;color:#1e40af;border:1px solid #bfdbfe;}
+.pq-ex-msg{font-size:.73rem;color:#172336;font-style:italic;line-height:1.5;}
+.pq-ex-note{font-size:.61rem;color:#4a6b85;margin-top:5px;padding-top:5px;
+  border-top:1px dashed rgba(0,0,0,.08);display:flex;gap:4px;align-items:flex-start;}
+
+/* Conseil */
+.pq-conseil{background:linear-gradient(135deg,rgba(29,111,164,.06),rgba(29,111,164,.02));
+  border:1px solid rgba(29,111,164,.18);border-radius:12px;
+  padding:12px 15px;display:flex;gap:10px;align-items:flex-start;}
+.pqc-ico{font-size:1rem;flex-shrink:0;}
+.pqc-txt{font-size:.73rem;line-height:1.55;color:#172336;}
+.pqc-txt strong{color:var(--fac);}
 </style>
 </head>
 <body>
 
-<div class="layout">
-
-  <!-- ── Topbar ── -->
-  <div class="topbar">
-    <div class="topbar-brand">
-      ⚡ SPARK
-      <span>Dashboard Facilitateur</span>
+<!-- ── HEADER ── -->
+<div class="hdr">
+  <div class="h-logo">⚡ SPARK <span class="h-logo-sub">Facilitateur</span></div>
+  <div class="h-right">
+    <div class="h-pill">
+      <div class="h-av">👤</div>
+      M. Lefebvre · FAC
     </div>
-    <div class="topbar-right">
-      <div class="fac-pill">👤 M. Lefebvre · FAC</div>
-      <div>The Schools Challenge · Promo 10</div>
-    </div>
+    <div class="h-promo">The Schools Challenge · Promo 10</div>
   </div>
-
-  <!-- ── Sidebar équipes ── -->
-  <div class="sidebar">
-    <div class="sidebar-header">
-      <div class="sidebar-title">Équipes · 8 actives</div>
-      <div class="search">🔍 Rechercher une équipe…</div>
-    </div>
-    <div class="sidebar-list">
-
-      <!-- Équipe active -->
-      <div class="eq-card active" onclick="">
-        <div class="eq-card-left">
-          <div class="eq-name">Forêt 2050</div>
-          <div class="eq-meta">
-            <span class="eq-step-dot"></span>
-            Étape 3 · 4 membres
-          </div>
-        </div>
-        <div class="level-badge level-3">
-          <span class="lv-ico">🔧</span> Niv.3
-        </div>
-      </div>
-
-      <div class="eq-card" onclick="">
-        <div class="eq-card-left">
-          <div class="eq-name">CityGrow</div>
-          <div class="eq-meta"><span class="eq-step-dot"></span>Étape 2 · 3 membres</div>
-        </div>
-        <div class="level-badge level-1"><span class="lv-ico">🌱</span> Niv.1</div>
-      </div>
-
-      <div class="eq-card" onclick="">
-        <div class="eq-card-left">
-          <div class="eq-name">AquaLab</div>
-          <div class="eq-meta"><span class="eq-step-dot"></span>Étape 4 · 5 membres</div>
-        </div>
-        <div class="level-badge level-4"><span class="lv-ico">🚀</span> Niv.4</div>
-      </div>
-
-      <div class="eq-card" onclick="">
-        <div class="eq-card-left">
-          <div class="eq-name">SolarPunk</div>
-          <div class="eq-meta"><span class="eq-step-dot"></span>Étape 2 · 4 membres</div>
-        </div>
-        <div class="level-badge level-2"><span class="lv-ico">✏️</span> Niv.2</div>
-      </div>
-
-      <div class="eq-card" onclick="">
-        <div class="eq-card-left">
-          <div class="eq-name">BioBridge</div>
-          <div class="eq-meta"><span class="eq-step-dot"></span>Étape 1 · 3 membres</div>
-        </div>
-        <div class="level-badge level-1"><span class="lv-ico">🌱</span> Niv.1</div>
-      </div>
-
-      <div class="eq-card" onclick="">
-        <div class="eq-card-left">
-          <div class="eq-name">UrbanHeat</div>
-          <div class="eq-meta"><span class="eq-step-dot"></span>Étape 3 · 4 membres</div>
-        </div>
-        <div class="level-badge level-2"><span class="lv-ico">✏️</span> Niv.2</div>
-      </div>
-
-      <div class="eq-card" onclick="">
-        <div class="eq-card-left">
-          <div class="eq-name">NanoFilter</div>
-          <div class="eq-meta"><span class="eq-step-dot"></span>Étape 2 · 5 membres</div>
-        </div>
-        <div class="level-badge level-3"><span class="lv-ico">🔧</span> Niv.3</div>
-      </div>
-
-      <div class="eq-card" onclick="">
-        <div class="eq-card-left">
-          <div class="eq-name">VentVert</div>
-          <div class="eq-meta"><span class="eq-step-dot"></span>Étape 1 · 4 membres</div>
-        </div>
-        <div class="level-badge level-1"><span class="lv-ico">🌱</span> Niv.1</div>
-      </div>
-
-    </div>
-  </div>
-
-  <!-- ── Panneau principal ── -->
-  <div class="main">
-
-    <!-- En-tête équipe -->
-    <div class="eq-header">
-      <div class="eq-header-left">
-        <div class="eq-header-tag">Équipe sélectionnée</div>
-        <div class="eq-header-name">Forêt 2050</div>
-        <div class="eq-header-meta">
-          <span class="h-chip">🌿 4 membres</span>
-          <span class="h-chip">📍 Étape 3 active</span>
-          <span class="h-chip">🕐 Dernière activité : il y a 38 min</span>
-          <span class="h-chip">CODE : FRT50</span>
-        </div>
-      </div>
-      <!-- Niveau hero -->
-      <div class="level-hero">
-        <div class="lh-eyebrow">Maîtrise Vitrine</div>
-        <div class="lh-level">🔧 Constructeur</div>
-        <div class="lh-desc">L'équipe prend des initiatives manuelles régulières sur plusieurs étapes.</div>
-        <div style="margin-top:4px;">
-          <div class="lh-bar"><div class="lh-bar-fill" style="width:62%"></div></div>
-          <div class="lh-bar-labels">
-            <span>🌱 Découv.</span>
-            <span>✏️ Explor.</span>
-            <span>🔧 Constr.</span>
-            <span>🚀 Archi.</span>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Diagnostic IA -->
-    <div class="diag-card">
-      <div class="diag-ico">🧠</div>
-      <div class="diag-content">
-        <div class="diag-title">Analyse comportementale · Vitrine</div>
-        <div class="diag-text">
-          <strong>Forêt 2050</strong> s'approprie progressivement la vitrine — sur 9 mises à jour au total,
-          <strong>4 étaient des initiatives manuelles</strong>, dont 3 faites <em>après</em> une génération IA.
-          Ce pattern indique une équipe qui utilise SPARK comme point de départ
-          et affine ensuite par elle-même. <strong>Bonne dynamique d'autonomie.</strong>
-        </div>
-        <div class="diag-hint">💡 Point d'attention : l'étape 2 n'a reçu aucune retouche manuelle — la vitrine est entièrement générée par IA.</div>
-      </div>
-    </div>
-
-    <!-- KPIs -->
-    <div class="kpi-row">
-      <div class="kpi">
-        <div class="kpi-val">9</div>
-        <div class="kpi-label">Mises à jour vitrine</div>
-        <div class="kpi-sub">
-          <span class="kpi-tag tag-purple">🤖 IA ×5</span>
-          <span class="kpi-tag tag-green">✋ Manuel ×4</span>
-        </div>
-      </div>
-      <div class="kpi">
-        <div class="kpi-val">44%</div>
-        <div class="kpi-label">Ratio autonomie</div>
-        <div class="kpi-sub">
-          <span class="kpi-tag tag-green">↑ +12% vs moy.</span>
-        </div>
-      </div>
-      <div class="kpi">
-        <div class="kpi-val">3</div>
-        <div class="kpi-label">Retouches post-IA</div>
-        <div class="kpi-sub">
-          <span class="kpi-tag tag-blue">Appropriation active</span>
-        </div>
-      </div>
-      <div class="kpi">
-        <div class="kpi-val">2</div>
-        <div class="kpi-label">Demandes explicites 🎨</div>
-        <div class="kpi-sub">
-          <span class="kpi-tag tag-orange">Sur 3 étapes actives</span>
-        </div>
-      </div>
-    </div>
-
-    <!-- Tabs -->
-    <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;">
-      <div class="section-title">DÉTAIL PAR ÉTAPE</div>
-      <div style="display:flex;align-items:center;gap:16px;flex-wrap:wrap;">
-        <div class="legend">
-          <div class="leg-item"><div class="leg-dot" style="background:#818cf8"></div>IA auto</div>
-          <div class="leg-item"><div class="leg-dot" style="background:#60a5fa"></div>IA sur demande 🎨</div>
-          <div class="leg-item"><div class="leg-dot" style="background:#34d399"></div>Manuel</div>
-        </div>
-        <div class="tabs">
-          <button class="tab on">Toutes</button>
-          <button class="tab">IA seule</button>
-          <button class="tab">Manuelles</button>
-        </div>
-      </div>
-    </div>
-
-    <div class="etapes-grid">
-
-      <!-- Étape 0 ── Découvrir -->
-      <div class="etape-row">
-        <div class="etape-num done">0</div>
-        <div class="etape-center">
-          <div class="etape-name">🌱 Découvrir</div>
-          <div class="etape-bars">
-            <div class="bar-group">
-              <div class="bar-track"><div class="bar-fill bar-ia" style="width:100%"></div></div>
-              <span class="bar-label" style="color:#6d28d9;font-weight:700;">🤖 ×1</span>
-            </div>
-            <div class="bar-group">
-              <div class="bar-track"><div class="bar-fill bar-manual" style="width:0%"></div></div>
-              <span class="bar-label">✋ ×0</span>
-            </div>
-          </div>
-          <div class="timeline">
-            <div class="tl-dot ia" title="IA auto"></div>
-            <div class="tl-connector"></div>
-          </div>
-        </div>
-        <div class="etape-right">
-          <div style="display:flex;align-items:center;gap:6px;">
-            <div class="level-badge level-1"><span class="lv-ico">🌱</span>Niv.1</div>
-          </div>
-          <div class="etape-events">
-            <span class="ev ev-ia">🤖 Checkpoint</span>
-          </div>
-          <div class="etape-ts">Il y a 3 jours</div>
-        </div>
-      </div>
-
-      <!-- Étape 1 ── Problématiser -->
-      <div class="etape-row">
-        <div class="etape-num done">1</div>
-        <div class="etape-center">
-          <div class="etape-name">🔍 Problématiser</div>
-          <div class="etape-bars">
-            <div class="bar-group">
-              <div class="bar-track"><div class="bar-fill bar-ia" style="width:100%"></div></div>
-              <span class="bar-label" style="color:#6d28d9;font-weight:700;">🤖 ×2</span>
-            </div>
-            <div class="bar-group">
-              <div class="bar-track"><div class="bar-fill bar-manual" style="width:50%"></div></div>
-              <span class="bar-label" style="color:#059669;font-weight:700;">✋ ×1</span>
-            </div>
-          </div>
-          <div class="timeline">
-            <div class="tl-dot ia" title="IA auto"></div>
-            <div class="tl-connector"></div>
-            <div class="tl-dot dem" title="Demande 🎨"></div>
-            <div class="tl-connector"></div>
-            <div class="tl-dot man" title="Manuel"></div>
-            <div class="tl-connector"></div>
-          </div>
-        </div>
-        <div class="etape-right">
-          <div class="level-badge level-2"><span class="lv-ico">✏️</span>Niv.2</div>
-          <div class="etape-events">
-            <span class="ev ev-ia">🤖 ×2</span>
-            <span class="ev ev-man">✋ ×1 post-IA</span>
-          </div>
-          <div class="etape-ts">Hier, 14h22</div>
-        </div>
-      </div>
-
-      <!-- Étape 2 ── Imaginer -->
-      <div class="etape-row">
-        <div class="etape-num done">2</div>
-        <div class="etape-center">
-          <div class="etape-name">✏️ Imaginer</div>
-          <div class="etape-bars">
-            <div class="bar-group">
-              <div class="bar-track"><div class="bar-fill bar-ia" style="width:100%"></div></div>
-              <span class="bar-label" style="color:#6d28d9;font-weight:700;">🤖 ×1</span>
-            </div>
-            <div class="bar-group">
-              <div class="bar-track"><div class="bar-fill bar-manual" style="width:0%"></div></div>
-              <span class="bar-label">✋ ×0</span>
-            </div>
-          </div>
-          <div class="timeline">
-            <div class="tl-dot ia"></div>
-            <div class="tl-connector"></div>
-          </div>
-        </div>
-        <div class="etape-right">
-          <div class="level-badge level-1"><span class="lv-ico">🌱</span>Niv.1</div>
-          <div class="etape-events">
-            <span class="ev ev-ia">🤖 Checkpoint</span>
-          </div>
-          <div class="etape-ts">Hier, 15h07</div>
-        </div>
-      </div>
-      <!-- Alerte étape 2 -->
-      <div class="alert-card" style="margin-top:-6px;margin-left:42px;">
-        <div class="alert-ico">⚠️</div>
-        <div class="alert-text">
-          <strong>Aucune initiative manuelle sur cette étape.</strong>
-          La vitrine de l'étape 2 est entièrement générée par SPARK sans retouche.
-          Il peut être utile d'encourager l'équipe à personnaliser cette section.
-        </div>
-      </div>
-
-      <!-- Étape 3 ── Créer (active) -->
-      <div class="etape-row" style="border-color:rgba(240,148,51,.3);background:#fffbf5;">
-        <div class="etape-num active">3</div>
-        <div class="etape-center">
-          <div class="etape-name">🔨 Créer <span style="font-size:.6rem;font-weight:600;background:#ffedd5;color:#c2410c;padding:2px 6px;border-radius:999px;margin-left:4px;vertical-align:middle;">EN COURS</span></div>
-          <div class="etape-bars">
-            <div class="bar-group">
-              <div class="bar-track"><div class="bar-fill bar-ia" style="width:33%"></div></div>
-              <span class="bar-label" style="color:#6d28d9;font-weight:700;">🤖 ×1</span>
-            </div>
-            <div class="bar-group">
-              <div class="bar-track"><div class="bar-fill bar-manual" style="width:66%"></div></div>
-              <span class="bar-label" style="color:#059669;font-weight:700;">✋ ×2</span>
-            </div>
-          </div>
-          <div class="timeline">
-            <div class="tl-dot ia"></div>
-            <div class="tl-connector"></div>
-            <div class="tl-dot man"></div>
-            <div class="tl-connector"></div>
-            <div class="tl-dot man"></div>
-            <div class="tl-connector" style="flex:4;"></div>
-          </div>
-        </div>
-        <div class="etape-right">
-          <div class="level-badge level-3"><span class="lv-ico">🔧</span>Niv.3</div>
-          <div class="etape-events">
-            <span class="ev ev-ia">🤖 ×1</span>
-            <span class="ev ev-dem">🎨 ×1</span>
-            <span class="ev ev-man">✋ ×2</span>
-          </div>
-          <div class="etape-ts">Il y a 38 min</div>
-        </div>
-      </div>
-
-      <!-- Étapes verrouillées -->
-      <div class="etape-row locked">
-        <div class="etape-num">4</div>
-        <div class="etape-center">
-          <div class="etape-name">📢 Chiffrer & Pitcher</div>
-          <div style="font-size:.7rem;color:var(--muted);">Étape non débloquée</div>
-        </div>
-        <div class="etape-right">
-          <div style="font-size:.72rem;color:var(--muted);">🔒 En attente</div>
-        </div>
-      </div>
-
-      <div class="etape-row locked">
-        <div class="etape-num">5</div>
-        <div class="etape-center">
-          <div class="etape-name">🏆 S'entraîner finale</div>
-          <div style="font-size:.7rem;color:var(--muted);">Étape non débloquée</div>
-        </div>
-        <div class="etape-right">
-          <div style="font-size:.72rem;color:var(--muted);">🔒 En attente</div>
-        </div>
-      </div>
-
-    </div>
-    <!-- fin etapes-grid -->
-
-    <div style="height:8px;"></div>
-
-  </div>
-  <!-- fin .main -->
-
 </div>
-<!-- fin .layout -->
 
+<div class="shell">
+
+  <!-- ── SIDEBAR DARK ── -->
+  <div class="sidebar">
+    <div class="sb-title">Navigation</div>
+    <div class="sb-nav"><span class="sb-nav-ico">👥</span>Vue Équipes</div>
+    <div class="sb-nav"><span class="sb-nav-ico">📓</span>Carnets élèves <span class="sb-badge">2</span></div>
+    <div class="sb-nav sel"><span class="sb-nav-ico">📊</span>Moniteur Vitrine <span class="sb-new">NEW</span></div>
+    <div class="sb-nav"><span class="sb-nav-ico">✅</span>Validations</div>
+    <div class="sb-nav"><span class="sb-nav-ico">⚙️</span>Paramètres</div>
+    <div class="sb-identity">
+      <div class="sb-id-av">🎓</div>
+      <div>
+        <div class="sb-id-name">M. Lefebvre</div>
+        <div class="sb-id-role">Facilitateur · FAC</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── DRAWER LAYOUT ── -->
+  <div class="drawer-layout">
+
+    <!-- ── TEAMS COLUMN ── -->
+    <div class="teams-col">
+      <div class="page-head">
+        <div class="page-title">📊 Moniteur Vitrine</div>
+        <div class="page-sub">Maîtrise vitrine · 8 équipes actives</div>
+      </div>
+
+      <!-- Forêt 2050 — active -->
+      <div class="tc active" onclick="selectTeam(this)">
+        <div class="tc-hdr">
+          <div class="tc-av" style="background:rgba(61,92,58,.12)">🌲</div>
+          <div class="tc-info">
+            <div class="tc-name">Forêt 2050</div>
+            <div class="tc-meta">Étape 3 · 4 membres</div>
+          </div>
+          <div class="tc-day tc-day-on">EN COURS</div>
+        </div>
+        <div class="tc-prog"><div class="prog-bg"><div class="prog-fill" style="width:55%;background:linear-gradient(90deg,var(--fac),#0f5b8c)"></div></div></div>
+        <div class="tc-foot">
+          <span class="tc-members">🤖×5 ✋×4</span>
+          <span class="tc-lv lv3">🔧 Constructeur</span>
+        </div>
+      </div>
+
+      <div class="tc" onclick="selectTeam(this)">
+        <div class="tc-hdr">
+          <div class="tc-av" style="background:rgba(244,162,97,.12)">🌻</div>
+          <div class="tc-info">
+            <div class="tc-name">CityGrow</div>
+            <div class="tc-meta">Étape 2 · 3 membres</div>
+          </div>
+          <div class="tc-day tc-day-on">EN COURS</div>
+        </div>
+        <div class="tc-prog"><div class="prog-bg"><div class="prog-fill" style="width:30%;background:linear-gradient(90deg,var(--fac),#0f5b8c)"></div></div></div>
+        <div class="tc-foot">
+          <span class="tc-members">🤖×3 ✋×0</span>
+          <span class="tc-lv lv1">🌱 Découvreur</span>
+        </div>
+      </div>
+
+      <div class="tc" onclick="selectTeam(this)">
+        <div class="tc-hdr">
+          <div class="tc-av" style="background:rgba(29,111,164,.12)">💧</div>
+          <div class="tc-info">
+            <div class="tc-name">AquaLab</div>
+            <div class="tc-meta">Étape 4 · 5 membres</div>
+          </div>
+          <div class="tc-day tc-day-done">AVANCÉE</div>
+        </div>
+        <div class="tc-prog"><div class="prog-bg"><div class="prog-fill" style="width:75%;background:linear-gradient(90deg,#7ab648,#3d5c3a)"></div></div></div>
+        <div class="tc-foot">
+          <span class="tc-members">🤖×4 ✋×9</span>
+          <span class="tc-lv lv4">🚀 Architecte</span>
+        </div>
+      </div>
+
+      <div class="tc" onclick="selectTeam(this)">
+        <div class="tc-hdr">
+          <div class="tc-av" style="background:rgba(240,192,64,.12)">☀️</div>
+          <div class="tc-info">
+            <div class="tc-name">SolarPunk</div>
+            <div class="tc-meta">Étape 2 · 4 membres</div>
+          </div>
+          <div class="tc-day tc-day-on">EN COURS</div>
+        </div>
+        <div class="tc-prog"><div class="prog-bg"><div class="prog-fill" style="width:35%;background:linear-gradient(90deg,var(--fac),#0f5b8c)"></div></div></div>
+        <div class="tc-foot">
+          <span class="tc-members">🤖×4 ✋×1</span>
+          <span class="tc-lv lv2">✏️ Explorateur</span>
+        </div>
+      </div>
+
+      <div class="tc" onclick="selectTeam(this)">
+        <div class="tc-hdr">
+          <div class="tc-av" style="background:rgba(122,182,72,.12)">🧬</div>
+          <div class="tc-info">
+            <div class="tc-name">BioBridge</div>
+            <div class="tc-meta">Étape 1 · 3 membres</div>
+          </div>
+          <div class="tc-day tc-day-on">EN COURS</div>
+        </div>
+        <div class="tc-prog"><div class="prog-bg"><div class="prog-fill" style="width:18%;background:linear-gradient(90deg,var(--fac),#0f5b8c)"></div></div></div>
+        <div class="tc-foot">
+          <span class="tc-members">🤖×2 ✋×0</span>
+          <span class="tc-lv lv1">🌱 Découvreur</span>
+        </div>
+      </div>
+
+      <div class="tc" onclick="selectTeam(this)">
+        <div class="tc-hdr">
+          <div class="tc-av" style="background:rgba(212,105,74,.12)">🔥</div>
+          <div class="tc-info">
+            <div class="tc-name">UrbanHeat</div>
+            <div class="tc-meta">Étape 3 · 4 membres</div>
+          </div>
+          <div class="tc-day tc-day-on">EN COURS</div>
+        </div>
+        <div class="tc-prog"><div class="prog-bg"><div class="prog-fill" style="width:48%;background:linear-gradient(90deg,var(--fac),#0f5b8c)"></div></div></div>
+        <div class="tc-foot">
+          <span class="tc-members">🤖×5 ✋×2</span>
+          <span class="tc-lv lv2">✏️ Explorateur</span>
+        </div>
+      </div>
+
+      <div class="tc" onclick="selectTeam(this)">
+        <div class="tc-hdr">
+          <div class="tc-av" style="background:rgba(123,94,167,.12)">🔬</div>
+          <div class="tc-info">
+            <div class="tc-name">NanoFilter</div>
+            <div class="tc-meta">Étape 2 · 5 membres</div>
+          </div>
+          <div class="tc-day tc-day-on">EN COURS</div>
+        </div>
+        <div class="tc-prog"><div class="prog-bg"><div class="prog-fill" style="width:42%;background:linear-gradient(90deg,var(--fac),#0f5b8c)"></div></div></div>
+        <div class="tc-foot">
+          <span class="tc-members">🤖×3 ✋×4</span>
+          <span class="tc-lv lv3">🔧 Constructeur</span>
+        </div>
+      </div>
+
+      <div class="tc" onclick="selectTeam(this)">
+        <div class="tc-hdr">
+          <div class="tc-av" style="background:rgba(147,197,232,.12)">💨</div>
+          <div class="tc-info">
+            <div class="tc-name">VentVert</div>
+            <div class="tc-meta">Étape 1 · 4 membres</div>
+          </div>
+          <div class="tc-day tc-day-on">EN COURS</div>
+        </div>
+        <div class="tc-prog"><div class="prog-bg"><div class="prog-fill" style="width:15%;background:linear-gradient(90deg,var(--fac),#0f5b8c)"></div></div></div>
+        <div class="tc-foot">
+          <span class="tc-members">🤖×1 ✋×0</span>
+          <span class="tc-lv lv1">🌱 Découvreur</span>
+        </div>
+      </div>
+
+    </div><!-- /teams-col -->
+
+    <!-- ── CONV DRAWER ── -->
+    <div class="conv-drawer">
+
+      <!-- Drawer header -->
+      <div class="dwr-hdr">
+        <div class="dwr-hdr-info">
+          <div class="dwr-title">
+            🌲 Forêt 2050
+            <span class="tc-lv lv3" style="font-size:.59rem;padding:3px 9px">🔧 Constructeur</span>
+          </div>
+          <div class="dwr-sub">Analyse vitrine · Dernière activité il y a 38 min</div>
+          <div class="dwr-chips">
+            <span class="dwr-chip">🌿 4 membres</span>
+            <span class="dwr-chip">📍 Étape 3 active</span>
+            <span class="dwr-chip">CODE&nbsp;: FRT50</span>
+            <span class="dwr-chip">🤖&nbsp;×5 · ✋&nbsp;×4</span>
+          </div>
+        </div>
+        <button class="btn-close">✕</button>
+      </div>
+
+      <!-- Tabs -->
+      <div class="dwr-tabs">
+        <button class="dwr-tab on" onclick="switchTab(event,'tab-vitrine')">📊 Maîtrise Vitrine</button>
+        <button class="dwr-tab" onclick="switchTab(event,'tab-prompts')">💬 Qualité des Prompts</button>
+      </div>
+
+      <!-- ═══════════ TAB VITRINE ═══════════ -->
+      <div id="tab-vitrine" class="tab-panel on">
+
+        <!-- Niveau hero -->
+        <div class="lv-hero">
+          <div class="lvh-left">
+            <div class="lvh-eye">Niveau de maîtrise vitrine</div>
+            <div class="lvh-name">🔧 Constructeur</div>
+            <div class="lvh-desc">L'équipe prend des initiatives manuelles régulières sur plusieurs étapes. Bon équilibre IA / autonomie.</div>
+          </div>
+          <div class="lvh-right">
+            <div class="lvh-bar-lbl">Progression</div>
+            <div class="lvh-bar"><div class="lvh-bar-fill" style="width:62%"></div></div>
+            <div class="lvh-ticks">
+              <span>🌱</span><span>✏️</span><span>🔧</span><span>🚀</span>
+            </div>
+            <div style="margin-top:6px;font-size:.59rem;opacity:.65;">9 MAJ · 44% autonomie</div>
+          </div>
+        </div>
+
+        <!-- Diagnostic -->
+        <div class="diag">
+          <div class="diag-ico">🧠</div>
+          <div class="diag-body">
+            <div class="diag-ttl">Analyse comportementale · Vitrine</div>
+            <div class="diag-txt">
+              <strong>Forêt 2050</strong> s'approprie progressivement la vitrine — sur 9 mises à jour,
+              <strong>4 étaient des initiatives manuelles</strong>, dont 3 réalisées <em>après</em>
+              une génération IA. Pattern d'équipe qui utilise SPARK comme point de départ
+              puis raffine par elle-même. <strong>Bonne dynamique d'autonomie.</strong>
+            </div>
+            <div class="diag-hint">⚠️ Point d'attention : l'étape 2 n'a reçu aucune retouche manuelle — vitrine 100% IA.</div>
+          </div>
+        </div>
+
+        <!-- KPIs -->
+        <div class="kpi-grid">
+          <div class="kpi">
+            <div class="kpi-val">9</div>
+            <div class="kpi-lbl">Mises à jour vitrine</div>
+            <div class="kpi-sub">
+              <span class="ktag kt-f">🤖 ×5</span>
+              <span class="ktag kt-g">✋ ×4</span>
+            </div>
+          </div>
+          <div class="kpi">
+            <div class="kpi-val">44%</div>
+            <div class="kpi-lbl">Ratio autonomie</div>
+            <div class="kpi-sub">
+              <span class="ktag kt-g">↑ +12% vs promo</span>
+            </div>
+          </div>
+          <div class="kpi">
+            <div class="kpi-val">3</div>
+            <div class="kpi-lbl">Retouches post-IA</div>
+            <div class="kpi-sub">
+              <span class="ktag kt-b">Appropriation active</span>
+            </div>
+          </div>
+          <div class="kpi">
+            <div class="kpi-val">2</div>
+            <div class="kpi-lbl">Demandes explicites 🎨</div>
+            <div class="kpi-sub">
+              <span class="ktag kt-o">Sur 3 étapes actives</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Étapes header -->
+        <div class="sec-hdr">
+          <div class="sec-ttl">Détail par étape</div>
+          <div class="legend">
+            <div class="leg"><div class="ldot" style="background:#60a5fa"></div>IA auto</div>
+            <div class="leg"><div class="ldot" style="background:#a78bfa"></div>IA demandée 🎨</div>
+            <div class="leg"><div class="ldot" style="background:#4ade80"></div>Manuel</div>
+          </div>
+        </div>
+
+        <div class="etapes">
+
+          <!-- Étape 0 -->
+          <div class="er">
+            <div class="enum e-d">0</div>
+            <div class="ectr">
+              <div class="ename">🌱 Découvrir</div>
+              <div class="ebars">
+                <div class="bg"><div class="bt"><div class="bf bf-ia" style="width:100%"></div></div><span style="color:#1d6fa4;font-weight:700;">🤖×1</span></div>
+                <div class="bg"><div class="bt"><div class="bf bf-mn" style="width:0%"></div></div><span style="color:#9ca3af;">✋×0</span></div>
+              </div>
+              <div class="tl"><div class="td ia"></div><div class="tl-ln"></div></div>
+            </div>
+            <div class="eright">
+              <span class="elv lv1">🌱 Niv.1</span>
+              <div class="eevs"><span class="ev ev-ia">🤖 Checkpoint</span></div>
+              <div class="ets">Il y a 3 jours</div>
+            </div>
+          </div>
+
+          <!-- Étape 1 -->
+          <div class="er">
+            <div class="enum e-d">1</div>
+            <div class="ectr">
+              <div class="ename">🔍 Problématiser</div>
+              <div class="ebars">
+                <div class="bg"><div class="bt"><div class="bf bf-ia" style="width:100%"></div></div><span style="color:#1d6fa4;font-weight:700;">🤖×2</span></div>
+                <div class="bg"><div class="bt"><div class="bf bf-mn" style="width:50%"></div></div><span style="color:#16a34a;font-weight:700;">✋×1</span></div>
+              </div>
+              <div class="tl"><div class="td ia"></div><div class="tl-ln"></div><div class="td dm"></div><div class="tl-ln"></div><div class="td mn"></div><div class="tl-ln"></div></div>
+            </div>
+            <div class="eright">
+              <span class="elv lv2">✏️ Niv.2</span>
+              <div class="eevs"><span class="ev ev-ia">🤖×2</span><span class="ev ev-mn">✋×1 post-IA</span></div>
+              <div class="ets">Hier, 14h22</div>
+            </div>
+          </div>
+
+          <!-- Étape 2 + alerte -->
+          <div class="er">
+            <div class="enum e-d">2</div>
+            <div class="ectr">
+              <div class="ename">✏️ Imaginer</div>
+              <div class="ebars">
+                <div class="bg"><div class="bt"><div class="bf bf-ia" style="width:100%"></div></div><span style="color:#1d6fa4;font-weight:700;">🤖×1</span></div>
+                <div class="bg"><div class="bt"><div class="bf bf-mn" style="width:0%"></div></div><span style="color:#9ca3af;">✋×0</span></div>
+              </div>
+              <div class="tl"><div class="td ia"></div><div class="tl-ln"></div></div>
+            </div>
+            <div class="eright">
+              <span class="elv lv1">🌱 Niv.1</span>
+              <div class="eevs"><span class="ev ev-ia">🤖 Checkpoint</span></div>
+              <div class="ets">Hier, 15h07</div>
+            </div>
+          </div>
+          <div class="alert-row">⚠️ <span><strong>Aucune initiative manuelle.</strong> Cette étape est entièrement générée par SPARK — encourager l'équipe à personnaliser.</span></div>
+
+          <!-- Étape 3 EN COURS -->
+          <div class="er cur">
+            <div class="enum e-a">3</div>
+            <div class="ectr">
+              <div class="ename">🔨 Créer <span class="etag">EN COURS</span></div>
+              <div class="ebars">
+                <div class="bg"><div class="bt"><div class="bf bf-ia" style="width:33%"></div></div><span style="color:#1d6fa4;font-weight:700;">🤖×1</span></div>
+                <div class="bg"><div class="bt"><div class="bf bf-mn" style="width:66%"></div></div><span style="color:#16a34a;font-weight:700;">✋×2</span></div>
+              </div>
+              <div class="tl"><div class="td ia"></div><div class="tl-ln"></div><div class="td mn"></div><div class="tl-ln"></div><div class="td mn"></div><div class="tl-ln" style="flex:3"></div></div>
+            </div>
+            <div class="eright">
+              <span class="elv lv3">🔧 Niv.3</span>
+              <div class="eevs"><span class="ev ev-ia">🤖×1</span><span class="ev ev-dm">🎨×1</span><span class="ev ev-mn">✋×2</span></div>
+              <div class="ets">Il y a 38 min</div>
+            </div>
+          </div>
+
+          <!-- Étapes verrouillées -->
+          <div class="er locked">
+            <div class="enum e-p">4</div>
+            <div class="ectr">
+              <div class="ename">📢 Pitcher</div>
+              <div style="font-size:.65rem;color:#9ca3af;">Étape non débloquée</div>
+            </div>
+            <div class="eright"><div class="ets">🔒 En attente</div></div>
+          </div>
+          <div class="er locked">
+            <div class="enum e-p">5</div>
+            <div class="ectr">
+              <div class="ename">🏆 Finale</div>
+              <div style="font-size:.65rem;color:#9ca3af;">Étape non débloquée</div>
+            </div>
+            <div class="eright"><div class="ets">🔒 En attente</div></div>
+          </div>
+
+        </div><!-- /etapes -->
+
+        <div style="height:6px"></div>
+      </div><!-- /tab-vitrine -->
+
+      <!-- ═══════════ TAB QUALITÉ PROMPTS ═══════════ -->
+      <div id="tab-prompts" class="tab-panel">
+
+        <!-- Hero qualité -->
+        <div class="pq-hero">
+          <div class="pqh-ico">💬</div>
+          <div class="pqh-left">
+            <div class="pqh-eye">Qualité des prompts TEAM → SPARK</div>
+            <div class="pqh-name">🟢 Contextualisé</div>
+            <div class="pqh-desc">L'équipe formule des demandes avec contexte sur 41% des messages. Progression nette à l'étape 3.</div>
+          </div>
+          <div class="pqh-score">
+            <div class="pqh-sv">5.8</div>
+            <div class="pqh-sl">Score / 10</div>
+          </div>
+        </div>
+
+        <!-- Stats -->
+        <div class="pq-stats">
+          <div class="pq-stat">
+            <div class="pqs-val">18 mots</div>
+            <div class="pqs-lbl">Longueur moyenne des messages</div>
+            <div class="pqs-bar"><div class="pqs-fill" style="width:36%;background:linear-gradient(90deg,#60a5fa,#1d6fa4)"></div></div>
+          </div>
+          <div class="pq-stat">
+            <div class="pqs-val">22%</div>
+            <div class="pqs-lbl">Prompts détaillés (&gt;30 mots)</div>
+            <div class="pqs-bar"><div class="pqs-fill" style="width:22%;background:linear-gradient(90deg,#4ade80,#16a34a)"></div></div>
+          </div>
+          <div class="pq-stat">
+            <div class="pqs-val">41%</div>
+            <div class="pqs-lbl">Avec contexte <em>("parce que", "notre projet"…)</em></div>
+            <div class="pqs-bar"><div class="pqs-fill" style="width:41%;background:linear-gradient(90deg,#818cf8,#6d28d9)"></div></div>
+          </div>
+          <div class="pq-stat">
+            <div class="pqs-val" style="color:var(--terra)">38%</div>
+            <div class="pqs-lbl">SPARK a dû relancer pour précisions</div>
+            <div class="pqs-bar"><div class="pqs-fill" style="width:38%;background:linear-gradient(90deg,#fca5a5,#dc2626)"></div></div>
+          </div>
+        </div>
+
+        <!-- Évolution par étape -->
+        <div class="pq-evol">
+          <div class="pq-evol-ttl">Évolution qualité des prompts par étape</div>
+          <div class="pq-evol-row">
+            <div class="pq-ev-lbl">🌱 Étape 0</div>
+            <div class="pq-ev-track"><div class="pq-ev-fill" style="width:30%;background:#fca5a5"></div></div>
+            <div class="pq-ev-score" style="color:#dc2626">3/10</div>
+            <div class="pq-ev-ico">🔴</div>
+          </div>
+          <div class="pq-evol-row">
+            <div class="pq-ev-lbl">🔍 Étape 1</div>
+            <div class="pq-ev-track"><div class="pq-ev-fill" style="width:50%;background:#fde68a"></div></div>
+            <div class="pq-ev-score" style="color:#92400e">5/10</div>
+            <div class="pq-ev-ico">🟡</div>
+          </div>
+          <div class="pq-evol-row">
+            <div class="pq-ev-lbl">✏️ Étape 2</div>
+            <div class="pq-ev-track"><div class="pq-ev-fill" style="width:52%;background:#fde68a"></div></div>
+            <div class="pq-ev-score" style="color:#92400e">5.2/10</div>
+            <div class="pq-ev-ico">🟡</div>
+          </div>
+          <div class="pq-evol-row" style="margin-bottom:0">
+            <div class="pq-ev-lbl">🔨 Étape 3 <span style="font-size:.54rem;color:var(--fac)">↑</span></div>
+            <div class="pq-ev-track"><div class="pq-ev-fill" style="width:70%;background:linear-gradient(90deg,#4ade80,#16a34a)"></div></div>
+            <div class="pq-ev-score" style="color:#16a34a">7/10</div>
+            <div class="pq-ev-ico">🟢</div>
+          </div>
+        </div>
+
+        <!-- Exemples annotés -->
+        <div class="pq-ex-ttl">Exemples de prompts annotés</div>
+
+        <div class="pq-ex">
+          <div class="pq-ex-hdr">
+            <div class="pq-ex-meta">Étape 1 · il y a 2 jours</div>
+            <div class="pq-ql ql-red">🔴 Vague</div>
+          </div>
+          <div class="pq-ex-msg">« améliore la vitrine »</div>
+          <div class="pq-ex-note">💡 Trop court — SPARK n'a pas pu cibler une amélioration précise et a produit une refonte générique. SPARK a dû demander des précisions.</div>
+        </div>
+
+        <div class="pq-ex">
+          <div class="pq-ex-hdr">
+            <div class="pq-ex-meta">Étape 2 · hier</div>
+            <div class="pq-ql ql-ylw">🟡 Court mais ciblé</div>
+          </div>
+          <div class="pq-ex-msg">« change la couleur du fond en quelque chose de plus naturel »</div>
+          <div class="pq-ex-note">💡 Action précise mais sans lien avec l'identité du projet. Bon début de maîtrise de la demande. Résultat correct mais générique.</div>
+        </div>
+
+        <div class="pq-ex">
+          <div class="pq-ex-hdr">
+            <div class="pq-ex-meta">Étape 3 · il y a 38 min</div>
+            <div class="pq-ql ql-grn">🟢 Contextualisé</div>
+          </div>
+          <div class="pq-ex-msg">« Je voudrais que l'introduction soit plus percutante <strong>parce que</strong> notre projet parle d'impact écologique et on veut que le visiteur comprenne ça en 3 secondes »</div>
+          <div class="pq-ex-note">✅ Excellent — intention claire, contexte projet, critère de réussite explicite. SPARK a pu produire une amélioration parfaitement ciblée.</div>
+        </div>
+
+        <!-- Conseil FAC -->
+        <div class="pq-conseil">
+          <div class="pqc-ico">💡</div>
+          <div class="pqc-txt">
+            <strong>Conseil facilitateur :</strong> encourager l'équipe à ajouter un <em>"parce que"</em> ou <em>"afin de"</em> dans leurs demandes à SPARK.
+            Les prompts avec <strong>contexte et intention explicite</strong> obtiennent des résultats 2× plus pertinents.
+            Suggérer le <em>guide de formulation</em> lors de la prochaine session — l'équipe est prête à passer au niveau Expert.
+          </div>
+        </div>
+
+        <div style="height:6px"></div>
+      </div><!-- /tab-prompts -->
+
+    </div><!-- /conv-drawer -->
+
+  </div><!-- /drawer-layout -->
+
+</div><!-- /shell -->
+
+<script>
+function switchTab(e, tabId) {
+  document.querySelectorAll('.dwr-tab').forEach(t => t.classList.remove('on'));
+  document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('on'));
+  e.currentTarget.classList.add('on');
+  document.getElementById(tabId).classList.add('on');
+}
+function selectTeam(el) {
+  document.querySelectorAll('.tc').forEach(c => c.classList.remove('active'));
+  el.classList.add('active');
+}
+</script>
 </body>
 </html>
