@@ -241,6 +241,38 @@ body{
   padding:9px 13px;display:flex;gap:8px;margin-top:-4px;margin-left:36px;
   font-size:.69rem;color:#92400e;line-height:1.5;}
 
+/* ── CONTRIBUTIONS PAR MEMBRE & AMPLITUDE ── */
+.contrib-card,.ampl-card{background:white;border:1px solid rgba(29,111,164,.1);border-radius:12px;
+  padding:13px 15px;box-shadow:0 3px 10px rgba(10,25,41,.04);}
+.ca-ttl{font-size:.57rem;font-weight:700;letter-spacing:1.3px;text-transform:uppercase;
+  color:#4a6b85;margin-bottom:9px;}
+.c-row{display:flex;align-items:center;gap:8px;margin-bottom:6px;}
+.c-row:last-of-type{margin-bottom:0;}
+.c-av{width:21px;height:21px;border-radius:6px;background:var(--fac-l);
+  border:1px solid var(--fac-b);display:flex;align-items:center;justify-content:center;
+  font-size:.6rem;font-weight:700;color:var(--fac);flex-shrink:0;}
+.c-av.off{background:rgba(0,0,0,.04);border-color:rgba(0,0,0,.08);color:#c0ccd8;}
+.c-name{font-size:.67rem;font-weight:600;color:#0a1929;width:44px;flex-shrink:0;}
+.c-track{flex:1;height:5px;background:rgba(0,0,0,.06);border-radius:999px;overflow:hidden;}
+.c-fill{height:100%;border-radius:999px;background:linear-gradient(90deg,#4ade80,#16a34a);}
+.c-count{font-size:.61rem;font-weight:700;color:#16a34a;width:28px;text-align:right;flex-shrink:0;}
+.c-count.off{color:#c0ccd8;}
+.c-ampl{display:flex;gap:3px;flex-wrap:wrap;}
+.ap-sm{padding:1px 5px;border-radius:999px;font-size:.52rem;font-weight:700;
+  background:#eff6ff;color:#1e40af;border:1px solid #bfdbfe;}
+.ap-md{padding:1px 5px;border-radius:999px;font-size:.52rem;font-weight:700;
+  background:#fff7ed;color:#c2410c;border:1px solid #fed7aa;}
+.ap-lg{padding:1px 5px;border-radius:999px;font-size:.52rem;font-weight:700;
+  background:#fdf4ff;color:#7e22ce;border:1px solid #e9d5ff;}
+.ampl-row{display:flex;align-items:center;gap:8px;margin-bottom:6px;}
+.ampl-row:last-of-type{margin-bottom:0;}
+.ampl-src{font-size:.63rem;font-weight:700;width:34px;flex-shrink:0;color:#4a6b85;}
+.ampl-lbl{width:84px;flex-shrink:0;}
+.ampl-track{flex:1;height:5px;background:rgba(0,0,0,.06);border-radius:999px;overflow:hidden;}
+.ampl-fill{height:100%;border-radius:999px;}
+.ampl-n{font-size:.61rem;font-weight:700;color:#4a6b85;width:20px;text-align:right;flex-shrink:0;}
+.ampl-note{font-size:.57rem;color:#4a6b85;font-style:italic;margin-top:2px;margin-left:120px;}
+
 /* ══════════════════════════════════════
    ONGLET QUALITÉ PROMPTS TEAM
 ══════════════════════════════════════ */
@@ -575,6 +607,85 @@ body{
               <span class="ktag kt-o">Sur 3 étapes actives</span>
             </div>
           </div>
+          <div class="kpi">
+            <div class="kpi-val">2<span style="font-size:.75rem;color:#9ca3af;font-weight:400;">/4</span></div>
+            <div class="kpi-lbl">Membres ayant contribué</div>
+            <div class="kpi-sub">
+              <span class="ktag kt-o">⚠️ 2 membres passifs</span>
+            </div>
+          </div>
+          <div class="kpi">
+            <div class="kpi-val" style="font-size:1rem;margin-top:3px;">🟡 Modérée</div>
+            <div class="kpi-lbl">Amplitude moy. modifs TEAM</div>
+            <div class="kpi-sub">
+              <span class="ktag kt-f">🤖 Grande (refonte IA)</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Contributions par membre -->
+        <div class="contrib-card">
+          <div class="ca-ttl">Contributions par membre de l'équipe</div>
+          <div class="c-row">
+            <div class="c-av">L</div>
+            <div class="c-name">Léa</div>
+            <div class="c-track"><div class="c-fill" style="width:100%"></div></div>
+            <div class="c-count">✋×3</div>
+            <div class="c-ampl"><span class="ap-md">🟡 §×2</span><span class="ap-sm">🔵 mot×1</span></div>
+          </div>
+          <div class="c-row">
+            <div class="c-av">T</div>
+            <div class="c-name">Tom</div>
+            <div class="c-track"><div class="c-fill" style="width:33%"></div></div>
+            <div class="c-count">✋×1</div>
+            <div class="c-ampl"><span class="ap-sm">🔵 couleur×1</span></div>
+          </div>
+          <div class="c-row">
+            <div class="c-av off">A</div>
+            <div class="c-name" style="color:#9ca3af">Amira</div>
+            <div class="c-track"><div class="c-fill" style="width:0%"></div></div>
+            <div class="c-count off">×0</div>
+            <div class="c-ampl"><span style="font-size:.57rem;color:#c0ccd8;font-style:italic">aucune modif</span></div>
+          </div>
+          <div class="c-row">
+            <div class="c-av off">J</div>
+            <div class="c-name" style="color:#9ca3af">Jules</div>
+            <div class="c-track"><div class="c-fill" style="width:0%"></div></div>
+            <div class="c-count off">×0</div>
+            <div class="c-ampl"><span style="font-size:.57rem;color:#c0ccd8;font-style:italic">aucune modif</span></div>
+          </div>
+          <div class="alert-row" style="margin:8px 0 0;margin-left:0">⚠️ <span><strong>Amira et Jules</strong> n'ont fait aucune modification manuelle — penser à les interpeller directement en session.</span></div>
+        </div>
+
+        <!-- Amplitude des modifications -->
+        <div class="ampl-card">
+          <div class="ca-ttl">Amplitude des modifications · IA vs TEAM</div>
+          <div class="ampl-row">
+            <div class="ampl-src">🤖 IA</div>
+            <div class="ampl-lbl"><span class="ap-lg">🔴 Grande</span></div>
+            <div class="ampl-track"><div class="ampl-fill" style="width:100%;background:linear-gradient(90deg,#c084fc,#7e22ce)"></div></div>
+            <div class="ampl-n">×5</div>
+          </div>
+          <div class="ampl-note">Génère ou refond des sections entières — impact toujours élevé sur le HTML</div>
+          <div class="ampl-row" style="margin-top:8px">
+            <div class="ampl-src">✋ Team</div>
+            <div class="ampl-lbl"><span class="ap-sm">🔵 Petite</span></div>
+            <div class="ampl-track"><div class="ampl-fill" style="width:50%;background:linear-gradient(90deg,#93c5fd,#1d6fa4)"></div></div>
+            <div class="ampl-n">×2</div>
+          </div>
+          <div class="ampl-row">
+            <div class="ampl-src"></div>
+            <div class="ampl-lbl"><span class="ap-md">🟡 Modérée</span></div>
+            <div class="ampl-track"><div class="ampl-fill" style="width:25%;background:linear-gradient(90deg,#fdba74,#c2410c)"></div></div>
+            <div class="ampl-n">×1</div>
+          </div>
+          <div class="ampl-row">
+            <div class="ampl-src"></div>
+            <div class="ampl-lbl"><span class="ap-lg">🔴 Grande</span></div>
+            <div class="ampl-track"><div class="ampl-fill" style="width:25%;background:linear-gradient(90deg,#d8b4fe,#7e22ce)"></div></div>
+            <div class="ampl-n">×1</div>
+          </div>
+          <div style="font-size:.57rem;color:#4a6b85;margin-top:6px;font-style:italic">🔵 Petite = mot / couleur / valeur CSS &nbsp;·&nbsp; 🟡 Modérée = paragraphe / ligne &nbsp;·&nbsp; 🔴 Grande = section / structure HTML</div>
         </div>
 
         <!-- Étapes header -->
@@ -620,7 +731,7 @@ body{
             </div>
             <div class="eright">
               <span class="elv lv2">✏️ Niv.2</span>
-              <div class="eevs"><span class="ev ev-ia">🤖×2</span><span class="ev ev-mn">✋×1 post-IA</span></div>
+              <div class="eevs"><span class="ev ev-ia">🤖×2</span><span class="ev ev-mn">✋×1 post-IA</span><span class="ap-md" style="font-size:.52rem">🟡 §section</span></div>
               <div class="ets">Hier, 14h22</div>
             </div>
           </div>
@@ -657,7 +768,7 @@ body{
             </div>
             <div class="eright">
               <span class="elv lv3">🔧 Niv.3</span>
-              <div class="eevs"><span class="ev ev-ia">🤖×1</span><span class="ev ev-dm">🎨×1</span><span class="ev ev-mn">✋×2</span></div>
+              <div class="eevs"><span class="ev ev-ia">🤖×1</span><span class="ev ev-dm">🎨×1</span><span class="ev ev-mn">✋×2</span><span class="ap-sm" style="font-size:.52rem">🔵 couleur</span><span class="ap-md" style="font-size:.52rem">🟡 §structure</span></div>
               <div class="ets">Il y a 38 min</div>
             </div>
           </div>
