@@ -1,0 +1,915 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SPARK — Animation fin d'étape</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+:root{
+  --bg:#070d18;
+  --card:#0e1829;
+  --moss:#3d5c3a;
+  --sage:#7ab648;
+  --green:#22c55e;
+  --green-dark:#16a34a;
+  --orange:#f09433;
+  --red:#dc2743;
+  --border:rgba(255,255,255,.07);
+}
+body{
+  font-family:'Inter',sans-serif;
+  background:var(--bg);
+  min-height:100vh;
+  display:flex;align-items:center;justify-content:center;
+  overflow:hidden;
+}
+
+/* ═══════════════════════════════════════════════
+   FAUX ÉCRAN TEAM (contexte de fond)
+═══════════════════════════════════════════════ */
+.bg-screen{
+  width:420px;max-width:100vw;
+  min-height:100vh;
+  display:flex;flex-direction:column;
+  background:var(--bg);
+  position:relative;
+}
+.bs-header{
+  padding:18px 20px 14px;
+  border-bottom:1px solid var(--border);
+  display:flex;align-items:center;justify-content:space-between;
+}
+.bs-step-tag{
+  font-size:.55rem;font-weight:800;letter-spacing:1.5px;
+  text-transform:uppercase;color:rgba(255,255,255,.3);
+}
+.bs-step-title{
+  font-family:'Syne',sans-serif;font-size:.95rem;font-weight:800;
+  color:#fff;margin-top:3px;
+}
+.bs-eco{
+  display:flex;align-items:center;gap:5px;
+  background:rgba(34,197,94,.08);
+  border:1px solid rgba(34,197,94,.18);
+  border-radius:20px;padding:4px 10px;
+  font-size:.58rem;font-weight:700;color:rgba(34,197,94,.7);
+  white-space:nowrap;
+}
+.bs-eco-dot{
+  width:6px;height:6px;border-radius:50%;
+  background:var(--green);
+  box-shadow:0 0 5px var(--green);
+}
+.bs-chat{
+  flex:1;padding:16px 16px 80px;
+  display:flex;flex-direction:column;gap:10px;
+  overflow:hidden;
+}
+.msg{
+  max-width:82%;padding:10px 14px;
+  border-radius:14px;font-size:.71rem;line-height:1.6;
+}
+.msg.spark{
+  align-self:flex-start;
+  background:rgba(255,255,255,.05);
+  border:1px solid var(--border);
+  color:rgba(255,255,255,.65);
+  border-bottom-left-radius:3px;
+}
+.msg.team{
+  align-self:flex-end;
+  background:rgba(34,197,94,.1);
+  border:1px solid rgba(34,197,94,.15);
+  color:rgba(255,255,255,.75);
+  border-bottom-right-radius:3px;
+}
+.msg-who{
+  font-size:.52rem;font-weight:700;letter-spacing:.5px;
+  text-transform:uppercase;color:rgba(255,255,255,.25);
+  margin-bottom:4px;
+}
+.bs-input{
+  position:absolute;bottom:0;left:0;right:0;
+  padding:12px 16px;
+  background:rgba(7,13,24,.95);
+  border-top:1px solid var(--border);
+  display:flex;gap:8px;align-items:center;
+}
+.bs-ifield{
+  flex:1;background:rgba(255,255,255,.05);
+  border:1px solid var(--border);border-radius:10px;
+  padding:10px 14px;font-size:.71rem;color:rgba(255,255,255,.3);
+  font-family:'Inter',sans-serif;
+}
+.bs-isend{
+  width:36px;height:36px;border-radius:10px;
+  background:linear-gradient(135deg,var(--green-dark),var(--green));
+  border:none;font-size:.95rem;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;
+}
+/* ── badge progression dans header ── */
+.bs-prog{
+  display:flex;gap:3px;align-items:center;
+}
+.bs-pip{
+  width:18px;height:3px;border-radius:2px;
+  background:rgba(255,255,255,.1);
+}
+.bs-pip.done{background:var(--green);}
+.bs-pip.active{background:linear-gradient(90deg,var(--orange),var(--red));}
+
+
+/* ═══════════════════════════════════════════════
+   OVERLAY PLEIN ÉCRAN
+═══════════════════════════════════════════════ */
+.overlay{
+  position:fixed;inset:0;z-index:100;
+  display:flex;flex-direction:column;
+  align-items:center;justify-content:center;
+  overflow:hidden;           /* le scroll est géré par .ov-scroll */
+  opacity:0;pointer-events:none;
+  transition:opacity .4s;
+}
+.overlay.show{
+  opacity:1;pointer-events:all;
+}
+
+/* Canvas confettis */
+#canvas-confetti{
+  position:fixed;inset:0;z-index:101;
+  pointer-events:none;
+  opacity:0;transition:opacity .3s;
+}
+#canvas-confetti.show{opacity:1;}
+
+/* Fond dégradé */
+.ov-bg{
+  position:fixed;inset:0;z-index:102;
+  background:linear-gradient(180deg,rgba(4,8,15,.96) 0%,rgba(7,13,24,.98) 100%);
+  backdrop-filter:blur(8px);
+}
+
+/* Contenu scrollable au-dessus du bg */
+.ov-scroll{
+  position:relative;z-index:103;
+  width:100%;max-width:480px;
+  max-height:100vh;           /* déclenche le scroll ici si besoin */
+  overflow-y:auto;
+  padding:20px 20px 16px;
+  display:flex;flex-direction:column;
+  align-items:center;
+  gap:0;
+}
+
+/* ── En-tête héroïque (compact) ── */
+.ov-hero{
+  width:100%;text-align:center;
+  padding-bottom:16px;
+  display:flex;flex-direction:column;align-items:center;gap:8px;
+  transform:translateY(30px);opacity:0;
+  transition:transform .6s cubic-bezier(.34,1.56,.64,1), opacity .5s;
+  transition-delay:.1s;
+}
+.overlay.show .ov-hero{transform:translateY(0);opacity:1;}
+
+.ov-step-badge{
+  display:inline-flex;align-items:center;gap:8px;
+  background:rgba(34,197,94,.1);
+  border:1px solid rgba(34,197,94,.25);
+  border-radius:24px;padding:5px 14px;
+  font-size:.58rem;font-weight:800;letter-spacing:1.5px;
+  text-transform:uppercase;color:var(--green);
+}
+.ov-step-badge-dot{
+  width:7px;height:7px;border-radius:50%;
+  background:var(--green);
+  animation:ping 1.4s ease-out infinite;
+}
+@keyframes ping{
+  0%{box-shadow:0 0 0 0 rgba(34,197,94,.6);}
+  100%{box-shadow:0 0 0 10px rgba(34,197,94,0);}
+}
+
+.ov-emoji{
+  font-size:2.8rem;
+  filter:drop-shadow(0 0 18px rgba(34,197,94,.4));
+  animation:emoji-in .7s .25s cubic-bezier(.34,1.56,.64,1) both;
+}
+@keyframes emoji-in{
+  from{transform:scale(0) rotate(-20deg);opacity:0;}
+  to{transform:scale(1) rotate(0);opacity:1;}
+}
+
+.ov-title{
+  font-family:'Syne',sans-serif;font-size:1.55rem;font-weight:800;
+  color:#fff;line-height:1.1;
+}
+.ov-title span{
+  background:linear-gradient(135deg,var(--green),#4ade80);
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;
+}
+
+.ov-subtitle{
+  font-size:.72rem;color:rgba(255,255,255,.4);
+  max-width:300px;line-height:1.5;margin:0 auto;
+}
+
+/* ── Barre de progression chemin ── */
+.ov-journey{
+  width:100%;
+  display:flex;align-items:center;justify-content:center;
+  gap:0;
+  padding:0 0 14px;
+  transform:translateY(20px);opacity:0;
+  transition:transform .5s cubic-bezier(.34,1.56,.64,1), opacity .5s;
+  transition-delay:.3s;
+}
+.overlay.show .ov-journey{transform:translateY(0);opacity:1;}
+
+.jp{
+  display:flex;flex-direction:column;align-items:center;gap:5px;
+  flex:0 0 auto;
+}
+.jp-orb{
+  width:44px;height:44px;border-radius:50%;
+  display:flex;align-items:center;justify-content:center;
+  font-size:1.1rem;
+  position:relative;
+}
+.jp-orb.done{
+  background:linear-gradient(135deg,var(--green),var(--green-dark));
+  box-shadow:0 0 0 3px rgba(34,197,94,.2);
+}
+.jp-orb.done::after{
+  content:'✓';
+  position:absolute;inset:0;border-radius:50%;
+  background:rgba(22,163,74,.85);
+  display:flex;align-items:center;justify-content:center;
+  font-size:.85rem;font-weight:900;color:#fff;
+}
+.jp-orb.current{
+  background:linear-gradient(135deg,var(--orange),var(--red));
+  box-shadow:0 0 0 3px rgba(240,148,51,.25),0 0 16px rgba(240,148,51,.2);
+  animation:orb-glow 2s ease-in-out infinite alternate;
+}
+@keyframes orb-glow{
+  from{box-shadow:0 0 0 3px rgba(240,148,51,.2),0 0 12px rgba(240,148,51,.15);}
+  to{box-shadow:0 0 0 4px rgba(240,148,51,.35),0 0 24px rgba(240,148,51,.25);}
+}
+.jp-orb.locked{
+  background:#1a2740;
+  opacity:.4;
+}
+.jp-label{
+  font-size:.45rem;font-weight:700;letter-spacing:.3px;
+  color:rgba(255,255,255,.3);text-align:center;max-width:46px;
+}
+.jp-label.done{color:rgba(34,197,94,.65);}
+.jp-label.current{color:rgba(255,255,255,.8);}
+
+.jc{
+  width:28px;height:2px;flex-shrink:0;
+  background:rgba(255,255,255,.08);
+  border-radius:2px;margin-bottom:20px;
+}
+.jc.lit{
+  background:linear-gradient(90deg,var(--green),var(--green-dark));
+}
+
+/* ── Bloc central fusionné (compact) ── */
+.ov-mid{
+  width:100%;
+  display:grid;grid-template-columns:1fr 1fr;gap:8px;
+  margin-bottom:10px;
+  transform:translateY(20px);opacity:0;
+  transition:transform .5s cubic-bezier(.34,1.56,.64,1), opacity .5s;
+  transition-delay:.45s;
+}
+.overlay.show .ov-mid{transform:translateY(0);opacity:1;}
+
+/* Colonne objectifs */
+.ov-mid-obj{
+  background:rgba(14,24,44,.7);
+  border:1px solid rgba(34,197,94,.15);
+  border-radius:16px;padding:12px;
+  display:flex;flex-direction:column;gap:8px;
+}
+.ov-mid-title{
+  font-size:.52rem;font-weight:800;letter-spacing:1.2px;
+  text-transform:uppercase;color:rgba(255,255,255,.25);
+}
+.ov-obj{
+  display:flex;align-items:flex-start;gap:7px;
+}
+.ov-obj-check{
+  width:16px;height:16px;border-radius:50%;flex-shrink:0;
+  background:var(--green);
+  display:flex;align-items:center;justify-content:center;
+  font-size:.5rem;font-weight:900;color:#fff;
+  margin-top:1px;
+}
+.ov-obj-text{
+  font-size:.64rem;color:rgba(255,255,255,.6);line-height:1.45;
+}
+.ov-obj-text strong{color:rgba(255,255,255,.88);}
+
+/* Colonne éco */
+.ov-mid-eco{
+  background:rgba(14,24,44,.7);
+  border:1px solid rgba(122,182,72,.15);
+  border-radius:16px;padding:12px;
+  display:flex;flex-direction:column;gap:8px;
+}
+.ov-eco-row{
+  display:flex;align-items:center;gap:7px;
+}
+.ov-eco-ico{font-size:.9rem;width:18px;text-align:center;flex-shrink:0;}
+.ov-eco-val{font-size:.68rem;font-weight:800;color:#fff;}
+.ov-eco-lbl{font-size:.52rem;color:rgba(255,255,255,.28);margin-left:2px;}
+.ov-eco-note-mini{
+  font-size:.56rem;color:rgba(122,182,72,.5);
+  font-style:italic;line-height:1.4;
+  border-top:1px solid rgba(122,182,72,.08);
+  padding-top:7px;
+}
+
+/* ── Prochaine étape (compact) ── */
+.ov-next{
+  width:100%;
+  background:linear-gradient(135deg,rgba(240,148,51,.06),rgba(220,39,67,.06));
+  border:1px solid rgba(240,148,51,.18);
+  border-radius:16px;
+  padding:14px 16px;
+  display:flex;align-items:center;gap:14px;
+  margin-bottom:16px;
+  transform:translateY(20px);opacity:0;
+  transition:transform .5s cubic-bezier(.34,1.56,.64,1), opacity .5s;
+  transition-delay:.6s;
+}
+.overlay.show .ov-next{transform:translateY(0);opacity:1;}
+
+.ov-next-orb{
+  width:40px;height:40px;border-radius:50%;flex-shrink:0;
+  background:linear-gradient(135deg,var(--orange),var(--red));
+  display:flex;align-items:center;justify-content:center;
+  font-size:1.1rem;
+  box-shadow:0 0 14px rgba(240,148,51,.2);
+}
+.ov-next-col{display:flex;flex-direction:column;gap:2px;}
+.ov-next-eyebrow{
+  font-size:.52rem;font-weight:800;letter-spacing:1px;
+  text-transform:uppercase;color:rgba(240,148,51,.6);
+}
+.ov-next-title{
+  font-family:'Syne',sans-serif;font-size:.95rem;font-weight:800;color:#fff;
+}
+.ov-next-desc{
+  font-size:.63rem;color:rgba(255,255,255,.38);line-height:1.45;
+}
+
+/* ── CTA ── */
+.ov-cta{
+  width:100%;
+  display:flex;flex-direction:column;align-items:center;gap:10px;
+  transform:translateY(20px);opacity:0;
+  transition:transform .5s cubic-bezier(.34,1.56,.64,1), opacity .5s;
+  transition-delay:.75s;
+}
+.overlay.show .ov-cta{transform:translateY(0);opacity:1;}
+
+.ov-cta-btn{
+  width:100%;max-width:320px;
+  padding:16px 32px;border-radius:28px;border:none;cursor:pointer;
+  font-family:'Syne',sans-serif;font-size:.85rem;font-weight:800;
+  letter-spacing:.5px;color:#fff;
+  background:linear-gradient(135deg,var(--orange),var(--red));
+  box-shadow:0 8px 28px rgba(220,39,67,.3);
+  transition:transform .15s,box-shadow .15s;
+  display:flex;align-items:center;justify-content:center;gap:8px;
+}
+.ov-cta-btn:hover{
+  transform:scale(1.03);
+  box-shadow:0 12px 32px rgba(220,39,67,.4);
+}
+.ov-cta-ghost{
+  font-size:.65rem;color:rgba(255,255,255,.2);
+  cursor:pointer;padding:4px;
+  transition:color .15s;
+}
+.ov-cta-ghost:hover{color:rgba(255,255,255,.45);}
+
+
+/* ═══════════════════════════════════════════════
+   BOUTON DÉMO (seul élément visible au départ)
+═══════════════════════════════════════════════ */
+.demo-trigger{
+  position:fixed;bottom:24px;left:50%;transform:translateX(-50%);
+  z-index:10;
+  background:linear-gradient(135deg,var(--green-dark),var(--green));
+  border:none;border-radius:24px;
+  padding:13px 28px;
+  font-family:'Syne',sans-serif;font-size:.8rem;font-weight:800;
+  color:#fff;cursor:pointer;
+  box-shadow:0 6px 24px rgba(34,197,94,.3);
+  transition:transform .15s,opacity .3s;
+  white-space:nowrap;
+}
+.demo-trigger:hover{transform:translateX(-50%) scale(1.04);}
+.demo-trigger.hidden{opacity:0;pointer-events:none;}
+</style>
+</head>
+<body>
+
+<!-- ══════════ FAUX ÉCRAN TEAM EN FOND ══════════ -->
+<div class="bg-screen">
+  <div class="bs-header">
+    <div>
+      <div class="bs-step-tag">Étape 1 · Se questionner</div>
+      <div class="bs-step-title">Quel problème résolvons-nous vraiment ?</div>
+    </div>
+    <div style="display:flex;flex-direction:column;align-items:flex-end;gap:8px">
+      <div class="bs-prog">
+        <div class="bs-pip done"></div>
+        <div class="bs-pip active"></div>
+        <div class="bs-pip"></div>
+        <div class="bs-pip"></div>
+        <div class="bs-pip"></div>
+        <div class="bs-pip"></div>
+      </div>
+      <div class="bs-eco">
+        <div class="bs-eco-dot"></div>
+        0.042 gCO₂ · session
+      </div>
+    </div>
+  </div>
+
+  <div class="bs-chat">
+    <div class="msg spark">
+      <div class="msg-who">SPARK ⚡</div>
+      Super travail sur l'étape 0 ! Maintenant, creusons dans le vif du sujet. Décrivez-moi le problème que vous voulez résoudre — pas votre solution, juste le problème.
+    </div>
+    <div class="msg team">
+      <div class="msg-who">Notre team</div>
+      On pense que les forêts manquent de surveillance contre les braconniers, et que les gardes forestiers ne peuvent pas être partout à la fois.
+    </div>
+    <div class="msg spark">
+      <div class="msg-who">SPARK ⚡</div>
+      Intéressant. Maintenant distinguez : c'est un problème de <em>détection</em>, de <em>réponse</em>, ou de <em>ressources humaines</em> ? Ces trois pistes mènent à des solutions très différentes.
+    </div>
+    <div class="msg team">
+      <div class="msg-who">Notre team</div>
+      De détection surtout. On a interviewé un garde forestier qui perd 2h par patrouille sans voir personne.
+    </div>
+    <div class="msg spark">
+      <div class="msg-who">SPARK ⚡</div>
+      Excellente validation terrain ! Votre étape est complète. Vous avez défini un problème concret, validé par un utilisateur réel.
+    </div>
+  </div>
+
+  <div class="bs-input">
+    <div class="bs-ifield">Écrire à SPARK…</div>
+    <button class="bs-isend">🌱</button>
+  </div>
+</div>
+
+<!-- ══════════ CANVAS CONFETTIS ══════════ -->
+<canvas id="canvas-confetti"></canvas>
+
+<!-- ══════════ OVERLAY ══════════ -->
+<div class="overlay" id="overlay">
+  <div class="ov-bg"></div>
+  <div class="ov-scroll">
+
+    <!-- Héro -->
+    <div class="ov-hero">
+      <div class="ov-step-badge">
+        <div class="ov-step-badge-dot"></div>
+        Étape 1 complétée !
+      </div>
+      <div class="ov-emoji">🎉</div>
+      <div class="ov-title">Bien joué,<br><span>vous avancez !</span></div>
+      <div class="ov-subtitle">Votre équipe a validé l'étape <strong style="color:rgba(255,255,255,.7)">"Se questionner"</strong> avec succès. L'étape suivante est débloquée.</div>
+    </div>
+
+    <!-- Journey tracker -->
+    <div class="ov-journey">
+      <div class="jp">
+        <div class="jp-orb done">🌱</div>
+        <div class="jp-label done">Découvrir</div>
+      </div>
+      <div class="jc lit"></div>
+      <div class="jp">
+        <div class="jp-orb done">🔍</div>
+        <div class="jp-label done">Questionner</div>
+      </div>
+      <div class="jc lit"></div>
+      <div class="jp">
+        <div class="jp-orb current">✏️</div>
+        <div class="jp-label current">Concevoir</div>
+      </div>
+      <div class="jc"></div>
+      <div class="jp">
+        <div class="jp-orb locked">🔨</div>
+        <div class="jp-label">Fabriquer</div>
+      </div>
+      <div class="jc"></div>
+      <div class="jp">
+        <div class="jp-orb locked">📢</div>
+        <div class="jp-label">Diffuser</div>
+      </div>
+      <div class="jc"></div>
+      <div class="jp">
+        <div class="jp-orb locked">🏆</div>
+        <div class="jp-label">Convaincre</div>
+      </div>
+    </div>
+
+    <!-- Bloc central fusionné : objectifs + éco côte à côte -->
+    <div class="ov-mid">
+      <!-- Objectifs (2 sur 4) -->
+      <div class="ov-mid-obj">
+        <div class="ov-mid-title">✦ Accompli</div>
+        <div class="ov-obj">
+          <div class="ov-obj-check">✓</div>
+          <div class="ov-obj-text"><strong>Problème formulé</strong> — détection des intrusions en forêt</div>
+        </div>
+        <div class="ov-obj">
+          <div class="ov-obj-check">✓</div>
+          <div class="ov-obj-text"><strong>Terrain validé</strong> — interview garde forestier, 2h perdues/patrouille</div>
+        </div>
+      </div>
+      <!-- Éco -->
+      <div class="ov-mid-eco">
+        <div class="ov-mid-title">🌿 Éco · étape 1</div>
+        <div class="ov-eco-row">
+          <div class="ov-eco-ico">⚡</div>
+          <div class="ov-eco-val">0.047</div>
+          <div class="ov-eco-lbl">Wh</div>
+        </div>
+        <div class="ov-eco-row">
+          <div class="ov-eco-ico">💧</div>
+          <div class="ov-eco-val">0.84</div>
+          <div class="ov-eco-lbl">ml</div>
+        </div>
+        <div class="ov-eco-row">
+          <div class="ov-eco-ico">💨</div>
+          <div class="ov-eco-val">0.028</div>
+          <div class="ov-eco-lbl">gCO₂</div>
+        </div>
+        <div class="ov-eco-note-mini">≈ 42s d'ampoule LED</div>
+      </div>
+    </div>
+
+    <!-- Prochaine étape (compact) -->
+    <div class="ov-next" id="ov-next">
+      <div class="ov-next-orb" id="ov-next-orb">✏️</div>
+      <div class="ov-next-col">
+        <div class="ov-next-eyebrow">→ Étape suivante débloquée</div>
+        <div class="ov-next-title" id="ov-next-title">Étape 2 — Concevoir</div>
+        <div class="ov-next-desc">Transformer votre problème en premières idées de solution.</div>
+      </div>
+    </div>
+
+    <!-- CTA -->
+    <div class="ov-cta">
+      <button class="ov-cta-btn" onclick="launchNext()">
+        <span>✏️</span>
+        Commencer l'étape 2
+      </button>
+      <div class="ov-cta-ghost" onclick="closeOverlay()">Rester sur cette étape</div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ══════════ BOUTON DÉCLENCHEUR DÉMO ══════════ -->
+<button class="demo-trigger" id="demo-trigger" onclick="triggerStep(0)">
+  ⚡ SPARK_CHECKPOINT:etape1-questionner
+</button>
+
+
+<script>
+/* ─────────────────────────────
+   DONNÉES PAR ÉTAPE
+   Pour ajouter une étape : créer un objet ici, le reste est automatique.
+───────────────────────────── */
+const STEPS = [
+  {
+    badge        : 'Étape 1 complétée !',
+    emoji        : '🎉',
+    title        : 'Bien joué,<br><span>vous avancez !</span>',
+    subtitle     : 'Votre équipe a validé l\'étape <strong style="color:rgba(255,255,255,.7)">"Se questionner"</strong> avec succès. L\'étape suivante est débloquée.',
+    // État de chaque orbe du journey tracker : 'done' | 'current' | 'locked'
+    journeyStates: ['done','done','current','locked','locked','locked'],
+    objectives   : [
+      { strong: 'Problème formulé',   text: '— détection des intrusions en forêt' },
+      { strong: 'Terrain validé',     text: '— interview garde forestier, 2h perdues/patrouille' },
+    ],
+    eco          : { title: '🌿 Éco · étape 1', wh: '0.047', ml: '0.84',  co2: '0.028', note: '≈ 42s d\'ampoule LED' },
+    next         : { orb: '✏️', title: 'Étape 2 — Concevoir', desc: 'Transformer votre problème en premières idées de solution.' },
+    cta          : { emoji: '✏️', label: 'Commencer l\'étape 2' },
+    // nextScreen : faux écran affiché après clic CTA (null = ferme juste l'overlay)
+    nextScreen   : {
+      tag        : 'Étape 2 · Concevoir',
+      title      : 'Transformer votre problème en solution',
+      pips       : ['done','done','active','','',''],
+      checkpoint : '⚡ SPARK_CHECKPOINT:etape2-concevoir',
+      nextStepIdx: 1,
+    },
+  },
+  {
+    badge        : 'Étape 2 complétée !',
+    emoji        : '🎉',
+    title        : 'Excellent travail,<br><span>continuez !</span>',
+    subtitle     : 'Votre équipe a validé <strong style="color:rgba(255,255,255,.7)">"Concevoir"</strong>. L\'étape 3 est débloquée.',
+    journeyStates: ['done','done','done','current','locked','locked'],
+    objectives   : [
+      { strong: '5 idées générées',   text: '— méthode SCAMPER appliquée' },
+      { strong: 'Prototype esquissé', text: '— première hypothèse de solution définie' },
+    ],
+    eco          : { title: '🌿 Éco · étape 2', wh: '0.061', ml: '1.12',  co2: '0.038', note: '≈ 55s d\'ampoule LED' },
+    next         : { orb: '🔨', title: 'Étape 3 — Fabriquer', desc: 'Construire votre premier prototype testable.' },
+    cta          : { emoji: '🔨', label: 'Commencer l\'étape 3' },
+    nextScreen   : null, // fin de la démo : ferme l'overlay
+  },
+];
+
+/* ─────────────────────────────
+   CONFETTIS CANVAS
+───────────────────────────── */
+const canvas  = document.getElementById('canvas-confetti');
+const ctx     = canvas.getContext('2d');
+let pieces    = [];
+let animFrame = null;
+
+const COLORS = ['#22c55e','#4ade80','#f09433','#fbbf24','#dc2743','#fff','#7ab648','#38bdf8'];
+
+function resizeCanvas(){
+  canvas.width  = window.innerWidth;
+  canvas.height = window.innerHeight;
+}
+window.addEventListener('resize', resizeCanvas);
+resizeCanvas();
+
+function spawnConfetti(){
+  pieces = [];
+  for(let i = 0; i < 120; i++){
+    pieces.push({
+      x: Math.random() * canvas.width,
+      y: -10 - Math.random() * 300,
+      w: 6 + Math.random() * 8,
+      h: 5 + Math.random() * 5,
+      color: COLORS[Math.floor(Math.random() * COLORS.length)],
+      vx: (Math.random() - .5) * 3,
+      vy: 2.5 + Math.random() * 4,
+      rot: Math.random() * 360,
+      vrot: (Math.random() - .5) * 8,
+      opacity: 1,
+      shape: Math.random() > .5 ? 'rect' : 'circle',
+    });
+  }
+}
+
+function drawPiece(p){
+  ctx.save();
+  ctx.globalAlpha = p.opacity;
+  ctx.translate(p.x + p.w/2, p.y + p.h/2);
+  ctx.rotate(p.rot * Math.PI / 180);
+  ctx.fillStyle = p.color;
+  if(p.shape === 'circle'){
+    ctx.beginPath();
+    ctx.arc(0, 0, p.w/2, 0, Math.PI*2);
+    ctx.fill();
+  } else {
+    ctx.fillRect(-p.w/2, -p.h/2, p.w, p.h);
+  }
+  ctx.restore();
+}
+
+function animateConfetti(){
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  let alive = false;
+  pieces.forEach(p => {
+    p.x  += p.vx;
+    p.y  += p.vy;
+    p.rot += p.vrot;
+    p.vy += .04; // gravité légère
+    if(p.y > canvas.height * .75) p.opacity -= .025;
+    p.opacity = Math.max(0, p.opacity);
+    if(p.opacity > 0) alive = true;
+    drawPiece(p);
+  });
+  if(alive) animFrame = requestAnimationFrame(animateConfetti);
+  else stopConfetti();
+}
+
+function launchConfetti(){
+  canvas.classList.add('show');
+  spawnConfetti();
+  if(animFrame) cancelAnimationFrame(animFrame);
+  animateConfetti();
+}
+
+function stopConfetti(){
+  if(animFrame){ cancelAnimationFrame(animFrame); animFrame=null; }
+  canvas.classList.remove('show');
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+}
+
+/* ─────────────────────────────
+   OVERLAY — LOGIQUE DATA-DRIVEN
+───────────────────────────── */
+function resetEmojiAnim(){
+  const el = document.querySelector('.ov-emoji');
+  el.style.animation = 'none';
+  el.offsetHeight; // reflow
+  el.style.animation = '';
+}
+
+// Peuple tout le DOM de l'overlay à partir d'un objet STEPS[n]
+function populateOverlay(step){
+  // Héro
+  document.querySelector('.ov-step-badge').innerHTML =
+    '<div class="ov-step-badge-dot"></div> ' + step.badge;
+  document.querySelector('.ov-emoji').textContent  = step.emoji;
+  document.querySelector('.ov-title').innerHTML    = step.title;
+  document.querySelector('.ov-subtitle').innerHTML = step.subtitle;
+
+  // Journey tracker — orbes + labels + connecteurs
+  const orbs   = document.querySelectorAll('.jp-orb');
+  const labels = document.querySelectorAll('.jp-label');
+  const conns  = document.querySelectorAll('.jc');
+  step.journeyStates.forEach(function(state, i){
+    orbs[i].className   = 'jp-orb '   + state;
+    labels[i].className = 'jp-label ' + (state !== 'locked' ? state : '');
+  });
+  conns.forEach(function(c, i){
+    c.classList.toggle('lit', step.journeyStates[i] === 'done');
+  });
+
+  // Objectifs — régénère la liste
+  const objCol = document.querySelector('.ov-mid-obj');
+  objCol.innerHTML = '<div class="ov-mid-title">✦ Accompli</div>' +
+    step.objectives.map(function(o){
+      return '<div class="ov-obj">' +
+               '<div class="ov-obj-check">✓</div>' +
+               '<div class="ov-obj-text"><strong>' + o.strong + '</strong> ' + o.text + '</div>' +
+             '</div>';
+    }).join('');
+
+  // Éco
+  document.querySelector('.ov-mid-eco .ov-mid-title').textContent = step.eco.title;
+  const ecoVals = document.querySelectorAll('.ov-eco-val');
+  ecoVals[0].textContent = step.eco.wh;
+  ecoVals[1].textContent = step.eco.ml;
+  ecoVals[2].textContent = step.eco.co2;
+  document.querySelector('.ov-eco-note-mini').textContent = step.eco.note;
+
+  // Prochaine étape
+  document.getElementById('ov-next-orb').textContent              = step.next.orb;
+  document.getElementById('ov-next-title').textContent            = step.next.title;
+  document.querySelector('#ov-next .ov-next-desc').textContent    = step.next.desc;
+
+  // CTA
+  const btn = document.querySelector('.ov-cta-btn');
+  btn.innerHTML = '<span>' + step.cta.emoji + '</span> ' + step.cta.label;
+  btn.onclick   = step.nextScreen
+    ? function(){ launchNextScreen(step.nextScreen); }
+    : closeOverlay;
+}
+
+// Déclenche l'overlay pour l'étape d'index stepIdx dans STEPS[]
+function triggerStep(stepIdx){
+  document.getElementById('demo-trigger').classList.add('hidden');
+  populateOverlay(STEPS[stepIdx]);
+  resetEmojiAnim();
+  setTimeout(launchConfetti, 150);
+  setTimeout(function(){
+    document.getElementById('overlay').classList.add('show');
+  }, 300);
+}
+
+function closeOverlay(){
+  document.getElementById('overlay').classList.remove('show');
+  stopConfetti();
+  const btn = document.getElementById('demo-trigger');
+  btn.classList.remove('hidden');
+  btn.textContent = '↺ Rejouer l\'animation';
+  btn.onclick = function(){ triggerStep(0); };
+}
+
+// Transition vers le faux écran suivant, puis affiche le prochain bouton checkpoint
+function launchNextScreen(screen){
+  const overlay = document.getElementById('overlay');
+  overlay.style.transition = 'opacity .4s';
+  overlay.style.opacity    = '0';
+  stopConfetti();
+  setTimeout(function(){
+    overlay.classList.remove('show');
+    overlay.style.opacity    = '';
+    overlay.style.transition = '';
+    document.querySelector('.bs-step-tag').textContent   = screen.tag;
+    document.querySelector('.bs-step-title').textContent = screen.title;
+    const pips = document.querySelectorAll('.bs-pip');
+    screen.pips.forEach(function(state, i){
+      pips[i].className = 'bs-pip' + (state ? ' ' + state : '');
+    });
+    const btn = document.getElementById('demo-trigger');
+    btn.classList.remove('hidden');
+    btn.textContent = screen.checkpoint;
+    btn.onclick     = function(){ triggerStep(screen.nextStepIdx); };
+  }, 450);
+}
+</script>
+
+</body>
+</html>
+
+<!--
+╔══════════════════════════════════════════════════════════════════════════════╗
+║  VERSION 1 — OVERLAY COMPLET (avec scroll)                                 ║
+║  Pour visualiser, copier-coller TOUT le bloc ci-dessous dans un fichier    ║
+║  HTML vierge (entre <body> et </body>), en ajoutant le CSS de l'overlay.   ║
+╚══════════════════════════════════════════════════════════════════════════════╝
+
+<!-- V1 : Bilan étape -- 4 objectifs -->
+<div class="ov-recap">
+  <div class="ov-recap-title">✦ Ce que vous avez accompli</div>
+  <div class="ov-obj-list">
+    <div class="ov-obj">
+      <div class="ov-obj-check done">✓</div>
+      <div class="ov-obj-text"><strong>Problème formulé</strong> — "Les gardes forestiers ne peuvent pas détecter les intrusions à temps"</div>
+    </div>
+    <div class="ov-obj">
+      <div class="ov-obj-check done">✓</div>
+      <div class="ov-obj-text"><strong>Validation terrain</strong> — Interview d'un utilisateur réel (garde forestier, 2h de patrouille inutile)</div>
+    </div>
+    <div class="ov-obj">
+      <div class="ov-obj-check done">✓</div>
+      <div class="ov-obj-text"><strong>Angle précisé</strong> — Problème de détection, pas de ressources ou de réponse</div>
+    </div>
+    <div class="ov-obj">
+      <div class="ov-obj-check done">✓</div>
+      <div class="ov-obj-text"><strong>5 échanges</strong> avec SPARK · 3 reformulations successives</div>
+    </div>
+  </div>
+</div>
+
+<!-- V1 : Indicateurs éco -- grille 3 cellules + barre + note -->
+<div class="ov-eco">
+  <div class="ov-eco-header">
+    <div class="ov-eco-title">🌿 Impact écologique · Étape 1</div>
+    <div class="ov-eco-tag">Bilan session</div>
+  </div>
+  <div class="ov-eco-grid">
+    <div class="ov-eco-cell">
+      <div class="ov-eco-ico">⚡</div>
+      <div class="ov-eco-val">0.047 Wh</div>
+      <div class="ov-eco-lbl">Énergie</div>
+    </div>
+    <div class="ov-eco-cell">
+      <div class="ov-eco-ico">💧</div>
+      <div class="ov-eco-val">0.84 ml</div>
+      <div class="ov-eco-lbl">Eau</div>
+    </div>
+    <div class="ov-eco-cell">
+      <div class="ov-eco-ico">💨</div>
+      <div class="ov-eco-val">0.028 gCO₂</div>
+      <div class="ov-eco-lbl">CO₂</div>
+    </div>
+  </div>
+  <div class="ov-eco-compare">
+    <div class="ov-eco-cmp-lbl">
+      <span>Cette étape vs plafond session (1.8 gCO₂)</span>
+      <span style="color:var(--sage)">1.6%</span>
+    </div>
+    <div class="ov-eco-cmp-track">
+      <div class="ov-eco-cmp-fill" style="--pct:1.6%"></div>
+    </div>
+  </div>
+  <div class="ov-eco-note">💡 Équivalent à 42 secondes d'ampoule LED allumée — pour toute la conversation de votre équipe.</div>
+</div>
+
+<!-- V1 : Aperçu étape suivante -- orbe + desc + 3 bullets teaser -->
+<div class="ov-next">
+  <div class="ov-next-eyebrow">→ L'étape suivante vous attend</div>
+  <div class="ov-next-header">
+    <div class="ov-next-orb">✏️</div>
+    <div>
+      <div class="ov-next-title">Étape 2 — Concevoir</div>
+    </div>
+  </div>
+  <div class="ov-next-desc">
+    Transformez votre problème bien défini en premières idées de solution. SPARK va vous challenger sur la faisabilité, l'originalité et l'impact réel.
+  </div>
+  <div class="ov-next-teaser">
+    <div class="ov-next-item">Générer 10 idées en 20 minutes (méthode SCAMPER)</div>
+    <div class="ov-next-item">Définir vos critères de choix avec le jury en tête</div>
+    <div class="ov-next-item">Prototyper une première hypothèse de solution</div>
+  </div>
+</div>
+
+FIN VERSION 1
+-->
