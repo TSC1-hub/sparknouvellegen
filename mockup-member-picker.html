@@ -371,9 +371,9 @@ function showState(btn, state) {
   document.getElementById('msg-input').disabled = false;
 
   if (state === 'welcome') {
-    _onboardingPhase = 'awaiting_ready';
+    _onboardingPhase = 'awaiting_nb';
     bubble('spark',
-      `<em>« Bienvenue dans le programme The Schools Challenge, vous êtes la 10ème génération à découvrir ce programme ! 🥳 Vous allez lors des 6 prochains mois collaborer tous.tes ensemble dans la résolution d'un problème ! Êtes-vous prêt.e.s ? 💪 »</em><br><br><span style="color:var(--light);font-style:italic">*(Je reste sur cette action tant que je n'ai pas une réponse positive, même courte comme "Oui" !)* 😊</span>`,
+      `Hey ! 👋 Avant de vous lancer dans l'aventure The Schools Challenge — vous êtes <strong>combien</strong> dans votre équipe ? 👥`,
       'SPARK ⚡');
   }
 
@@ -463,7 +463,8 @@ function sendMsg() {
   inp.value = ''; inp.style.height = 'auto';
 
   // Pendant le tour guidé — réponse générique, ne déclenche PAS l'onboarding
-  if (_onboardingPhase === 'tour') {
+  // Double garde : phase 'tour' OU présence de l'overlay (source de vérité)
+  if (_onboardingPhase === 'tour' || document.getElementById('gt-overlay')) {
     bubble('eleve', txt, 'La Team', TEAM_MEMBER);
     showTyping();
     setTimeout(() => {
@@ -549,11 +550,21 @@ function sendMsg() {
         hideTyping();
         const listStr = names.slice(0,-1).join(', ') + (names.length > 1 ? ' et ' + names[names.length-1] : names[0]);
         bubble('spark',
-          `Bienvenue dans le programme The Schools Challenge, vous êtes la 10ème génération à découvrir ce programme ! 🥳 Vous allez lors des 6 prochains mois collaborer tous.tes ensemble dans la résolution d'un problème ! Êtes-vous prêt.e.s ${listStr} ? 💪`,
+          `Bienvenue ${listStr} ! 🥳 Vous êtes la 10ème génération à rejoindre The Schools Challenge — dans 6 mois, vous aurez un projet qui change vraiment les choses. 💪`,
           'SPARK ⚡');
         setTimeout(() => {
           renderMemberPicker(dynamicMembers);
           document.getElementById('spark-mode-bar').style.display = 'flex';
+          // ── Plan 3 — Action 0 — lancement automatique ──
+          setTimeout(() => {
+            showTyping();
+            setTimeout(() => {
+              hideTyping();
+              bubble('spark',
+                `🌱 <strong>Action 0 — Découvrir</strong><br><br>Première mission : trouver le problème sur lequel vous allez travailler ces 6 prochains mois.<br><br><strong>Quel sujet vous touche le plus dans votre environnement ?</strong> Biodiversité, alimentation, énergie, mobilité, inégalités… ou autre chose ! 🌍`,
+                'SPARK ⚡');
+            }, 1200);
+          }, 800);
         }, 900);
       }, 800);
     } else {
@@ -599,14 +610,16 @@ _onboardingPhase = 'tour';
 // Appelé quand le tour se termine (bouton "C'est parti !" ou "Passer")
 window.SparkTourOnEnd = function() {
   msgs.innerHTML = '';
-  _onboardingPhase = 'awaiting_ready';
+  _onboardingPhase = 'awaiting_nb';
   _nbMembres = 0;
   _collectedNames = [];
+  showTyping();
   setTimeout(() => {
+    hideTyping();
     bubble('spark',
-      `<em>« Bienvenue dans le programme The Schools Challenge, vous êtes la 10ème génération à découvrir ce programme ! 🥳 Vous allez lors des 6 prochains mois collaborer tous.tes ensemble dans la résolution d'un problème ! Êtes-vous prêt.e.s ? 💪 »</em><br><br><span style="color:var(--light);font-style:italic">*(Je reste sur cette action tant que je n'ai pas une réponse positive, même courte comme "Oui" !)* 😊</span>`,
+      `Hey ! 👋 Avant de vous lancer dans l'aventure The Schools Challenge — vous êtes <strong>combien</strong> dans votre équipe ? 👥`,
       'SPARK ⚡');
-  }, 300);
+  }, 600);
 };
 
 // Lancer le tour si disponible, sinon aller directement à l'onboarding
