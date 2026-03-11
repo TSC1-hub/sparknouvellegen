@@ -3364,13 +3364,44 @@ async function sendMessage(){
   const txt=inp.value.trim();
   if(!txt||!currentEquipe) return;
 
+  // ── Tour guidé actif : message éphémère sans Mistral ni BDD ──
+  if (document.getElementById('gt-overlay')) {
+    inp.value=''; inp.style.height='auto';
+    const chatEl = document.getElementById('chat-messages');
+    const dUser = document.createElement('div');
+    dUser.className = 'msg eleve-msg';
+    dUser.innerHTML = `<div class="msg-av">👥</div><div class="msg-col"><div class="msg-who">La Team</div><div class="msg-bubble">${txt}</div></div>`;
+    chatEl.appendChild(dUser);
+    chatEl.scrollTop = chatEl.scrollHeight;
+    setTimeout(() => {
+      const dSpark = document.createElement('div');
+      dSpark.className = 'msg spark-msg';
+      const tourReplies = [
+        "Super ! Je vois que vous avez déjà des idées 🌱 Posez-moi vos questions au fil des étapes.",
+        "Intéressant ! SPARK est là pour challenger votre projet 🎯",
+        "Bien reçu ! On va construire quelque chose de solide ensemble 💪",
+      ];
+      dSpark.innerHTML = `<div class="msg-av"><div class="msg-av-inner">⚡</div></div><div class="msg-col"><div class="msg-who">SPARK ⚡</div><div class="msg-bubble">${tourReplies[Math.floor(Math.random()*tourReplies.length)]}</div></div>`;
+      chatEl.appendChild(dSpark);
+      chatEl.scrollTop = chatEl.scrollHeight;
+    }, 800 + Math.random() * 400);
+    return;
+  }
+
   // ══ INTERCEPTEUR ONBOARDING MEMBRES ══
   if (_onboardingPhase === 'awaiting_nb') {
     inp.value=''; inp.style.height='auto';
     eleveMessagesCache.push({role:'user',message:txt,pseudo:'La Team',etape:0});
     renderEleveConversation(); scrollBot();
     await saveMsg('user', txt, 'La Team');
-    const n = parseInt(txt.match(/\d+/)?.[0]);
+    const _textNums = {'un':1,'une':1,'deux':2,'trois':3,'quatre':4,'cinq':5,'six':6,'sept':7,'huit':8,'neuf':9,'dix':10};
+    const _lowerNb = txt.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'');
+    let n = parseInt(txt.match(/\d+/)?.[0]);
+    if (isNaN(n)) {
+      for (const [word, val] of Object.entries(_textNums)) {
+        if (_lowerNb === word || new RegExp('\\b' + word + '\\b').test(_lowerNb)) { n = val; break; }
+      }
+    }
     if (n >= 1 && n <= 10) {
       _nbMembresAttendus = n;
       _onboardingPhase = 'awaiting_names';
@@ -3415,19 +3446,22 @@ async function sendMessage(){
       // Enregistrer le contexte membres dans conversationHistory pour Mistral
       conversationHistory.push({role:'user',parts:[{text:`Notre équipe est composée de : ${listStr}`}]});
       // ① Bienvenue personnalisé avec les prénoms
-      const bienvenue = `Bienvenue dans le programme The Schools Challenge, vous êtes la 10ème génération à découvrir ce programme ! 🥳 Vous allez lors des 6 prochains mois collaborer tous.tes ensemble dans la résolution d'un problème ! Êtes-vous prêt.e.s ${listStr} ? 💪`;
+      const bienvenue = `Bienvenue ${listStr} ! 🥳 Vous êtes la 10ème génération à rejoindre The Schools Challenge — dans 6 mois, vous aurez un projet qui change vraiment les choses. 💪`;
       await saveMsg('assistant', bienvenue, 'SPARK ⚡');
       eleveMessagesCache.push({role:'assistant',message:bienvenue,pseudo:'SPARK ⚡',etape:0});
       conversationHistory.push({role:'model',parts:[{text:bienvenue}]});
       renderEleveConversation(); scrollBot();
-      // ② Qui est au clavier ? + picker (après 900 ms)
+      // ② Afficher le picker + lancer Action 0 (Plan 3 — sans demander qui est au clavier)
       setTimeout(async () => {
-        const q2 = "Avant de démarrer — <strong>qui est au clavier là maintenant ?</strong>";
-        await saveMsg('assistant', q2, 'SPARK ⚡');
-        eleveMessagesCache.push({role:'assistant',message:q2,pseudo:'SPARK ⚡',etape:0});
-        renderEleveConversation(); scrollBot();
         renderMemberPicker(_teamMembers);
-      }, 900);
+        setTimeout(async () => {
+          const action0 = `🌱 <strong>Action 0 — Découvrir</strong><br><br>Première mission : trouver le problème sur lequel vous allez travailler ces 6 prochains mois.<br><br><strong>Quel sujet vous touche le plus dans votre environnement ?</strong> Biodiversité, alimentation, énergie, mobilité, inégalités… ou autre chose ! 🌍`;
+          await saveMsg('assistant', action0, 'SPARK ⚡');
+          eleveMessagesCache.push({role:'assistant',message:action0,pseudo:'SPARK ⚡',etape:0});
+          conversationHistory.push({role:'model',parts:[{text:action0}]});
+          renderEleveConversation(); scrollBot();
+        }, 1200);
+      }, 800);
     } else {
       const reste = _nbMembresAttendus - _collectedMbrNames.length;
       const q = `👍 J'en ai ${_collectedMbrNames.length} — encore ${reste} prénom${reste>1?'s':''} !`;
