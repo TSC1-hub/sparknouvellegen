@@ -373,9 +373,7 @@ function showState(btn, state) {
   if (state === 'welcome') {
     _onboardingPhase = 'awaiting_ready';
     bubble('spark',
-      `Coucou ! 😊<br>Prêt·e·s à démarrer cette aventure ? Je suis là pour vous accompagner.<br><br>
-      <em>« Bienvenue dans le programme The Schools Challenge, vous êtes la 10ème génération à découvrir ce programme ! 🥳 Vous allez lors des 6 prochains mois collaborer tous.tes ensemble dans la résolution d'un problème ! Êtes-vous prêt.e.s ? 💪 »</em><br><br>
-      (Un simple "oui" ou "prêt·e·s" suffit !)`,
+      `<em>« Bienvenue dans le programme The Schools Challenge, vous êtes la 10ème génération à découvrir ce programme ! 🥳 Vous allez lors des 6 prochains mois collaborer tous.tes ensemble dans la résolution d'un problème ! Êtes-vous prêt.e.s ? 💪 »</em><br><br><span style="color:var(--light);font-style:italic">*(Je reste sur cette action tant que je n'ai pas une réponse positive, même courte comme "Oui" !)* 😊</span>`,
       'SPARK ⚡');
   }
 
@@ -484,19 +482,22 @@ function sendMsg() {
   if (_onboardingPhase === 'awaiting_ready') {
     bubble('eleve', txt, 'La Team', TEAM_MEMBER);
     const lower = txt.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'');
-    const isNeg = /\bnon\b|pas (sur|vraiment|encore)|peut.tre|bof|sais pas/i.test(lower);
-    const isExcited = /!|genial|trop (bien|cool|top)|grave|hyper|waoh|yeah/i.test(lower);
-    let reply;
+    const isNeg = /\bnon\b|pas (sur|sûr|vraiment|encore)|peut.tre|bof|sais pas|pas pr[eê]t/i.test(lower);
     if (isNeg) {
-      reply = "Pas d'inquiétude, on y va ensemble et ça va envoyer ! 😊 Avant de commencer l'aventure The Schools Challenge — vous êtes <strong>combien</strong> dans votre équipe ? 👥";
-    } else if (isExcited) {
-      reply = "Waoh, l'énergie est là ! 🔥 Avant de commencer l'aventure The Schools Challenge — vous êtes <strong>combien</strong> dans votre équipe ? 👥";
-    } else {
-      reply = "Super, on est parés ! 🚀 Avant de commencer l'aventure The Schools Challenge — vous êtes <strong>combien</strong> dans votre équipe ? 👥";
+      // Réponse négative → rester en awaiting_ready et encourager
+      showTyping();
+      setTimeout(() => {
+        hideTyping();
+        bubble('spark', "Pas d'inquiétude, SPARK est là pour vous guider pas à pas ! 😊 Prenez votre temps — quand vous êtes prêt.e.s, dites-le moi 💪", 'SPARK ⚡');
+      }, 700);
+      return;
     }
+    // Réponse positive ou neutre → avancer
     _onboardingPhase = 'awaiting_nb';
+    const isExcited = /!|genial|génial|trop (bien|cool|top)|grave|hyper|waoh|yeah/i.test(lower);
+    const prefix = isExcited ? "Waoh, l'énergie est là ! 🔥 " : "";
     showTyping();
-    setTimeout(() => { hideTyping(); bubble('spark', reply, 'SPARK ⚡'); }, 700);
+    setTimeout(() => { hideTyping(); bubble('spark', `${prefix}Avant de commencer — vous êtes <strong>combien</strong> dans votre équipe ? 👥`, 'SPARK ⚡'); }, 700);
     return;
   }
 
@@ -506,7 +507,7 @@ function sendMsg() {
     let n = parseInt(txt.match(/\d+/)?.[0]);
     if (isNaN(n)) {
       for (const [word, val] of Object.entries(textNums)) {
-        if (new RegExp('\\b' + word + '\\b').test(lowerNb)) { n = val; break; }
+        if (lowerNb === word || new RegExp('\\b' + word + '\\b').test(lowerNb)) { n = val; break; }
       }
     }
     bubble('eleve', txt, 'La Team', TEAM_MEMBER);
@@ -603,9 +604,7 @@ window.SparkTourOnEnd = function() {
   _collectedNames = [];
   setTimeout(() => {
     bubble('spark',
-      `Coucou ! 😊<br>Prêt·e·s à démarrer cette aventure ? Je suis là pour vous accompagner.<br><br>
-      <em>« Bienvenue dans le programme The Schools Challenge, vous êtes la 10ème génération à découvrir ce programme ! 🥳 Vous allez lors des 6 prochains mois collaborer tous.tes ensemble dans la résolution d'un problème ! Êtes-vous prêt.e.s ? 💪 »</em><br><br>
-      (Un simple "oui" ou "prêt·e·s" suffit !)`,
+      `<em>« Bienvenue dans le programme The Schools Challenge, vous êtes la 10ème génération à découvrir ce programme ! 🥳 Vous allez lors des 6 prochains mois collaborer tous.tes ensemble dans la résolution d'un problème ! Êtes-vous prêt.e.s ? 💪 »</em><br><br><span style="color:var(--light);font-style:italic">*(Je reste sur cette action tant que je n'ai pas une réponse positive, même courte comme "Oui" !)* 😊</span>`,
       'SPARK ⚡');
   }, 300);
 };
