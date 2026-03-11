@@ -37,7 +37,7 @@
   flex-shrink: 0;
 }
 
-/* Étoiles */
+// Étoiles
 .pq-stars { display: flex; gap: 2px; align-items: center; }
 .pq-star  { font-size: .85rem; line-height: 1; transition: transform .15s; }
 .pq-star.filled { filter: none; }
@@ -52,7 +52,7 @@
   white-space: nowrap;
 }
 
-/* Badge niveau */
+// Badge niveau
 .pq-badge {
   margin-left: auto;
   padding: 2px 8px;
@@ -68,14 +68,14 @@
 .pq-badge.lvl-2,.pq-badge.lvl-3 { background:rgba(240,192,64,.1);  color:#b38b00;      border:1px solid rgba(240,192,64,.3);  }
 .pq-badge.lvl-4,.pq-badge.lvl-5 { background:rgba(0,212,160,.1);   color:#009978;      border:1px solid rgba(0,212,160,.25);  }
 
-/* Badge étape 0 */
+// Badge étape 0
 .pq-badge.onboarding {
   background: rgba(0,0,0,.04);
   color: var(--light);
   border: 1px solid var(--border);
 }
 
-/* Sparkline progression par étape */
+// Sparkline progression par étape
 .pq-sparkline {
   display: flex;
   gap: 2px;
@@ -95,7 +95,7 @@
 .pq-spark-bar.s-high { background: var(--moss);  }
 .pq-spark-bar.s-na   { background: var(--border); opacity: .4; }
 
-/* Tooltip */
+// Tooltip
 .pq-tooltip {
   display: none;
   position: absolute;
@@ -127,7 +127,7 @@
   margin-bottom: 10px;
 }
 
-/* Onglets étapes dans le tooltip */
+// Onglets étapes dans le tooltip
 .pq-tt-etapes {
   display: flex;
   gap: 4px;
@@ -152,7 +152,7 @@
 }
 .pq-tt-etape.na { opacity: .4; cursor: default; }
 
-/* Critères */
+// Critères
 .pq-tt-row {
   display: flex;
   align-items: center;
