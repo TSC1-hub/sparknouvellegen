@@ -331,6 +331,7 @@
   ══════════════════════════════════════════════ */
   let cur = 0;
   let chatSent = false;      // déverrouillé dès qu'un message est envoyé
+  let _chatObserver = null;  // référence à l'observer actif de hookChatSend
   let ecoStampEl = null;     // référence au stamp éco créé
   let curSub = 0;            // sous-étape active (étapes avec subSteps)
   let _exoWatchEl = null;    // élément surveillé pour l'exercice interactif
@@ -598,6 +599,13 @@
 
     // Callback d'entrée pour les étapes sans subSteps
     if (step.onEnter) step.onEnter();
+
+    // Si on entre dans l'étape chat et que chatSent a déjà été consommé
+    // (l'utilisateur a tapé trop tôt pendant le welcome), re-armer l'observer
+    if (step.id === 'chat' && chatSent) {
+      chatSent = false;
+      hookChatSend();
+    }
   }
 
   /* ── sous-étape (étapes avec subSteps) ── */
@@ -788,6 +796,8 @@
      8. Intercepter l'envoi du message (étape chat)
   ══════════════════════════════════════════════ */
   function hookChatSend() {
+    // Déconnecter l'observer précédent si présent (évite les doublons lors du re-armement)
+    if (_chatObserver) { _chatObserver.disconnect(); _chatObserver = null; }
     // On observe le DOM pour détecter l'apparition d'une bulle .spark-msg
     // après la bulle .eleve-msg (= quand Team répond)
     const msgs = document.getElementById('chat-messages');
@@ -807,6 +817,7 @@
       if (hasUser && hasTeamAfter) {
         chatSent = true;
         observer.disconnect();
+        _chatObserver = null;
         // Attendre 150ms que _simulateTeamReply ait le temps d'ajouter son stamp
         setTimeout(() => {
           const lastUserEl2 = [...msgs.querySelectorAll('.msg')].reverse().find(m => m.classList.contains('eleve-msg'));
@@ -839,6 +850,7 @@
         }, 150);
       }
     });
+    _chatObserver = observer;
     observer.observe(msgs, { childList: true, subtree: true });
   }
 
