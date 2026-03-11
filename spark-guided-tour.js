@@ -336,6 +336,7 @@
   let curSub = 0;            // sous-étape active (étapes avec subSteps)
   let _exoWatchEl = null;    // élément surveillé pour l'exercice interactif
   let _exoWatchFn = null;    // listener correspondant
+  let _exoIntervalId = null; // polling pour détecter les changements programmatiques
 
   // ── Helpers dual-context (index.html + mockup) ──────────────────────────────
   // Essaie le vrai ID (index.html) d'abord, puis le fallback (mockup)
@@ -387,6 +388,7 @@
     if (_exoWatchEl && _exoWatchFn) {
       _exoWatchEl.removeEventListener('input', _exoWatchFn);
     }
+    if (_exoIntervalId) { clearInterval(_exoIntervalId); _exoIntervalId = null; }
     _exoWatchEl = null;
     _exoWatchFn = null;
     _exoOriginalVal = null;
@@ -488,6 +490,9 @@
       _updateExoStatus();
     };
     ta.addEventListener('input', _exoWatchFn);
+    // Polling de sécurité : détecte aussi les changements programmatiques
+    // (ex. mise à jour de ta.value sans déclencher d'événement 'input')
+    _exoIntervalId = setInterval(_updateExoStatus, 300);
   }
 
   /* ══════════════════════════════════════════════

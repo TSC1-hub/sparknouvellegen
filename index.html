@@ -5346,6 +5346,10 @@ async function supprimerConversationEquipe(eqId) {
     return;
   }
 
+  // Nettoyer localStorage de l'équipe (membres + onboarding)
+  try { localStorage.removeItem('spark_mbr_' + eqId); } catch(e) {}
+  try { localStorage.removeItem('spark_onboarding_done'); } catch(e) {}
+
   // Nettoyer l'état mémoire du drawer FAC
   facDrawerVitrines = [];
   facDrawerEquipeId = null;
@@ -5475,7 +5479,11 @@ async function confirmReset(){
   if(!resetEquipeId) return;
   const { error } = await sb.rpc('reset_equipe', { p_equipe_id: resetEquipeId });
   if (error) { showToast('Erreur reset : ' + error.message, 'error'); return; }
-  closeReset(); showToast('Projet réinitialisé','success');
+  const _resetId = resetEquipeId;
+  closeReset();
+  try { localStorage.removeItem('spark_mbr_' + _resetId); } catch(e) {}
+  try { localStorage.removeItem('spark_onboarding_done'); } catch(e) {}
+  showToast('Projet réinitialisé','success');
   await renderFacEquipes();
 }
 function handleKey(e){
