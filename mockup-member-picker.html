@@ -259,7 +259,7 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;
     <div class="conv-etape-header" id="conv-header">Étape 1 — Problématiser</div>
 
     <!-- MESSAGES -->
-    <div class="messages" id="messages"></div>
+    <div class="messages" id="chat-messages"></div>
 
     <!-- INPUT ZONE -->
     <div class="input-zone" id="input-zone">
@@ -292,33 +292,36 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;
 <!-- State switcher (démo) -->
 <div class="state-switcher">
   <span class="sw-lbl">DÉMO — état</span>
-  <button class="sw-btn on" onclick="showState(this,'nb')">① Combien ?</button>
-  <button class="sw-btn" onclick="showState(this,'names')">② Pseudos</button>
-  <button class="sw-btn" onclick="showState(this,'picker')">③ Picker actif</button>
+  <button class="sw-btn on" onclick="showState(this,'welcome')">① Bienvenue</button>
+  <button class="sw-btn" onclick="showState(this,'nb')">② Combien ?</button>
+  <button class="sw-btn" onclick="showState(this,'names')">③ Pseudos</button>
   <button class="sw-btn" onclick="showState(this,'chat')">④ Chat normal</button>
 </div>
 
+<script src="spark-guided-tour.js"></script>
 <script>
 /* ══════════════════ DATA ══════════════════ */
+const TEAM_MEMBER = { id:'team', init:'', name:'Team', emoji:'👥' };
 const MEMBERS = [
   { id:'lea',   init:'L', name:'Léa',   emoji:'🌿' },
   { id:'tom',   init:'T', name:'Tom',   emoji:'🔥' },
   { id:'amira', init:'A', name:'Amira', emoji:'💧' },
   { id:'jules', init:'J', name:'Jules', emoji:'⚡' },
 ];
-let currentSpeaker = MEMBERS[0];
-let _onboardingPhase = 'awaiting_nb'; // awaiting_nb | awaiting_names | done
+let _currentMembers = [TEAM_MEMBER, ...MEMBERS];
+let currentSpeaker = TEAM_MEMBER;
+let _onboardingPhase = 'awaiting_ready'; // awaiting_ready | awaiting_nb | awaiting_names | done
 let _nbMembres = 0;
 let _collectedNames = [];
 
 /* ══════════════════ MESSAGES ══════════════════ */
-const msgs = document.getElementById('messages');
+const msgs = document.getElementById('chat-messages');
 
 function bubble(role, text, who, speakerMember) {
   const cls = role === 'spark' ? 'spark-msg' : 'eleve-msg';
   const av  = role === 'spark' ? '⚡' : (speakerMember?.emoji || '🐉');
   const avColor = role === 'spark' ? '' : `background:${memberColor(speakerMember?.id)}`;
-  const badge = (role === 'eleve' && speakerMember)
+  const badge = (role === 'eleve' && speakerMember?.init)
     ? `<div class="spk-badge">${speakerMember.init}</div>` : '';
   const d = document.createElement('div');
   d.className = `msg ${cls}`;
@@ -333,7 +336,7 @@ function bubble(role, text, who, speakerMember) {
 }
 
 function memberColor(id) {
-  const map = { lea:'#d4694a', tom:'#e6683c', amira:'#5a7a5a', jules:'#3d5c3a' };
+  const map = { lea:'#d4694a', tom:'#e6683c', amira:'#5a7a5a', jules:'#3d5c3a', team:'var(--moss)' };
   return map[id] || 'var(--terra)';
 }
 
@@ -358,46 +361,41 @@ function showState(btn, state) {
   document.querySelectorAll('.sw-btn').forEach(b => b.classList.remove('on'));
   btn.classList.add('on');
   msgs.innerHTML = '';
+  // Fermer le tour guidé si actif (mode démo — évite les conflits de phase)
+  ['gt-overlay','gt-spotlight','gt-arrow','gt-card','gt-styles'].forEach(id => {
+    document.getElementById(id)?.remove();
+  });
   document.getElementById('mbr-bar').style.display = 'none';
   document.getElementById('spark-mode-bar').style.display = 'none';
   document.getElementById('msg-input').placeholder = 'Tapez votre message...';
   document.getElementById('msg-input').disabled = false;
 
+  if (state === 'welcome') {
+    _onboardingPhase = 'awaiting_ready';
+    bubble('spark',
+      `Coucou ! 😊<br>Prêt·e·s à démarrer cette aventure ? Je suis là pour vous accompagner.<br><br>
+      <em>« Bienvenue dans le programme The Schools Challenge, vous êtes la 10ème génération à découvrir ce programme ! 🥳 Vous allez lors des 6 prochains mois collaborer tous.tes ensemble dans la résolution d'un problème ! Êtes-vous prêt.e.s ? 💪 »</em><br><br>
+      (Un simple "oui" ou "prêt·e·s" suffit !)`,
+      'SPARK ⚡');
+  }
+
   if (state === 'nb') {
     _onboardingPhase = 'awaiting_nb';
     bubble('spark',
-      "Avant de commencer — vous êtes <strong>combien</strong> dans votre équipe ? 👥",
+      "Avant de commencer l'aventure The Schools Challenge — vous êtes <strong>combien</strong> dans votre équipe ? 👥",
       'SPARK ⚡');
   }
 
   if (state === 'names') {
     _onboardingPhase = 'awaiting_names';
     _nbMembres = 4;
-    bubble('spark', "Avant de commencer — vous êtes <strong>combien</strong> dans votre équipe ? 👥", 'SPARK ⚡');
-    setTimeout(() => bubble('eleve', "4", 'La Team'), 500);
+    bubble('spark', "Avant de commencer l'aventure The Schools Challenge — vous êtes <strong>combien</strong> dans votre équipe ? 👥", 'SPARK ⚡');
+    setTimeout(() => bubble('eleve', "4", 'La Team', TEAM_MEMBER), 500);
     setTimeout(() => {
       bubble('spark',
         "Super, une équipe de 4 ! 🙌 Donnez-moi les <strong>4 prénoms ou pseudos</strong> de votre équipe — séparés par des virgules ou un par message !",
         'SPARK ⚡');
     }, 1100);
-  }
-
-  if (state === 'picker') {
-    _onboardingPhase = 'done';
-    bubble('spark', "Avant de commencer — vous êtes <strong>combien</strong> dans votre équipe ? 👥", 'SPARK ⚡');
-    bubble('eleve', "4", 'La Team');
-    bubble('spark', "Super ! Donnez-moi les 4 prénoms de votre équipe 🙌", 'SPARK ⚡');
-    bubble('eleve', "Léa, Tom, Amira, Jules", 'La Team');
-    setTimeout(() => {
-      bubble('spark',
-        "Bienvenue dans le programme The Schools Challenge, vous êtes la 10ème génération à découvrir ce programme ! 🥳 Vous allez lors des 6 prochains mois collaborer tous.tes ensemble dans la résolution d'un problème ! Êtes-vous prêt.e.s Léa, Tom, Amira et Jules ? 💪",
-        'SPARK ⚡');
-      setTimeout(() => {
-        bubble('spark', "Avant de démarrer — <strong>qui est au clavier là maintenant ?</strong>", 'SPARK ⚡');
-        renderMemberPicker(MEMBERS);
-        document.getElementById('spark-mode-bar').style.display = 'flex';
-      }, 900);
-    }, 600);
   }
 
   if (state === 'chat') {
@@ -437,16 +435,17 @@ function renderMemberPicker(members) {
   const bar = document.getElementById('mbr-bar');
   const pills = document.getElementById('mbr-pills');
   bar.style.display = 'flex';
-  pills.innerHTML = members.map((m, i) =>
+  _currentMembers = [TEAM_MEMBER, ...members];
+  pills.innerHTML = _currentMembers.map((m, i) =>
     `<button class="mbr-pill ${i === 0 ? 'on' : ''}" onclick="setSpeaker('${m.id}', true)" id="pill-${m.id}">
-      <span class="mp-av">${m.init}</span>${m.name}
+      <span class="mp-av">${m.init || m.emoji}</span>${m.name}
     </button>`
   ).join('');
-  setSpeaker(members[0].id, false);
+  setSpeaker('team', false);
 }
 
 function setSpeaker(id, focus) {
-  const m = MEMBERS.find(x => x.id === id);
+  const m = _currentMembers.find(x => x.id === id);
   if (!m) return;
   currentSpeaker = m;
   document.querySelectorAll('.mbr-pill').forEach(b => b.classList.remove('on'));
@@ -454,7 +453,7 @@ function setSpeaker(id, focus) {
   if (pill) pill.classList.add('on');
   document.getElementById('mbr-live-name').textContent = m.name;
   const inp = document.getElementById('msg-input');
-  inp.placeholder = `${m.name} écrit à SPARK…`;
+  inp.placeholder = m.id === 'team' ? 'La Team écrit à SPARK…' : `${m.name} écrit à SPARK…`;
   if (focus) inp.focus();
 }
 
@@ -465,9 +464,52 @@ function sendMsg() {
   if (!txt) return;
   inp.value = ''; inp.style.height = 'auto';
 
+  // Pendant le tour guidé — réponse générique, ne déclenche PAS l'onboarding
+  if (_onboardingPhase === 'tour') {
+    bubble('eleve', txt, 'La Team', TEAM_MEMBER);
+    showTyping();
+    setTimeout(() => {
+      hideTyping();
+      const tourReplies = [
+        "Super ! Je vois que vous avez déjà des idées 🌱 C'est exactement comme ça que ça marche — posez-moi vos questions et on avance ensemble.",
+        "Intéressant ! SPARK est là pour vous aider à structurer vos idées et challenger votre projet 🎯",
+        "Bien reçu ! Au cours des prochaines étapes, vous pourrez me poser toutes vos questions 🔍",
+        "Parfait ! Vous verrez, ensemble on va construire quelque chose de fort 💪",
+      ];
+      bubble('spark', tourReplies[Math.floor(Math.random() * tourReplies.length)], 'SPARK ⚡');
+    }, 800 + Math.random() * 600);
+    return;
+  }
+
+  if (_onboardingPhase === 'awaiting_ready') {
+    bubble('eleve', txt, 'La Team', TEAM_MEMBER);
+    const lower = txt.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'');
+    const isNeg = /\bnon\b|pas (sur|vraiment|encore)|peut.tre|bof|sais pas/i.test(lower);
+    const isExcited = /!|genial|trop (bien|cool|top)|grave|hyper|waoh|yeah/i.test(lower);
+    let reply;
+    if (isNeg) {
+      reply = "Pas d'inquiétude, on y va ensemble et ça va envoyer ! 😊 Avant de commencer l'aventure The Schools Challenge — vous êtes <strong>combien</strong> dans votre équipe ? 👥";
+    } else if (isExcited) {
+      reply = "Waoh, l'énergie est là ! 🔥 Avant de commencer l'aventure The Schools Challenge — vous êtes <strong>combien</strong> dans votre équipe ? 👥";
+    } else {
+      reply = "Super, on est parés ! 🚀 Avant de commencer l'aventure The Schools Challenge — vous êtes <strong>combien</strong> dans votre équipe ? 👥";
+    }
+    _onboardingPhase = 'awaiting_nb';
+    showTyping();
+    setTimeout(() => { hideTyping(); bubble('spark', reply, 'SPARK ⚡'); }, 700);
+    return;
+  }
+
   if (_onboardingPhase === 'awaiting_nb') {
-    const n = parseInt(txt.match(/\d+/)?.[0]);
-    bubble('eleve', txt, 'La Team');
+    const textNums = {'un':1,'une':1,'deux':2,'trois':3,'quatre':4,'cinq':5,'six':6,'sept':7,'huit':8,'neuf':9,'dix':10};
+    const lowerNb = txt.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'');
+    let n = parseInt(txt.match(/\d+/)?.[0]);
+    if (isNaN(n)) {
+      for (const [word, val] of Object.entries(textNums)) {
+        if (new RegExp('\\b' + word + '\\b').test(lowerNb)) { n = val; break; }
+      }
+    }
+    bubble('eleve', txt, 'La Team', TEAM_MEMBER);
     if (n >= 1 && n <= 10) {
       _nbMembres = n;
       _onboardingPhase = 'awaiting_names';
@@ -488,7 +530,7 @@ function sendMsg() {
   }
 
   if (_onboardingPhase === 'awaiting_names') {
-    bubble('eleve', txt, 'La Team');
+    bubble('eleve', txt, 'La Team', TEAM_MEMBER);
     const parsed = txt.split(/[,\n\/;]+/).map(s => s.trim()).filter(Boolean);
     _collectedNames.push(...parsed);
     if (_collectedNames.length >= _nbMembres) {
@@ -509,7 +551,6 @@ function sendMsg() {
           `Bienvenue dans le programme The Schools Challenge, vous êtes la 10ème génération à découvrir ce programme ! 🥳 Vous allez lors des 6 prochains mois collaborer tous.tes ensemble dans la résolution d'un problème ! Êtes-vous prêt.e.s ${listStr} ? 💪`,
           'SPARK ⚡');
         setTimeout(() => {
-          bubble('spark', "Avant de démarrer — <strong>qui est au clavier là maintenant ?</strong>", 'SPARK ⚡');
           renderMemberPicker(dynamicMembers);
           document.getElementById('spark-mode-bar').style.display = 'flex';
         }, 900);
@@ -526,17 +567,19 @@ function sendMsg() {
   }
 
   // Chat normal
-  const who         = currentSpeaker ? `${currentSpeaker.name} · Team` : 'La Team';
-  const spk         = currentSpeaker;
+  const isTeam = !currentSpeaker || currentSpeaker.id === 'team';
+  const who    = isTeam ? 'La Team' : `${currentSpeaker.name} · Team`;
+  const spk    = isTeam ? TEAM_MEMBER : currentSpeaker;
   bubble('eleve', txt, who, spk);
   showTyping();
   setTimeout(() => {
     hideTyping();
+    const spkName = isTeam ? '' : currentSpeaker.name;
     const replies = [
-      `Bonne piste ${currentSpeaker?.name || ''} 🎯 — comment vous creusez ça ?`,
+      `Bonne piste${spkName ? ' ' + spkName : ''} 🎯 — comment vous creusez ça ?`,
       `Intéressant ! Et quel impact concret est-ce que ça aurait sur le problème ? 🔍`,
       `Je vous challenge : est-ce que quelqu'un dans l'équipe voit un angle opposé ? 💥`,
-      `${currentSpeaker?.name || ''}, tu peux reformuler en partant de <em>"Le problème c'est que…"</em> ?`,
+      spkName ? `${spkName}, tu peux reformuler en partant de <em>"Le problème c'est que…"</em> ?` : `Pouvez-vous reformuler en partant de <em>"Le problème c'est que…"</em> ?`,
     ];
     bubble('spark', replies[Math.floor(Math.random() * replies.length)], 'SPARK ⚡');
   }, 800 + Math.random() * 700);
@@ -550,7 +593,29 @@ function autoResize(el) {
 }
 
 /* ── Init ── */
-showState(document.querySelector('.sw-btn.on'), 'nb');
+_onboardingPhase = 'tour';
+
+// Appelé quand le tour se termine (bouton "C'est parti !" ou "Passer")
+window.SparkTourOnEnd = function() {
+  msgs.innerHTML = '';
+  _onboardingPhase = 'awaiting_ready';
+  _nbMembres = 0;
+  _collectedNames = [];
+  setTimeout(() => {
+    bubble('spark',
+      `Coucou ! 😊<br>Prêt·e·s à démarrer cette aventure ? Je suis là pour vous accompagner.<br><br>
+      <em>« Bienvenue dans le programme The Schools Challenge, vous êtes la 10ème génération à découvrir ce programme ! 🥳 Vous allez lors des 6 prochains mois collaborer tous.tes ensemble dans la résolution d'un problème ! Êtes-vous prêt.e.s ? 💪 »</em><br><br>
+      (Un simple "oui" ou "prêt·e·s" suffit !)`,
+      'SPARK ⚡');
+  }, 300);
+};
+
+// Lancer le tour si disponible, sinon aller directement à l'onboarding
+if (typeof SparkTour !== 'undefined') {
+  SparkTour.start();
+} else {
+  window.SparkTourOnEnd();
+}
 </script>
 </body>
 </html>
