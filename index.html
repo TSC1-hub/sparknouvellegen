@@ -2841,8 +2841,22 @@ async function initEleve(){
   go('eleve');
   switchEleveCanal('spark', true);
   await loadConversation();
-  if(conversationHistory.length===0) await sparkGreet();
-  else _loadOrRestorePicker(); // conversation existante → restaurer le picker si membres connus
+  if(conversationHistory.length===0) {
+    // Laisser le guided tour se lancer en premier ; il appelle sparkGreet() via SparkTourOnEnd.
+    // Si le tour ne se lance pas (équipe déjà avancée, bug…), fallback après 8 s.
+    window.SparkTourOnEnd = async function() {
+      window.SparkTourOnEnd = null;
+      await sparkGreet();
+    };
+    setTimeout(async () => {
+      if (typeof window.SparkTourOnEnd === 'function' && !document.getElementById('gt-overlay')) {
+        window.SparkTourOnEnd = null;
+        await sparkGreet();
+      }
+    }, 8000);
+  } else {
+    _loadOrRestorePicker(); // conversation existante → restaurer le picker si membres connus
+  }
   requestAnimationFrame(()=>scrollBot());
   listenEleveConversations();
   listenVitrine();
@@ -3154,21 +3168,14 @@ function switchEleveCanal(canal, silent=false){
 }
 
 async function sparkGreet(){
-  const g="Bienvenue dans le programme The Schools Challenge, vous êtes la 10ème génération à découvrir ce programme ! 🥳 Vous allez lors de 6 prochains mois collaborer tous.tes ensemble dans la résolution d'un problème ! Etes-vous prêt.e.s? 💪";
-  await saveMsg('assistant',g,'SPARK ⚡');
-  eleveMessagesCache.push({role:'assistant',message:g,pseudo:'SPARK ⚡',etape:0});
-  renderEleveConversation();
-  conversationHistory.push({role:'model',parts:[{text:g}]});
-  scrollBot();
   // ── Onboarding membres : demander le nombre si pas encore connu ──
+  // La bienvenue personnalisée est envoyée plus tard, une fois les prénoms collectés.
   if (_teamMembers.length === 0) {
     _onboardingPhase = 'awaiting_nb';
-    setTimeout(async () => {
-      const q = "Avant de commencer — vous êtes \u003cstrong\u003ecombien\u003c/strong\u003e dans votre équipe\u00a0? 👥";
-      await saveMsg('assistant', q, 'SPARK ⚡');
-      eleveMessagesCache.push({role:'assistant', message:q, pseudo:'SPARK ⚡', etape:0});
-      renderEleveConversation(); scrollBot();
-    }, 900);
+    const q = "Avant de commencer — vous êtes <strong>combien</strong> dans votre équipe\u00a0? 👥";
+    await saveMsg('assistant', q, 'SPARK ⚡');
+    eleveMessagesCache.push({role:'assistant', message:q, pseudo:'SPARK ⚡', etape:0});
+    renderEleveConversation(); scrollBot();
   }
 }
 
@@ -3351,7 +3358,7 @@ async function sendMessage(){
     eleveMessagesCache.push({role:'user',message:txt,pseudo:'La Team',etape:0});
     renderEleveConversation(); scrollBot();
     await saveMsg('user', txt, 'La Team');
-    const parsed = txt.split(/[,\n\/;]+/).map(s=>s.trim()).filter(Boolean);
+    const parsed = txt.split(/[,;\/\n]+|\s+et\s+/).map(s=>s.trim()).filter(Boolean);
     _collectedMbrNames.push(...parsed);
     if (_collectedMbrNames.length >= _nbMembresAttendus) {
       const names = _collectedMbrNames.slice(0, _nbMembresAttendus);
@@ -3364,17 +3371,25 @@ async function sendMessage(){
         emoji: _MBR_EMOJIS[i % _MBR_EMOJIS.length]
       }));
       _saveMembersToStorage();
-      renderMemberPicker(_teamMembers);
       const listStr = names.length > 1
         ? names.slice(0,-1).join(', ') + ' et ' + names[names.length-1]
         : names[0];
       // Enregistrer le contexte membres dans conversationHistory pour Mistral
       conversationHistory.push({role:'user',parts:[{text:`Notre équipe est composée de : ${listStr}`}]});
-      const q = `Parfait ! Bienvenue \u003cstrong\u003e${listStr}\u003c/strong\u003e 👋\u003cbr\u003e\u003cbr\u003eOn est prêts ? Qui est au clavier maintenant ? Cliquez sur votre prénom ci-dessous, puis dites-moi ce que vous ressentez en démarrant ce challenge ! 🚀`;
-      await saveMsg('assistant', q, 'SPARK ⚡');
-      eleveMessagesCache.push({role:'assistant',message:q,pseudo:'SPARK ⚡',etape:0});
-      conversationHistory.push({role:'model',parts:[{text:q.replace(/<[^>]+>/g,'')}]});
+      // ① Bienvenue personnalisé avec les prénoms
+      const bienvenue = `Bienvenue dans le programme The Schools Challenge, vous êtes la 10ème génération à découvrir ce programme ! 🥳 Vous allez lors des 6 prochains mois collaborer tous.tes ensemble dans la résolution d'un problème ! Êtes-vous prêt.e.s ${listStr} ? 💪`;
+      await saveMsg('assistant', bienvenue, 'SPARK ⚡');
+      eleveMessagesCache.push({role:'assistant',message:bienvenue,pseudo:'SPARK ⚡',etape:0});
+      conversationHistory.push({role:'model',parts:[{text:bienvenue}]});
       renderEleveConversation(); scrollBot();
+      // ② Qui est au clavier ? + picker (après 900 ms)
+      setTimeout(async () => {
+        const q2 = "Avant de démarrer — <strong>qui est au clavier là maintenant ?</strong>";
+        await saveMsg('assistant', q2, 'SPARK ⚡');
+        eleveMessagesCache.push({role:'assistant',message:q2,pseudo:'SPARK ⚡',etape:0});
+        renderEleveConversation(); scrollBot();
+        renderMemberPicker(_teamMembers);
+      }, 900);
     } else {
       const reste = _nbMembresAttendus - _collectedMbrNames.length;
       const q = `👍 J'en ai ${_collectedMbrNames.length} — encore ${reste} prénom${reste>1?'s':''} !`;
